@@ -1,0 +1,12 @@
+Package: rssr
+Type: Package
+Title: Regression With Summary Statistics
+Version: 1.0
+Date: 2017-01-27
+Author: Xiang Zhu, Peter Carbonetto, Nicholas Knoblauch
+Maintainer: Who to complain to <yourfault@somewhere.net>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
+Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM
+LinkingTo: Rcpp, RcppEigen
+RoxygenNote: 6.0.0
