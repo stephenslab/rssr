@@ -1,11 +1,5 @@
-
 #' Convenience function to call two RSS updates
-#' 
-#' @param SiRiS see documentation for `rss_varbvsr_bigmem_squarem`
-#' @param sigma_beta see documentation for `rss_varbvsr_bigmem_squarem`
-#' @param logodds see documentation for `rss_varbvsr_bigmem_squarem`
-#' @param betahat univariate regression coefficients
-#' @param se univariate standard errors
+#' @template rssr
 #' @param o_mat a p by 3 matrix consisting of the concatenation of the three vectors: alpha0,mu0 and SiRiSr0, the initial values of alpha,mu and SiRiSr.
 squarem_update <- function(SiRiS,
                            sigma_beta,
@@ -13,7 +7,7 @@ squarem_update <- function(SiRiS,
                            betahat,
                            se,o_mat,reverse){
   
-  resmat <- rss_varbvsr(SiRiS  =SiRiS,
+  resmat <- rss_varbvsr_iter_naive_reference(SiRiS  =SiRiS,
                         sigma_beta = sigma_beta,
                         logodds = logodds,
                         betahat = betahat,
@@ -22,7 +16,7 @@ squarem_update <- function(SiRiS,
                         mu = o_mat[,2],
                         SiRiSr = o_mat[,3],reverse)
   
-  sresmat <- rss_varbvsr(SiRiS=SiRiS,
+  sresmat <- rss_varbvsr_iter_naive_reference(SiRiS=SiRiS,
                          sigma_beta=sigma_beta,
                          logodds = logodds,
                          betahat=betahat,
@@ -34,27 +28,6 @@ squarem_update <- function(SiRiS,
 }
 
 
-
-relerr <- function(x1, x2){
-  if (is.null(x1) | is.null(x2)){
-    return(0)  
-  }else{
-    return(abs(x1-x2)/(abs(x1)+abs(x2)+.Machine$double.eps))
-  }
-}
-
-
-
-read_option_vec <- function(optionvec,pvec){
-  npvec <- cumsum(c(1,pvec[-length(pvec)]))
-  cpvec <- cumsum(pvec)
-  optionlist <- list()
-  for(i in 1:length(pvec)){
-    optionlist[[i]] <- optionvec[npvec[i]:cpvec[i]]
-    stopifnot(length(optionlist[[i]])==pvec[i])
-  }
-  return(optionvec)
-}
 
 
 
@@ -74,13 +47,12 @@ read_option_vec <- function(optionvec,pvec){
 #'               - maxerr: the maximum relative difference between the parameters at the last two iterations
 #'               - sigb: scalar, the maximum likelihood estimate of sigma_beta
 #'               - loglik: iter by 1, the variational lower bound at each iteration
-
 rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10),options=list()){
-  require(h5)
+  
   stopifnot(all(file.exists(datafiles)))
   tolerance <- 1e-4
   if(is.null(options[["itermax"]])){
-    itermax <- 100
+    itermax <- 200
   }else{
     itermax <- options[["itermax"]]
   }
@@ -125,7 +97,7 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
     SiRiS_cell[[i]] <- gen_SiRSi(datafiles[i])
     chrom_cell[[i]] <- c(read_vec(datafiles[i],"chr"))
   }
-
+  
   
   #init_params
   if(is.null(options[["alpha"]])){
@@ -147,8 +119,8 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
     q_cell[[i]] <- betahat_cell[[i]]/sesquare_cell[[i]]
     s_cell[[i]] <- (sesquare_cell[[i]]*(sigb*sigb))/(sesquare_cell[[i]]+(sigb*sigb))
   }
-
-
+  
+  
   lnZ=-Inf
   alpha_r <- list()
   alpha_v <- list()
@@ -160,7 +132,7 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
   alpha_tmp <- list()
   mu_tmp <- list()
   SiRiSr_tmp <- list()
-  lnZ_l <- list()
+  lnZ_l <- numeric(length(datafiles))
   
   alpha0_cell <- list()
   mu0_cell <- list()
@@ -171,8 +143,8 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
   
   
   cat('iter   lower bound  change vars E[b] sigma2\n');
-   while(iter<itermax){
- 
+  while(iter<itermax){
+    
     lnZ0 <- lnZ
     
     for(i in 1:length(datafiles)){
@@ -186,7 +158,7 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
     for(i in 1:length(datafiles)){
       # cat(i,"\n")
       gc()
-
+      
       ntimevec[i] <- system.time(toutput <- squarem_update(SiRiS=SiRiS_cell[[i]],
                                                            sigma_beta=sigb_cell[[i]],
                                                            logodds=logodds_cell[[i]],se = se_cell[[i]],
@@ -234,7 +206,7 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
     
     for(i in 1:length(datafiles)){
       # cat(i,"\n")
-      timevec3[i]<-system.time(toutput<-rss_varbvsr(SiRiS=SiRiS_cell[[i]],
+      timevec3[i]<-system.time(toutput<-rss_varbvsr_iter_naive_reference(SiRiS=SiRiS_cell[[i]],
                                                     sigma_beta=sigb_cell[[i]],
                                                     logodds=logodds_cell[[i]],
                                                     betahat = betahat_cell[[i]],se=se_cell[[i]],
@@ -248,16 +220,22 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
       
       r_list[[i]] <- toutput[,1]*toutput[,2]
       params_cell[[i]] <- c(toutput[,1],r_list[[i]])
-    
-      lnZ_l[[i]] <- crossprod(q_cell[[i]],r_list[[i]])-crossprod(0.5*r_list[[i]],SiRiSr_cell[[i]])+intgamma(logodds_cell[[i]],alpha_cell[[i]])
-      lnZ_l[[i]] <- lnZ_l[[i]]-crossprod(0.5*(1/sesquare_cell[[i]]),betavar(alpha_cell[[i]],mu_cell[[i]],s_cell[[i]]))
-      lnZ_l[[i]] <- lnZ_l[[i]]+intklbeta_rssbvsr(alpha_cell[[i]],mu_cell[[i]],s_cell[[i]],sigb*sigb)
+      lnZ_l[i] <- calculate_lnZ(q = q_cell[[i]],
+                                r = r_list[[i]],
+                                SiRiSr = SiRiSr_cell[[i]],
+                                logodds = logodds_cell[[i]],
+                                sesquare = sesquare_cell[[i]],
+                                alpha = alpha_cell[[i]],
+                                mu = mu_cell[[i]],
+                                s = s_cell[[i]],
+                                sigb = sigb)
       J_tmp <- which(params_cell[[i]]>1e-6)
       err_tmp <- relerr(params_cell[[i]][J_tmp],params0_cell[[i]][J_tmp])
       maxerr_uni[i] <- max(err_tmp)
     }
     
-    lnZ <- sum(sapply(lnZ_l,sum))
+    
+    lnZ <- sum(lnZ_l)
     
     if((mtp<(-1))&(lnZ<lnZ0)){
       num_bt=0
@@ -269,7 +247,7 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
           mu_tmp3 <- mu0_cell[[i]]-2*mtp*mu_r[[i]]+(mtp^2)*mu_v[[i]]
           SiRiSr_tmp3 <- (SiRiS_cell[[i]]%*%(alpha_tmp3*mu_tmp3))@x
           
-          loutput <- rss_varbvsr(SiRiS=SiRiS_cell[[i]],
+          loutput <- rss_varbvsr_iter_naive_reference(SiRiS=SiRiS_cell[[i]],
                                  sigma_beta=sigb_cell[[i]],
                                  logodds=logodds_cell[[i]],
                                  betahat = betahat_cell[[i]],se=se_cell[[i]],
@@ -278,12 +256,18 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
           mu_cell[[i]] <- loutput[,2]
           r <- loutput[,1]*loutput[,2]
           SiRiSr_cell[[i]] <- loutput[,3]
+          lnZ_l[i] <- calculate_lnZ(q = q_cell[[i]],
+                                    r = r_list[[i]],
+                                    SiRiSr = SiRiSr_cell[[i]],
+                                    logodds = logodds_cell[[i]],
+                                    sesquare = sesquare_cell[[i]],
+                                    alpha = alpha_cell[[i]],
+                                    mu = mu_cell[[i]],
+                                    s = s_cell[[i]],
+                                    sigb = sigb)
           
-          lnZ_l[[i]] <- crossprod(q_cell[[i]],r)-crossprod(0.5*r,SiRiSr_tmp[[i]])+intgamma(logodds_cell[[i]],loutput[,1])
-          lnZ_l[[i]] <- lnZ_l[[i]]-crossprod(0.5*(1/sesquare_cell[[i]]),betavar(loutput[,1],loutput[,2],s_cell[[i]]))
-          lnZ_l[[i]] <- lnZ_l[[i]]+intklbeta_rssbvsr(loutput[,1],loutput[,2],s_cell[[i]],sigb_cell[[i]]*sigb_cell[[i]])
         }
-        lnZ <- sum(sapply(lnZ_l,sum))
+        lnZ <- sum(lnZ_l)
         num_bt <- num_bt+1
       }
     }
@@ -338,4 +322,12 @@ rss_varbvsr_bigmem_squarem <- function(datafiles,sigb=0.058,logodds=-2.9/log(10)
               ),
               s=unlist(s_cell)))
 }
+
+
+
+
+
+
+
+
 
