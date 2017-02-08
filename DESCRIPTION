@@ -7,7 +7,7 @@ Author: Xiang Zhu, Peter Carbonetto, Nicholas Knoblauch
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
-Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM
+Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM,future
 LinkingTo: Rcpp, RcppEigen
-RoxygenNote: 6.0.0
+RoxygenNote: 6.0.1
 Suggests: testthat

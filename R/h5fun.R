@@ -19,7 +19,7 @@ read_ccs_h5 <- function(h5filename,groupname,dataname="data",iname="ir",pname="j
 #' write a sparse matrix to HDF5 stored in the Compressed Column Storage (CCS) format)
 #' @template h5fun
 
-write_ccs_h5 <- function(h5filename,spmat,groupname,dataname="data",iname="ir",pname="jc"){
+write_ccs_h5 <- function(h5filename,spmat,groupname,dataname="data",iname="ir",pname="jc",compression_level=8){
   require(h5)
   h5f <- h5::h5file(h5filename,'a')
   h5g <- createGroup(h5f,groupname)
@@ -27,9 +27,26 @@ write_ccs_h5 <- function(h5filename,spmat,groupname,dataname="data",iname="ir",p
   i <- spmat@i
   p <- spmat@p
   data <- spmat@x
-  h5g[iname] <- i
-  h5g[pname] <- p
-  h5g[dataname] <- data
+  id <- h5::createDataSet(.Object = h5g,
+                          datasetname = iname,
+                          data=i,
+                          chunksize=as.integer(length(i)/10),
+                          maxdimensions = NA_integer_,
+                          compression=as.integer(compression_level))
+  pd <- h5::createDataSet(.Object = h5g,
+                          datasetname = pname,
+                          data=p,
+                          chunksize=as.integer(length(p)/10),
+                          maxdimensions = NA_integer_,
+                          compression=as.integer(compression_level))
+
+  dd <- h5::createDataSet(.Object = h5g,
+                          datasetname = dataname,
+                          data=data,
+                          chunksize=as.integer(length(data)/10),
+                          maxdimensions = NA_integer_,
+                          compression=as.integer(compression_level))
+
   h5close(h5f)
   return(T)
 }
