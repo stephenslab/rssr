@@ -6,24 +6,31 @@ squarem_update <- function(SiRiS,
                            logodds,
                            betahat,
                            se,o_mat,reverse){
-  
+  alpha0 <- o_mat[,1]
+  mu0 <- o_mat[,2]
+  SiRiSr0 <- o_mat[,3]
   resmat <- rss_varbvsr_iter_naive_reference(SiRiS  =SiRiS,
                         sigma_beta = sigma_beta,
                         logodds = logodds,
                         betahat = betahat,
                         se = se,
-                        alpha = o_mat[,1],
-                        mu = o_mat[,2],
-                        SiRiSr = o_mat[,3],reverse)
+                        alpha = alpha0,
+                        mu = mu0,
+                        SiRiSr = SiRiSr0,reverse)
+  
+  alpha1 <- resmat[,1]
+  mu1 <- resmat[,2]
+  SiRiSr1 <- resmat[,3]
   
   sresmat <- rss_varbvsr_iter_naive_reference(SiRiS=SiRiS,
                          sigma_beta=sigma_beta,
                          logodds = logodds,
                          betahat=betahat,
                          se = se,
-                         alpha = resmat[,1],
-                         mu = resmat[,2],
-                         SiRiSr = resmat[,3],reverse)
+                         alpha = alpha1,
+                         mu = mu1,
+                         SiRiSr = SiRiSr1,
+                         reverse)
   return(array(c(resmat,sresmat),c(dim(resmat),2)))
 }
 

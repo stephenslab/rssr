@@ -12,9 +12,9 @@ Eigen::MatrixXd rss_varbvsr_iter_naive_reference (Eigen::SparseMatrix<double> Si
                                                   const Eigen::VectorXd logodds,
                                                   const Eigen::VectorXd betahat,
                                                   const Eigen::VectorXd se,
-                                                  const Eigen::ArrayXd &alpha0,
-                                                  const Eigen::ArrayXd &mu0,
-                                                  const Eigen::ArrayXd &SiRiSr0,bool reverse){
+                                                  const Eigen::ArrayXd alpha0,
+                                                  const Eigen::ArrayXd mu0,
+                                                  const Eigen::ArrayXd SiRiSr0,bool reverse){
  
   
   // Get the number of SNPs (p) and coordinate ascent updates (m).
