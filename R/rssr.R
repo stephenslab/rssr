@@ -25,9 +25,10 @@ rss_varbvsr_future <- function(datafile,sigb=0.058,logodds=-2.9/log(10),options=
       stopifnot(file.exists(options[["alpha"]]))
       alpha_cell <- scan(options[["alpha"]],what=numeric())
       mu_cell <- scan(options[["mu"]],what=numeric())
+    }else{
+      alpha_cell <- options[["alpha"]]
+      mu_cell <- options[["mu"]]
     }
-    alpha_cell <- options[["alpha"]]
-    mu_cell <- options[["mu"]]
   }
   SiRiSr_cell <- (SiRiS_cell%*%(alpha_cell*mu_cell))@x
   return(rss_varbvsr_squarem(SiRiS = SiRiS_cell,
