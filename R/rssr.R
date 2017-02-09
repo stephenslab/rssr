@@ -104,8 +104,9 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
       options[["alpha"]] <- alpha_cell[[i]]
       options[["mu"]] <- mu_cell[[i]]
       if(!is.null(options[["toFile"]])){
-        resultl[[i]] %<-%{
-          cat("Starting Batch Job\n")
+        cat("Submitting!\n")
+        resultl[[i]] %<-% {
+          cat("Batch Job Started!\n")
           tres <- rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
           outf <- h5file(options[["toFile"]][[i]],'a')
           outf["alpha"] <- tres[["alpha"]]
@@ -120,7 +121,7 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
         resultl[[i]] %<-% rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
       }
     }else{
-      resultl[[i]] <- future::future(rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options))
+      resultl[[i]] %<-% rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
     }
   }
   return(future::values(resultl))
