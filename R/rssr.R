@@ -21,6 +21,11 @@ rss_varbvsr_future <- function(datafile,sigb=0.058,logodds=-2.9/log(10),options=
     options[["alpha"]] <- alpha_cell
     options[["mu"]] <- mu_cell
   }else{
+    if(length(options[["alpha"]])==1){
+      stopifnot(file.exists(options[["alpha"]]))
+      alpha_cell <- scan(options[["alpha"]],what=numeric())
+      mu_cell <- scan(options[["mu"]],what=numeric())
+    }
     alpha_cell <- options[["alpha"]]
     mu_cell <- options[["mu"]]
   }
@@ -37,12 +42,22 @@ rss_varbvsr_future <- function(datafile,sigb=0.058,logodds=-2.9/log(10),options=
 
 
 rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10),options=list()){
-  requireNamespace("future")
+  library(future.BatchJobs)
+  library(future)
+  library(h5)
   stopifnot(all(file.exists(datafiles)))
   
   if(!is.null(options[["plan"]])){
-    nodes <- options[["plan"]][["nodes"]]
-    future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
+    if(options[["plan"]][["engine"]]=="PBS"){
+      plan(batchjobs_torque,resources=options[["plan"]][["resources"]])
+    }else{
+      if(options[["plan"]][["engine"]]=="slurm"){
+        plan(batchjobs_slurm())
+      }else{
+        nodes <- options[["plan"]][["nodes"]]
+        future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
+      }
+    }
   }else{
     future::plan(future::eager)
   }
@@ -56,21 +71,30 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
   }
   timevec <- numeric(length(datafiles))
   
-  chrom_cell <- list()
+ 
   
   
   alpha_cell <- list()
   mu_cell <- list()
   
-  #init_params
+  #init_params (If we're running on the head node, we want to be as polite as possible,
+  #and allow users to specify files rather than vectors)
+  
   if(!is.null(options[["alpha"]])){
-    for(i in 1:length(datafiles)){
-      chrom_cell[[i]] <- c(read_vec(datafiles[i],"chr"))
+    if(length(options[["alpha"]])==length(datafiles)){
+      alpha_cell <- options[["alpha"]]
+      mu_cell <- options[["mu"]]
     }
-    stopifnot(length(options[["alpha"]])==length(unlist(chrom_cell)),
-              length(options[["mu"]])==length(unlist(chrom_cell)))
-    alpha_cell <- split(options[["alpha"]],f = unlist(chrom_cell))
-    mu_cell <- split(options[["mu"]],f = unlist(chrom_cell))
+    else{
+      chrom_cell <- list()
+      for(i in 1:length(datafiles)){
+        chrom_cell[[i]] <- c(read_vec(datafiles[i],"chr"))
+      }
+      stopifnot(length(options[["alpha"]])==length(unlist(chrom_cell)),
+                length(options[["mu"]])==length(unlist(chrom_cell)))
+      alpha_cell <- split(options[["alpha"]],f = unlist(chrom_cell))
+      mu_cell <- split(options[["mu"]],f = unlist(chrom_cell))
+    }
   }
   
   resultl <- list()
@@ -79,7 +103,21 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
     if(!is.null(options[["alpha"]])){
       options[["alpha"]] <- alpha_cell[[i]]
       options[["mu"]] <- mu_cell[[i]]
-      resultl[[i]] <- future::future(rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options))
+      if(!is.null(options[["toFile"]])){
+        resultl[[i]] %<-%{
+          tres <- rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
+          outf <- h5file(options[["toFile"]][i],'a')
+          outf["alpha"] <- tres[["alpha"]]
+          outf["mu"] <- tres[["mu"]]
+          outf["lnZ"] <- tres[["lnZ"]]
+          outf[["iter"]] <- tres[["iter"]]
+          outf[["max_err"]] <- tres[["max_err"]]
+          h5close(outf)
+          tres[["lnZ"]]
+        }
+      }else{
+        resultl[[i]] %<-% rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
+      }
     }else{
       resultl[[i]] <- future::future(rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options))
     }
