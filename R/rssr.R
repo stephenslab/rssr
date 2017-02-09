@@ -67,6 +67,8 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
     for(i in 1:length(datafiles)){
       chrom_cell[[i]] <- c(read_vec(datafiles[i],"chr"))
     }
+    stopifnot(length(options[["alpha"]])==length(unlist(chrom_cell)),
+              length(options[["mu"]])==length(unlist(chrom_cell)))
     alpha_cell <- split(options[["alpha"]],f = unlist(chrom_cell))
     mu_cell <- split(options[["mu"]],f = unlist(chrom_cell))
   }
