@@ -105,8 +105,9 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
       options[["mu"]] <- mu_cell[[i]]
       if(!is.null(options[["toFile"]])){
         resultl[[i]] %<-%{
+          cat("Starting Batch Job\n")
           tres <- rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
-          outf <- h5file(options[["toFile"]][i],'a')
+          outf <- h5file(options[["toFile"]][[i]],'a')
           outf["alpha"] <- tres[["alpha"]]
           outf["mu"] <- tres[["mu"]]
           outf["lnZ"] <- tres[["lnZ"]]
