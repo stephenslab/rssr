@@ -45,16 +45,17 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
   library(future.BatchJobs)
   library(future)
   library(h5)
+  library(listenv)
   stopifnot(all(file.exists(datafiles)))
   
   if(!is.null(options[["plan"]])){
     if(options[["plan"]][["engine"]]=="PBS"){
       plan(batchjobs_torque,resources=options[["plan"]][["resources"]])
     }else{
-      if(options[["plan"]][["engine"]]=="slurm"){
-        plan(batchjobs_slurm())
+      if(options[["plan"]][["engine"]]=="SLURM"){
+        plan(batchjobs_slurm,resources=options[["plan"]][["resources"]])
       }else{
-        nodes <- options[["plan"]][["nodes"]]
+        nodes <- options[["plan"]][["resources"]][["nodes"]]
         future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
       }
     }
@@ -97,7 +98,7 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
     }
   }
   
-  resultl <- list()
+  resultl <- listenv()
   for(i in 1:length(datafiles)){
     cat(datafiles[i],"\n")
     if(!is.null(options[["alpha"]])){
