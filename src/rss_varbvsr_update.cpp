@@ -5,8 +5,8 @@
 #include <cstdio>
                      
 void rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
-                      const Eigen::ArrayXd sigma_beta,
-                      const Eigen::ArrayXd logodds,
+                      const double sigma_beta,
+                      const double logodds,
                       const Eigen::ArrayXd betahat,
                       const Eigen::ArrayXd se,
                       Eigen::ArrayXd &alpha,
@@ -42,9 +42,9 @@ void rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
     double SiRiSr_snp = SiRiSr(i);
     
     // Perform the mean-field variational update.
-    rss_varbvsr_update(betahat(i), se(i), sigma_beta[i], 
+    rss_varbvsr_update(betahat(i), se(i), sigma_beta, 
                        SiRiS_snp, SiRiSr, SiRiSr_snp, 
-                       logodds(i), alpha(i), mu(i));
+                       logodds, alpha(i), mu(i));
   }
 }
 
@@ -58,8 +58,8 @@ void rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
 //' @useDynLib rssr
 //[[Rcpp::export]]
 Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
-                                   const Eigen::ArrayXd sigma_beta,
-                                   const Eigen::ArrayXd logodds,
+                                   const double sigma_beta,
+                                   const double logodds,
                                    const Eigen::ArrayXd betahat,
                                    const Eigen::ArrayXd se,
                                    const Eigen::ArrayXd &talpha0,
@@ -138,7 +138,7 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
     }
     
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
-    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta(0));
+    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
     if((mtp<(-1)) && (lnZ < lnZ0)){
       size_t num_bt=0;
       while((lnZ<lnZ0) &&(num_bt < 10)){
@@ -147,7 +147,7 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
         mu = mu0-2*mtp*mu_r+(mtp*mtp)*mu_v;
         SiRiSr = SiRiS*(alpha*mu).matrix();
         rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
-        lnZ=calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta(0));          
+        lnZ=calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);          
         num_bt=num_bt+1;
       }
     }
@@ -156,7 +156,7 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
     if(verbose){
       double absr=(alpha*mu).abs().maxCoeff();
       int asum=round(alpha.sum());
-      printf("%4d %+13.6e %0.1e %4d %0.2f %5.2f\n",(int)iter,lnZ,max_err,(int) asum,absr,sigma_beta(0)*sigma_beta(0));
+      printf("%4d %+13.6e %0.1e %4d %0.2f %5.2f\n",(int)iter,lnZ,max_err,(int) asum,absr,sigma_beta*sigma_beta);
     }
     iter=iter+1;
   }
@@ -170,8 +170,8 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
 
 //[[Rcpp::export]]
 Eigen::MatrixXd rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
-                                  const Eigen::ArrayXd sigma_beta,
-                                  const Eigen::ArrayXd logodds,
+                                  const double sigma_beta,
+                                  const double logodds,
                                   const Eigen::ArrayXd betahat,
                                   const Eigen::ArrayXd se,
                                   const Eigen::ArrayXd &alpha0,

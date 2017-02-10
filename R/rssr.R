@@ -2,17 +2,22 @@
 rss_varbvsr_future <- function(datafile,sigb=0.058,logodds=-2.9/log(10),options=list()){
   
   stopifnot(file.exists(datafile))
-  tolerance <- 1e-4
+  if(is.null(options[["tolerance"]])){
+    tolerance <- 1e-4
+  }else{
+    tolerance <- options[["tolerance"]]
+  }
   if(is.null(options[["itermax"]])){
     itermax <- 100
   }else{
     itermax <- options[["itermax"]]
   }
+  
   betahat_cell <- c(read_vec(datafile,"betahat"))
   se_cell <- c(read_vec(datafile,"se"))
   p <- length(betahat_cell)
-  sigb_cell <- rep(sigb,p)
-  logodds_cell <- rep(logodds,p)
+  sigb_cell <- sigb
+  logodds_cell <- logodds
   SiRiS_cell <- gen_SiRSi(datafile)
   if(is.null(options[["alpha"]])){
     alpha_cell <- runif(p)
@@ -64,17 +69,16 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
     future::plan(future::eager)
   }
   
-  
+  if(is.null(options[["tolerance"]])){
   tolerance <- 1e-4
+  }else{
+    tolerance <- options[["tolerance"]]
+  }
   if(is.null(options[["itermax"]])){
     itermax <- 100
   }else{
     itermax <- options[["itermax"]]
   }
-  timevec <- numeric(length(datafiles))
-  
- 
-  
   
   alpha_cell <- list()
   mu_cell <- list()
@@ -84,6 +88,7 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
   
   if(!is.null(options[["alpha"]])){
     if(length(options[["alpha"]])==length(datafiles)){
+      stopifnot(typeof(options[["alpha"]][[1]])=="character")
       alpha_cell <- options[["alpha"]]
       mu_cell <- options[["mu"]]
     }
@@ -92,14 +97,19 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
       for(i in 1:length(datafiles)){
         chrom_cell[[i]] <- c(read_vec(datafiles[i],"chr"))
       }
-      stopifnot(length(options[["alpha"]])==length(unlist(chrom_cell)),
-                length(options[["mu"]])==length(unlist(chrom_cell)))
-      alpha_cell <- split(options[["alpha"]],f = unlist(chrom_cell))
-      mu_cell <- split(options[["mu"]],f = unlist(chrom_cell))
+      if(all(lengths(options[["alpha"]])==lengths(chrom_cell))){
+        alpha_cell <- options[["alpha"]]
+        mu_cell <- options[["mu"]]
+      }else{
+        stopifnot(length(options[["alpha"]])==length(unlist(chrom_cell)),
+                  length(options[["mu"]])==length(unlist(chrom_cell)))
+        alpha_cell <- split(options[["alpha"]],f = unlist(chrom_cell))
+        mu_cell <- split(options[["mu"]],f = unlist(chrom_cell))
+      }
     }
   }
   
-  resultl <- listenv()
+  resultl <- list()
   for(i in 1:length(datafiles)){
     cat(datafiles[i],"\n")
     if(!is.null(options[["alpha"]])){
@@ -107,26 +117,27 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
       options[["mu"]] <- mu_cell[[i]]
       if(!is.null(options[["toFile"]])){
         cat("Submitting!\n")
-        resultl[[i]] %<-% {
+        resultl[[i]] <-future({
           cat("Batch Job Started!\n")
           tres <- rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
+          
           outf <- h5file(options[["toFile"]][[i]],'a')
           outf["alpha"] <- tres[["alpha"]]
           outf["mu"] <- tres[["mu"]]
           outf["lnZ"] <- tres[["lnZ"]]
-          outf[["iter"]] <- tres[["iter"]]
-          outf[["max_err"]] <- tres[["max_err"]]
+          outf["iter"] <- tres[["iter"]]
+          outf["max_err"] <- tres[["max_err"]]
           h5close(outf)
-          tres[["lnZ"]]
-        }
+        })
       }else{
-        resultl[[i]] %<-% rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
+        resultl[[i]]<-  future({ rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)})
       }
     }else{
-      resultl[[i]] %<-% rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)
+      resultl[[i]] <- future({rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)})
     }
   }
-  return(future::values(resultl))
+  cat("Waiting on Results")
+  return(values(resultl))
 }
 
 

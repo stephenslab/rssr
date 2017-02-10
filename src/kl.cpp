@@ -8,7 +8,7 @@ Eigen::ArrayXd betavar(const Eigen::ArrayXd &p,const Eigen::ArrayXd &mu,const Ei
   return p*(s+(1-p)*mu.square());
 }
 //[[Rcpp::export]]
-double intklbeta_rssbvsr(const Eigen::ArrayXd &alpha,const Eigen::ArrayXd &mu,const Eigen::ArrayXd &sigma_square,const double &sigma_beta_square){
+double intklbeta_rssbvsr(const Eigen::ArrayXd &alpha,const Eigen::ArrayXd &mu,const Eigen::ArrayXd &sigma_square, double sigma_beta_square){
   double tres = alpha.sum()+alpha.matrix().transpose()*((sigma_square/sigma_beta_square).log()).matrix();
   double sres = alpha.matrix().transpose()*(sigma_square+mu.square()).matrix();
   double thres = alpha.matrix().transpose()*((alpha+double_lim::epsilon()).log()).matrix();
@@ -17,7 +17,7 @@ double intklbeta_rssbvsr(const Eigen::ArrayXd &alpha,const Eigen::ArrayXd &mu,co
 }
 
 //[[Rcpp::export]]
-double intgamma(const Eigen::ArrayXd &logodds, const Eigen::ArrayXd &alpha){
+double intgamma(double logodds, const Eigen::ArrayXd &alpha){
   Eigen::ArrayXd tres = ((alpha-1)*logodds+logsigmoid(logodds));
   return tres.sum();
 }
@@ -52,12 +52,12 @@ double find_maxerr(const Eigen::ArrayXd &alpha,
 double calculate_lnZ(const Eigen::VectorXd &q,
                      const Eigen::VectorXd &r,
                      const Eigen::VectorXd &SiRiSr,
-                     const Eigen::ArrayXd &logodds,
+                     double logodds,
                      const Eigen::VectorXd &sesquare,
                      const Eigen::VectorXd &alpha,
                      const Eigen::VectorXd &mu,
                      const Eigen::VectorXd &s,
-                     const double sigb){
+                     double sigb){
   
 
   double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());

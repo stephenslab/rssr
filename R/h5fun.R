@@ -69,9 +69,22 @@ write_vec <- function(h5filename,vec,datapath){
   return(data)
 }
 
+
+# write_obj_h5 <- function(h5filename,obj,objname,compression_level=2){
+#   require(h5)
+#   if(typeof(obj)=="list"){
+#     h5f <- h5file(h5filename,'a')
+#   }
+#     
+#   
+# }
+
+
+
+
+
 #' @describeIn read_ccs_h5 Read in R and standard error, and generate the SiRiS matrix
 gen_SiRSi <- function(h5filename,check=T){
-  requireNamespace("h5")
   require(h5)
   if(check){
     h5f <- h5file(h5filename,'r')
