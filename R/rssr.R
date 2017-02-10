@@ -56,16 +56,20 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
   
   if(!is.null(options[["plan"]])){
     if(options[["plan"]][["engine"]]=="PBS"){
+      cat("PBS/Torque detected\n")
       plan(batchjobs_torque,resources=options[["plan"]][["resources"]])
     }else{
       if(options[["plan"]][["engine"]]=="SLURM"){
+        cat("SLURM detected\n")
         plan(batchjobs_slurm,resources=options[["plan"]][["resources"]])
       }else{
+        cat("Multisession parallelism\n")
         nodes <- options[["plan"]][["resources"]][["nodes"]]
         future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
       }
     }
   }else{
+    cat("Defaulting to serial execution\n")
     future::plan(future::eager)
   }
   
@@ -128,6 +132,7 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
           outf["iter"] <- tres[["iter"]]
           outf["max_err"] <- tres[["max_err"]]
           h5close(outf)
+          tres[["lnZ"]]
         })
       }else{
         resultl[[i]]<-  future({ rss_varbvsr_future(datafiles[i],sigb=sigb,logodds=logodds,options=options)})
@@ -137,6 +142,16 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
     }
   }
   cat("Waiting on Results")
+  num_resolved <- sum(sapply(resultl,function(x){
+    resolved(x)
+  }))
+  while(num_resolved<length(resultl)){
+    cat("Waiting on:",length(resultl)-num_resolved," results \n")
+    Sys.sleep(10)
+    num_resolved <- sum(sapply(resultl,function(x){
+      resolved(x)
+    }))
+  }
   return(values(resultl))
 }
 
