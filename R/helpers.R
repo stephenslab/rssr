@@ -6,19 +6,30 @@ relerr <- function(x1, x2){
   }
 }
 
-
-
-
-read_option_vec <- function(optionvec,pvec){
-  npvec <- cumsum(c(1,pvec[-length(pvec)]))
-  cpvec <- cumsum(pvec)
-  optionlist <- list()
-  for(i in 1:length(pvec)){
-    optionlist[[i]] <- optionvec[npvec[i]:cpvec[i]]
-    stopifnot(length(optionlist[[i]])==pvec[i])
-  }
-  return(optionvec)
+#' Normalize log weights
+#' @param lnZ unnormalized log probability
+#' normalizelogweights takes as input an array of unnormalized
+# log-probabilities logw and returns normalized probabilities such
+# that the sum is equal to 1.
+normalizeLogWeights <- function (lnZ) {
+  
+  # Guard against underflow or overflow by adjusting the
+  # log-probabilities so that the largest probability is 1.
+  const <- max(lnZ)
+  w <- exp(lnZ - const)
+  
+  # Normalize the probabilities.
+  return(w/sum(w))
 }
+
+
+marg_param <- function(lnZ,param){
+  normw <- normalizeLogWeights(lnZ)
+  mean_param <- c(normw%*%param)
+  sd_param <- sqrt(sum(normw*(param-mean_param)^2))
+  return(c(mean_param,sd_param))
+}
+
 
 
 #' Function to create an HDF5 dataset
@@ -40,3 +51,112 @@ create_h5_data <- function(h5filename,R,betahat,se,chr=NULL){
   cat("Finished writing file ",h5filename,"\n")
   return(T)
 }
+
+ralpha <- function(p){
+  alpha <- runif(p)
+  return(alpha/sum(alpha))
+}
+
+rmu <- function(p){
+  return(rnorm(p))
+}
+  
+
+#'Helper function  to specify data and hyperparameters for the scenario 
+#where LD,betahat,and se are in the same files but split into chunks,
+#where alpha and mu, if available, are in separate txt files
+prep_list <- function(x,default,chunk=NULL,chunk_max=NULL){
+  if(!is.null(x)){
+    if(!is.null(chunk)){
+      if(length(x)==chunk_max){
+        if(typeof(x)=="list")
+          return(x[[chunk]])
+      }
+    }
+    return(x)
+  }
+  return(default)
+}
+    
+
+#'Flexible function for specifying data and hyperparameters for RSS
+#'@param datafile path to HDF5 formatted file with betahat, se, and R
+#'@param options list containing the remaining parameters that have already been specified.
+#'@details The elements of options are :
+#'betahat: vector of length p pre-specifying betahat (in this case, don't read betahat from datafile)
+#'se: vector of length p pre-specifying se (in this case, don't read se from datafile)
+#'R: A sparse matrix of class dgCMatrix, specifying LD (note, this is distinct from the SiRiS matrix)
+#'SiRiS: A sparse matrix of class dgCMatrix, specifying the SiRiS matrix
+#'tolerance: the tolerance for convergence of the VB algorithm
+#'maxiter: the maximum number of iterations to perform
+#'alphafile file containing initial values of alpha (txt file)
+#'mu file containing initial values of alpha (txt file)
+#'alpha: a length p vector specifying initial values of alpha
+#'mu: a length p vector specifying initial values of mu
+#'Rfile: HDF5 file to use instead of datafile for LD matrix
+#'betahatfile: HDF5 file to use instead of datafile for betahat vector
+#'sefile: HDF5 file to use instead of datafile for se vector
+#'Rpath: path in HDF5 file to look for R matrix (may be name of group in case of sparse matrix or name of data in case of dense matrix)
+#'betahatpath: path in HDF5 file to look for betahat vector 
+#'sepath: path in HDF5 file to look for se vector 
+
+prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
+  
+  options[["datafile"]] <- prep_list(options[["datafile"]],datafile,chunk,tot_chunks)
+  stopifnot(file.exists(options[["datafile"]]))
+  options[["tolerance"]] <- prep_list(options[["toleraence"]],1e-4,chunk,tot_chunks)
+  options[["itermax"]] <- prep_list(options[["itermax"]],100,chunk,tot_chunks)
+  
+  options[["betahatfile"]] <- prep_list(options[["betahatfile"]],options[["datafile"]],chunk,tot_chunks)
+  options[["betahatpath"]] <- prep_list(options[["betahatpath"]],"betahat",chunk,tot_chunks)
+  options[["betahat"]] <- prep_list(options[["betahat"]],  c(read_vec(options[["betahatfile"]],options[["betahatpath"]])),chunk,tot_chunks)
+  
+  options[["sefile"]] <- prep_list(options[["sefile"]],options[["datafile"]],chunk,tot_chunks)
+  options[["sepath"]] <- prep_list(options[["sepath"]],"se",chunk,tot_chunks)
+  options[["se"]] <- prep_list(options[["se"]],  c(read_vec(options[["sefile"]],options[["sepath"]])),chunk,tot_chunks)
+  options["verbose"] <- prep_list(options[["verbose"]],T,chunk,tot_chunks)
+  p <- length(options[["se"]])
+  stopifnot(length(options[["se"]])==length(options[["betahat"]]))
+  if(is.null(options[["SiRiS"]])){
+    options[["Rfile"]] <- prep_list(options[["Rfile"]],options[["datafile"]],chunk,tot_chunks)
+    options[["Rpath"]] <- prep_list(options[["Rpath"]],"R",chunk,tot_chunks)
+    options[["se"]] <- prep_list(options[["se"]],  c(read_vec(options[["sefile"]],options[["sepath"]])),chunk,tot_chunks)
+    options[["SiRiS"]] <- gen_SiRSi(options[["Rfile"]],options[["Rpath"]],options[["se"]],check=F)
+  }
+  options[["alphafile"]] <- prep_list(options[["alphafile"]],NULL,chunk,tot_chunks)
+  options[["mufile"]] <- prep_list(options[["mufile"]],NULL,chunk,tot_chunks)
+  
+  if(!is.null(options[["alphafile"]])){
+    stopifnot(file.exists(options[["alphafile"]]))
+    options[["alpha"]] <- scan(options[["alphafile"]],what=numeric())
+  }else{
+    options[["alpha"]] <- prep_list(options[["alpha"]],NULL,chunk,tot_chunks)
+    if(is.null(options[["alpha"]])){
+      options[["alpha"]] <- ralpha(p)
+
+    }
+  }
+  if(!is.null(options[["mufile"]])){
+    stopifnot(file.exists(options[["mufile"]]))
+    options[["mu"]] <- scan(options[["mufile"]],what=numeric())
+  }else{
+    options[["mu"]] <- prep_list(options[["mu"]],NULL,chunk,tot_chunks)
+    if(is.null(options[["mu"]])){
+      options[["mu"]] <- rmu(p)
+    }
+  }
+  if(is.null(options[["SiRiSr"]])){
+    options[["SiRiSr"]] <- (options[["SiRiS"]]%*%(options[["alpha"]]*options[["mu"]]))@x
+  }
+  if(is.null(options[["sigb"]])){
+    options[["sigb"]] <- prep_list(options[["sigb"]],0.058,chunk,tot_chunks)
+  }
+  if(is.null(options[["logodds"]])){
+    options[["logodds"]] <- prep_list(options[["logodds"]],-2.9/log(10),chunk,tot_chunks)
+  }
+  return(options)
+}
+
+
+
+

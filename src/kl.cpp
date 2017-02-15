@@ -22,7 +22,7 @@ double intgamma(double logodds, const Eigen::ArrayXd &alpha){
   return tres.sum();
 }
 
-
+//[[Rcpp::export]]
 double find_maxerr(const Eigen::ArrayXd &alpha,
                    const Eigen::ArrayXd &alpha0,
                    const Eigen::ArrayXd &r,

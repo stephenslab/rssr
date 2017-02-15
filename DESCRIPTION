@@ -10,4 +10,4 @@ License: What license is it under?
 Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM,future,future.BatchJobs
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 6.0.1
-Suggests: testthat
+Suggests: testthat,RcppOctave

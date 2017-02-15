@@ -6,7 +6,7 @@
 write a sparse matrix to HDF5 stored in the Compressed Column Storage (CCS) format)}
 \usage{
 write_ccs_h5(h5filename, spmat, groupname, dataname = "data", iname = "ir",
-  pname = "jc", compression_level = 8)
+  pname = "jc", compression_level = 8, symmetric = F)
 }
 \arguments{
 \item{h5filename}{path to HDF5 file}

@@ -3,6 +3,9 @@
 #include "rssvarbvsr.hpp"
 #include "kl.hpp"
 #include <cstdio>
+
+
+
                      
 void rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
                       const double sigma_beta,
@@ -48,6 +51,31 @@ void rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
   }
 }
 
+//[[Rcpp::export]]
+Rcpp::List wrap_rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
+                                 const double sigma_beta,
+                                 const double logodds,
+                                 const Eigen::ArrayXd betahat,
+                                 const Eigen::ArrayXd se,
+                                 Eigen::ArrayXd &alpha,
+                                 Eigen::ArrayXd &mu,
+                                 Eigen::ArrayXd &SiRiSr,
+                                 bool reverse){
+  
+  rss_varbvsr_iter(SiRiS,
+                   sigma_beta,
+                   logodds,
+                   betahat,
+                   se,
+                   alpha,
+                   mu,
+                   SiRiSr,
+                   reverse);
+  return Rcpp::List::create(Rcpp::Named("alpha1")=alpha,
+                            Rcpp::Named("mu1")=mu,
+                            Rcpp::Named("SiRiSr")=SiRiSr);
+}
+
 
 
 //' Run RSS with the variational bayes algorithm accelerated with SQUAREM
@@ -65,12 +93,14 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
                                    const Eigen::ArrayXd &talpha0,
                                    const Eigen::ArrayXd &tmu0,
                                    const Eigen::ArrayXd &tSiRiSr0,
-                                   double tolerance){
+                                   double tolerance,
+                                   int itermax,
+                                   Rcpp::LogicalVector verbose){
   
   
   //This function implements RSS with variational bayes and the SQUAREM algorithm.
   
-  
+  bool verbosev=verbose[0];
   const size_t p = betahat.size();
   
   Eigen::ArrayXd alpha=talpha0;
@@ -108,12 +138,11 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
   size_t iter=0;
   double max_err=1;
   double lnZ0=0;
-  bool  verbose=true;
   while(max_err>tolerance){
     lnZ0=lnZ;
     alpha0=alpha;
     mu0=mu;
-    bool reverse = iter%2==0;
+    bool reverse = iter%2!=0;
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     alpha1=alpha;
     mu1=mu;
@@ -153,10 +182,15 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
     }
     
     max_err=find_maxerr(alpha,alpha0,alpha*mu,alpha0*mu0);
-    if(verbose){
+    if(verbosev){
       double absr=(alpha*mu).abs().maxCoeff();
       int asum=round(alpha.sum());
-      printf("%4d %+13.6e %0.1e %4d %0.2f %5.2f\n",(int)iter,lnZ,max_err,(int) asum,absr,sigma_beta*sigma_beta);
+      printf("%4d %+13.6e %1.9e %4d %0.2f %5.2f\n",(int)iter,lnZ,max_err,(int) asum,absr,sigma_beta*sigma_beta);
+    }
+    if(iter>itermax){
+      printf("Maximum iteration number reached: %+0.2d \n",(int)iter);
+      printf("The log variational lower bound of the last step increased by %+0.2e\n",lnZ-lnZ0);
+      break;
     }
     iter=iter+1;
   }

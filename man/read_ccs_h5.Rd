@@ -9,13 +9,13 @@
 read a sparse matrix from HDF5 stored in Compressed Column Storage (CCS) format}
 \usage{
 read_ccs_h5(h5filename, groupname, dataname = "data", iname = "ir",
-  pname = "jc")
+  pname = "jc", isSymmetric = NULL)
 
 read_vec(h5filename, datapath)
 
 write_vec(h5filename, vec, datapath)
 
-gen_SiRSi(h5filename, check = T)
+gen_SiRSi(h5filename, Rpath = NULL, se = NULL, check = T)
 }
 \arguments{
 \item{h5filename}{path to HDF5 file}
