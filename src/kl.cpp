@@ -23,6 +23,11 @@ double intgamma(double logodds, const Eigen::ArrayXd &alpha){
 }
 
 //[[Rcpp::export]]
+double rel_err(double p0,double p1){
+  return fabs(p0-p1)/(fabs(p0)+fabs(p1)+double_lim::epsilon());
+}
+
+//[[Rcpp::export]]
 double find_maxerr(const Eigen::ArrayXd &alpha,
                    const Eigen::ArrayXd &alpha0,
                    const Eigen::ArrayXd &r,

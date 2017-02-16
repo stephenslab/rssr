@@ -3,6 +3,16 @@ rss_varbvsr_future <- function(options=list()){
   if(options[["verbose"]]){
     cat('iter   lower bound  change vars E[b] sigma2\n');
   }
+  stopifnot(length(options[["sigb"]])==1,
+            length(options[["logodds"]])==1,
+            !is.null(options[["SiRiS"]]),
+            !is.null(options[["betahat"]]),
+            !is.null(options[["alpha"]]),
+            !is.null(options[["mu"]]),
+            !is.null(options[["se"]]),
+            length(options[["se"]])==length(options[["betahat"]]),
+            length(options[["betahat"]])==length(options[["mu"]]))
+            
   run_time <- system.time(int_res <- rss_varbvsr_squarem(SiRiS = options[["SiRiS"]],
                                                          sigma_beta=options[["sigb"]],
                                                          logodds=options[["logodds"]],
@@ -13,7 +23,8 @@ rss_varbvsr_future <- function(options=list()){
                                                          tSiRiSr0 = options[["SiRiSr"]],
                                                          tolerance = options[["tolerance"]],
                                                          itermax=options[["itermax"]],
-                                                         verbose=options[["verbose"]]))
+                                                         verbose=options[["verbose"]],
+                                                         lnz_tol = options[["lnz_tol"]]))
   int_res[["run_time"]] <- run_time
   return(int_res)
 }
@@ -38,7 +49,8 @@ grid_optimize_rss_varbvsr <- function(options=list()){
                                      tSiRiSr0 = options[["SiRiSr"]],
                                      tolerance = options[["tolerance"]],
                                      itermax=options[["itermax"]],
-                                     verbose=options[["verbose"]])
+                                     verbose=options[["verbose"]],
+                                     lnz_tol = options[["lnz_tol"]])
       lnzmat[i,j] <- int_res[["lnZ"]]
     }
   }
@@ -48,18 +60,11 @@ grid_optimize_rss_varbvsr <- function(options=list()){
 
 
 
-rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10),options=list()){
-  # sigb <- 0.058
-  # logodds <- -2.9/log(10)
-  # input_h5files <- dir("/media/nwknoblauch/Data/GTEx/1kg_LD",full.names = T)
-  # output_h5files <- gsub("1kg_LD","1kg_IBD",input_h5files)
-  # options <- list(plan=list(engine="MC",resources=list(nodes=2)),toFile=as.list(output_h5files),datafile=as.list(input_h5files),tolerance=1e-2)
-  # datafiles <- input_h5files
-  # rss_varbvsr_parallel_future(input_h5files,sigb=0.058,logodds=-2.9/log(10),options=options)
+rss_varbvsr_parallel_future <- function(datafiles,options=list()){
+
   library(future.BatchJobs)
   library(future)
   library(h5)
-  stopifnot(all(file.exists(datafiles)))
   
   if(!is.null(options[["plan"]])){
     if(options[["plan"]][["engine"]]=="PBS"){
@@ -72,7 +77,8 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
       }else{
         cat("Multisession parallelism\n")
         nodes <- as.integer(options[["plan"]][["resources"]][["nodes"]])
-        future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
+        future::plan(multiprocess, workers = nodes)
+#        future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
       }
     }
   }else{
@@ -87,28 +93,42 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
   resultl <- list()
   for(i in 1:length(datafiles)){
     cat(datafiles[i],"\n")
-    if(!is.null(options[["toFile"]])){
-      resultl[[i]] <-future({
-        cat("Batch Job Started!\n")
-        data_opts <- prep_rss(datafiles,options,chunk=i,tot_chunks=length(datafiles))
-        tres <- rss_varbvsr_future(options = data_opts)
+    resultl[[i]] <-future({
+      cat("Batch Job Started!\n")
+      data_opts <- prep_rss(datafiles,options,chunk=i,tot_chunks=length(datafiles))
+      sigbvec <- data_opts[["sigb"]]
+      logoddsvec <- data_opts[["logodds"]]
+      if(!is.null(options[["toFile"]])){
         outf <- h5file(options[["toFile"]][[i]],'a')
-        outf["alpha"] <- tres[["alpha"]]
-        outf["mu"] <- tres[["mu"]]
-        outf["lnZ"] <- tres[["lnZ"]]
-        outf["iter"] <- tres[["iter"]]
-        outf["max_err"] <- tres[["max_err"]]
-        outf["time"] <- as.numeric(tres[["run_time"]])
+        outf["logoddsvec"] <- logoddsvec
+        outf["sigbvec"] <- sigbvec
         h5close(outf)
-        tres[["lnZ"]]
-      })
-    }else{
-      resultl[[i]]<-  future({ 
-        data_opts <- prep_rss(datafiles,options,chunk=i,tot_chunks=length(datafiles))
-        rss_varbvsr_future(options=data_opts)
-      })
-    }
+      }
+      lnzmat <- matrix(0,length(logoddsvec),length(sigbvec))
+      for(j in 1:length(logoddsvec)){
+        for(k in 1:length(sigbvec)){
+          data_opts[["logodds"]]<-logoddsvec[j]
+          data_opts[["sigb"]]<-sigbvec[k]
+          tres <- rss_varbvsr_future(options = data_opts)
+          if(!is.null(options[["toFile"]])){
+            outf <- h5file(options[["toFile"]][[i]],'a')
+            outg <- createGroup(outf,paste0(j,"_",k))
+            createAttribute(outg,"logodds",logoddsvec[j])
+            createAttribute(outg,"sigb",sigbvec[k])
+            outg["alpha"] <- tres[["alpha"]]
+            outg["mu"] <- tres[["mu"]]
+            outg["lnZ"] <- tres[["lnZ"]]
+            outg["iter"] <- tres[["iter"]]
+            outg["max_err"] <- tres[["max_err"]]
+            outg["time"] <- as.numeric(tres[["run_time"]])
+            h5close(outf)
+          }
+          lnzmat[j,k] <- tres[["lnZ"]]
+        }
+      }
+      lnzmat})
   }
+
   cat("Waiting on Results")
   num_resolved <- sum(sapply(resultl,function(x){
     resolved(x)
@@ -121,7 +141,10 @@ rss_varbvsr_parallel_future <- function(datafiles,sigb=0.058,logodds=-2.9/log(10
       resolved(x)
     }))
   }
-  return(values(resultl))
+  cat("All Resolved!\n")
+  resv <- values(resultl)
+
+  return(resv)
 }
 
 

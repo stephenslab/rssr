@@ -47,6 +47,14 @@ read_ccs_h5 <- function(h5filename,groupname,dataname="data",iname="ir",pname="j
   }
 }
 
+read_lnzmat_h5 <- function(h5filename){
+  require(h5)
+  stopifnot(file.exists(h5filename))
+  h5f <- h5file(h5filename,'r')
+  
+  
+}
+
 
 
 

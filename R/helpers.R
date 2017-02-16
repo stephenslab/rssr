@@ -6,6 +6,7 @@ relerr <- function(x1, x2){
   }
 }
 
+
 #' Normalize log weights
 #' @param lnZ unnormalized log probability
 #' normalizelogweights takes as input an array of unnormalized
@@ -22,12 +23,17 @@ normalizeLogWeights <- function (lnZ) {
   return(w/sum(w))
 }
 
+marg_pi<- function(log10odds=NULL,lnz=NULL){
+  lw=normalizeLogWeights(lnz)
+  pi=1/(1+10^(-log10odds))
+  return(lw%*%pi)
+}
+
 
 marg_param <- function(lnZ,param){
   normw <- normalizeLogWeights(lnZ)
   mean_param <- c(normw%*%param)
-  sd_param <- sqrt(sum(normw*(param-mean_param)^2))
-  return(c(mean_param,sd_param))
+  return(c(mean_param))
 }
 
 
@@ -101,10 +107,8 @@ prep_list <- function(x,default,chunk=NULL,chunk_max=NULL){
 #'sepath: path in HDF5 file to look for se vector 
 
 prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
-  
   options[["datafile"]] <- prep_list(options[["datafile"]],datafile,chunk,tot_chunks)
-  stopifnot(file.exists(options[["datafile"]]))
-  options[["tolerance"]] <- prep_list(options[["toleraence"]],1e-4,chunk,tot_chunks)
+  options[["tolerance"]] <- prep_list(options[["tolerance"]],1e-4,chunk,tot_chunks)
   options[["itermax"]] <- prep_list(options[["itermax"]],100,chunk,tot_chunks)
   
   options[["betahatfile"]] <- prep_list(options[["betahatfile"]],options[["datafile"]],chunk,tot_chunks)
@@ -114,7 +118,8 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
   options[["sefile"]] <- prep_list(options[["sefile"]],options[["datafile"]],chunk,tot_chunks)
   options[["sepath"]] <- prep_list(options[["sepath"]],"se",chunk,tot_chunks)
   options[["se"]] <- prep_list(options[["se"]],  c(read_vec(options[["sefile"]],options[["sepath"]])),chunk,tot_chunks)
-  options["verbose"] <- prep_list(options[["verbose"]],T,chunk,tot_chunks)
+  options[["verbose"]] <- prep_list(options[["verbose"]],T,chunk,tot_chunks)
+  options[["lnz_tol"]] <- prep_list(options[["lnz_tol"]],T,chunk,tot_chunks)
   p <- length(options[["se"]])
   stopifnot(length(options[["se"]])==length(options[["betahat"]]))
   if(is.null(options[["SiRiS"]])){
@@ -133,7 +138,6 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
     options[["alpha"]] <- prep_list(options[["alpha"]],NULL,chunk,tot_chunks)
     if(is.null(options[["alpha"]])){
       options[["alpha"]] <- ralpha(p)
-
     }
   }
   if(!is.null(options[["mufile"]])){
@@ -149,10 +153,10 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
     options[["SiRiSr"]] <- (options[["SiRiS"]]%*%(options[["alpha"]]*options[["mu"]]))@x
   }
   if(is.null(options[["sigb"]])){
-    options[["sigb"]] <- prep_list(options[["sigb"]],0.058,chunk,tot_chunks)
+    options[["sigb"]] <- 0.058
   }
   if(is.null(options[["logodds"]])){
-    options[["logodds"]] <- prep_list(options[["logodds"]],-2.9/log(10),chunk,tot_chunks)
+    options[["logodds"]] <- -2.9/log(10)
   }
   return(options)
 }

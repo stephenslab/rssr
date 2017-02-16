@@ -95,12 +95,14 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
                                    const Eigen::ArrayXd &tSiRiSr0,
                                    double tolerance,
                                    int itermax,
-                                   Rcpp::LogicalVector verbose){
+                                   Rcpp::LogicalVector verbose,
+                                   Rcpp::LogicalVector lnz_tol){
   
   
   //This function implements RSS with variational bayes and the SQUAREM algorithm.
   
   bool verbosev=verbose[0];
+  bool lnztol=lnz_tol[0];
   const size_t p = betahat.size();
   
   Eigen::ArrayXd alpha=talpha0;
@@ -133,11 +135,14 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
   Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
   
   
-  
+  lnZ=calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
   double mtp;  
   size_t iter=0;
   double max_err=1;
-  double lnZ0=0;
+  double lnZ0=lnZ;
+  double lnZ00=lnZ0;
+  double rel_l0=0;
+  double rel_li=0;
   while(max_err>tolerance){
     lnZ0=lnZ;
     alpha0=alpha;
@@ -180,12 +185,17 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
         num_bt=num_bt+1;
       }
     }
-    
-    max_err=find_maxerr(alpha,alpha0,alpha*mu,alpha0*mu0);
+    rel_l0=rel_err(lnZ00,lnZ);
+    rel_li=rel_err(lnZ,lnZ0);
+    if(lnztol){
+      max_err=rel_li;
+    }else{
+      max_err=find_maxerr(alpha,alpha0,alpha*mu,alpha0*mu0);
+    }
     if(verbosev){
       double absr=(alpha*mu).abs().maxCoeff();
       int asum=round(alpha.sum());
-      printf("%4d %+13.6e %1.9e %4d %0.2f %5.2f\n",(int)iter,lnZ,max_err,(int) asum,absr,sigma_beta*sigma_beta);
+      printf("%4d %+13.6e %1.9e %4d %1.9e %1.9e\n",(int)iter,lnZ,max_err,(int) asum,rel_l0,rel_li);
     }
     if(iter>itermax){
       printf("Maximum iteration number reached: %+0.2d \n",(int)iter);

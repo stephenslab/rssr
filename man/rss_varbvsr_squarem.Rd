@@ -5,7 +5,7 @@
 \title{Run RSS with the variational bayes algorithm accelerated with SQUAREM}
 \usage{
 rss_varbvsr_squarem(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0,
-  tSiRiSr0, tolerance, itermax, verbose)
+  tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 \arguments{
 \item{SiRiS}{a sparse matrix of class `dgCMatrix`, representing the LD matrix}

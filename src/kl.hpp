@@ -10,7 +10,7 @@ Eigen::ArrayXd betavar(const Eigen::ArrayXd &p,const Eigen::ArrayXd &mu,Eigen::A
 double intklbeta_rssbvsr(const Eigen::ArrayXd &alpha,const Eigen::ArrayXd &mu,const Eigen::ArrayXd &sigma_square,double sigma_beta_square);
 
 double intgamma(double logodds, const Eigen::ArrayXd &alpha);
-
+double rel_err(double p0,double p1);
 double find_maxerr(const Eigen::ArrayXd &alpha,
                    const Eigen::ArrayXd &alpha0,
                    const Eigen::ArrayXd &r,

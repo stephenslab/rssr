@@ -2,6 +2,7 @@ context("MATLAB_scripts")
 library(RcppOctave)
 #library(rssr)
 library(Matrix)
+library(testthat)
 
 mfile <- system.file("m_files/run_install.m",package="rssr")
 mdir <- system.file("m_files",package="rssr")
@@ -16,13 +17,13 @@ data("se")
 se <- c(se)
 data("alpha_test")
 data("mu_test")
-data("R_panel")
+data("R_shrink")
 
 mu_test <- t(t(mu_test))
 alpha_test <- t(t(alpha_test))
 # R_panel <-as.matrix(R_panel)
-t_SiRiS <- SiRSi(R_panel,1/se)
-SiRiS_f <- as.matrix(SiRSi(R_panel,1/se))
+t_SiRiS <- SiRSi(R_shrink,1/se)
+SiRiS_f <- as.matrix(SiRSi(R_shrink,1/se))
 p <- length(betahat)
 SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
 sigb <- 1
@@ -51,8 +52,8 @@ test_that("integral of variational lower bound is computed correctly",
 test_that("betavar works the same",
           expect_equal(betavar(alpha_test,mu_test,s_test),
                        c(.CallOctave('betavar',alpha_test,mu_test,s_test))))
-t_SiRiS = .CallOctave('gen_SiRiS',as.matrix(R_panel),se)
-m_SiRiS <- as.matrix(SiRSi(R_panel,1/se))
+t_SiRiS = .CallOctave('gen_SiRiS',as.matrix(R_shrink),se)
+m_SiRiS <- as.matrix(SiRSi(R_shrink,1/se))
 attr(m_SiRiS,"dimnames") <- NULL
 test_that("SiRiS is generated equivalently",expect_equivalent(t_SiRiS,m_SiRiS))
 rm(m_SiRiS,t_SiRiS)
@@ -69,7 +70,8 @@ my_results <- rss_varbvsr_squarem(SiRiS = SiRiS,
                                   tSiRiSr0 = SiRiSr,
                                   tolerance = 1e-4,
                                   itermax=900,
-                                  verbose=T)
+                                  verbose=T,
+                                  lnz_tol=F)
 
 test_that("SQUAREM updates are identical",{
   expect_equivalent(my_results$lnZ,mat_results$lnZ)
@@ -79,6 +81,22 @@ test_that("SQUAREM updates are identical",{
   expect_equivalent(my_results$max_err,mat_results$info$maxerr)
 })
 
+log10oddsvec <- seq(-6,-1,0.5)
+logoddsvec <- log10oddsvec*log(10)
+pm <- .CallOctave('grid_rss_varbvsr_logodds',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
+
+
+grid_options <- list(alpha=alpha_test,
+                mu=mu_test,betahat=betahat,
+                se=se,
+                SiRiS=SiRiS,
+                sigb=1,
+                logodds=logoddsvec,
+                verbose=F,
+                SiRiSr=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
+mr <- grid_optimize_rss_varbvsr(grid_options)
+pi_mean <- marg_pi(log10odds = log10oddsvec,c(mr))
+test_that("grid optimization over logodds works as expected",expect_equal(c(pi_mean),pm$pi_mean))
 
 # hfile <- "/media/nwknoblauch/Data/GTEx/1kg_LD/EUR.chr1_1_1kg.h5"
 # SiRiS_f <- as.matrix(gen_SiRSi(hfile))
@@ -91,4 +109,6 @@ test_that("SQUAREM updates are identical",{
 # sigb <- 0.058
 # logodds <- -2.9/log(10)
 # mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha),t(mu))
+
+
 
