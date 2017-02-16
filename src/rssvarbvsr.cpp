@@ -34,8 +34,3 @@
   SiRiSr+=(SiRiS_snp*(r_new-r));
 //  add(SiRiSr, r_new - r, SiRiS_snp, p);
 }
-
-//[[Rcpp::export]]
-Eigen::ArrayXd olog_sigmoid(Eigen::ArrayXd x){
-  return(logsigmoid(x));
-}

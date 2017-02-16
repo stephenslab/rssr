@@ -13,23 +13,52 @@ intgamma <- function(logodds, alpha) {
     .Call('rssr_intgamma', PACKAGE = 'rssr', logodds, alpha)
 }
 
-rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, reverse) {
-    .Call('rssr_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, reverse)
+rel_err <- function(p0, p1) {
+    .Call('rssr_rel_err', PACKAGE = 'rssr', p0, p1)
 }
 
-rss_varbvsr_fast <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, Squarem_update, tolerance) {
-    .Call('rssr_rss_varbvsr_fast', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, Squarem_update, tolerance)
+find_maxerr <- function(alpha, alpha0, r, r0) {
+    .Call('rssr_find_maxerr', PACKAGE = 'rssr', alpha, alpha0, r, r0)
+}
+
+calculate_lnZ <- function(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb) {
+    .Call('rssr_calculate_lnZ', PACKAGE = 'rssr', q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb)
+}
+
+wrap_rss_varbvsr_iter <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
+    .Call('rssr_wrap_rss_varbvsr_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
+}
+
+#' Run RSS with the variational bayes algorithm accelerated with SQUAREM
+#' @template rssr
+#' @param talpha0 a length p vector specifying the initial value of alpha
+#' @param tmu0 a length p vector specifying the initial value of mu
+#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
+#' @useDynLib rssr
+rss_varbvsr_squarem <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_rss_varbvsr_squarem', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+}
+
+rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance) {
+    .Call('rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance)
 }
 
 rss_varbvsr_update <- function(betahat, se, sigma_beta, SiRiS_snp, SiRiSr, SiRiSr_snp, logodds, alpha, mu) {
     invisible(.Call('rssr_rss_varbvsr_update', PACKAGE = 'rssr', betahat, se, sigma_beta, SiRiS_snp, SiRiSr, SiRiSr_snp, logodds, alpha, mu))
 }
 
-olog_sigmoid <- function(x) {
-    .Call('rssr_olog_sigmoid', PACKAGE = 'rssr', x)
-}
-
 SiRSi <- function(R, Si) {
     .Call('rssr_SiRSi', PACKAGE = 'rssr', R, Si)
+}
+
+genSymm <- function(R) {
+    .Call('rssr_genSymm', PACKAGE = 'rssr', R)
+}
+
+#' Single update of RSS with variational method
+#' This function is a very close translation of the original implementation of RSS. It is kept here for testing purposes
+#' It performs a single update
+rss_varbvsr_iter_naive_reference <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, reverse) {
+    .Call('rssr_rss_varbvsr_iter_naive_reference', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, reverse)
 }
 

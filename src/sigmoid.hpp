@@ -3,7 +3,7 @@
 #ifndef INCLUDE_SIGMOID
 #define INCLUDE_SIGMOID
 #include <RcppEigen.h>
-#include <limits>
+
 // Function declarations.
 // -----------------------------------------------------------------
 // Compute log(1 + exp(x)) in a numerically stable manner.
@@ -16,7 +16,7 @@
 // Eigen::ArrayXd logsigmoid (Eigen::ArrayXd x);
 // Return the logarithm of the sigmoid function at x. Computation is
 // performed in a numerically stable manner.
-typedef std::numeric_limits<double> double_lim;
+
 
 inline double logpexp (double x) {
   return (x >= 16) * x + (x < 16)  * log(1 + exp(x));
