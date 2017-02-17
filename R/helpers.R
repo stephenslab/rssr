@@ -207,7 +207,7 @@ frac_resolved <- function(job_list){
       }
     }
   }
-  return(totsize/tot_resolved)
+  return(tot_resolved/totsize)
 }
 
 
