@@ -100,11 +100,11 @@ rss_varbvsr_parallel_future <- function(options=list()){
             (!is.null(options[["sigb"]])))
   resultl <- list()
   datafiles <- unlist(options[["datafile"]])
+  sigbvec <- options[["sigb"]]
+  logoddsvec <- options[["logodds"]]
   for(i in 1:length(datafiles)){
     cat("File: ",i,"of ",length(datafiles),"\n")
     resultl[[i]] <- list()
-    sigbvec <- options[["sigb"]]
-    logoddsvec <- options[["logodds"]]
     for(j in 1:length(logoddsvec)){
       resultl[[i]][[j]] <- list()
       options[["logodds"]] <- logoddsvec[j]
