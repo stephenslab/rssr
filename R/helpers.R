@@ -184,7 +184,7 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
   
   tempf <- tempfile()
   th <- h5file(tempf,'a')
-  thd <- createDataSet(th,data=1:5,chunksize=2L,compression=4L,maxdimensions = NA_integer_)
+  thd <- createDataSet(th,datasetname = "tdn",data=1:5,chunksize=2L,compression=4L,maxdimensions = NA_integer_)
   h5close(th)
   file.remove(tempf)
   
