@@ -120,9 +120,9 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
   }
   
   cat("Waiting on Results")
-  num_resolved <- sum(sapply(unlist(resultl,recursive = T),function(x){
+  num_resolved <- sum(unlist(sapply(unlist(resultl,recursive = T),function(x){
     resolved(x)
-  }))
+  }),recursive = T))
   cat(num_resolved,"\n")
   while(num_resolved<length(resultl)){
     cat("Waiting on:",length(resultl)-num_resolved," results \n")
