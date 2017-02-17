@@ -41,6 +41,7 @@ marg_param <- function(lnZ,param){
 }
  
 
+
 gen_lnzmat <- function(matlist,logoddsvec,sigbvec){
   require(future)
   lnzmat <- matrix(0,nrow = length(matlist),ncol = length(matlist[[1]]))
@@ -128,6 +129,7 @@ prep_list <- function(x,default,chunk=NULL,chunk_max=NULL){
 #'sepath: path in HDF5 file to look for se vector 
 
 prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
+  require(h5)
   options[["datafile"]] <- prep_list(options[["datafile"]],datafile,chunk,tot_chunks)
   options[["tolerance"]] <- prep_list(options[["tolerance"]],1e-4,chunk,tot_chunks)
   options[["itermax"]] <- prep_list(options[["itermax"]],100,chunk,tot_chunks)
@@ -179,6 +181,15 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
   if(is.null(options[["logodds"]])){
     options[["logodds"]] <- -2.9/log(10)
   }
+  
+  tempf <- tempfile()
+  th <- h5file(tempf,'a')
+  thd <- createDataSet(th,data=1:5,chunksize=2L,compression=4L,maxdimensions = NA_integer_)
+  h5close(th)
+  file.remove(tempf)
+  
+  
+  
   return(options)
 }
 
