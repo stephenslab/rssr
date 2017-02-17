@@ -193,6 +193,22 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
   return(options)
 }
 
+frac_resolved <- function(job_list){
+  require(future)
+  totsize <- 0
+  tot_resolved <- 0
+  for(i in 1:length(job_list)){
+    for(j in 1:length(job_list[[i]])){
+      for(k in 1:length(job_list[[i]][[j]])){
+        if(resolved(job_list[[i]][[j]][[k]])){
+          tot_resolved <- tot_resolved+1
+        }
+        totsize <- totsize+1
+      }
+    }
+  }
+  return(totsize/tot_resolved)
+}
 
 
 

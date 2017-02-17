@@ -99,7 +99,7 @@ rss_varbvsr_parallel_future <- function(options=list()){
   stopifnot((!is.null(options[["logodds"]])),
             (!is.null(options[["sigb"]])))
   resultl <- list()
-  datafiles <- unlist(options[["datafiles"]])
+  datafiles <- unlist(options[["datafile"]])
   for(i in 1:length(datafiles)){
     cat("File: ",i,"of ",length(datafiles),"\n")
     resultl[[i]] <- list()
@@ -122,20 +122,15 @@ rss_varbvsr_parallel_future <- function(options=list()){
   }
   
   cat("Waiting on Results")
-  num_resolved <- sum(unlist(sapply(unlist(resultl,recursive = T),function(x){
-    resolved(x)
-  }),recursive = T))
-  cat(num_resolved,"\n")
-  while(num_resolved<length(resultl)){
-    cat("Waiting on:",length(resultl)-num_resolved," results \n")
-    Sys.sleep(10)
-    num_resolved <- sum(sapply(resultl,function(x){
-      resolved(x)
-    }))
+  fr <- frac_resolved(frac_resolved(resultl))
+  cat(fr,"\n")
+  while(fr<1){
+    cat("Waiting on:",length(resultl)-fr,"% of  results \n")
+    Sys.sleep(5)
+    fr <- frac_resolved(frac_resolved(resultl))
   }
   cat("All Resolved!\n")
-  resv <- values(resultl)
-  return(resv)
+  return(resultl)
 }
 
 
