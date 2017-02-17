@@ -60,8 +60,8 @@ grid_optimize_rss_varbvsr <- function(options=list()){
 
  
 
-rss_varbvsr_parallel_future <- function(datafiles,options=list()){
-
+rss_varbvsr_parallel_future <- function(options=list()){
+  
   library(future.BatchJobs)
   library(future)
   library(h5)
@@ -84,7 +84,7 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
           tplan <- options[["plan"]][["plan"]]
           future::plan(tplan)
         }
-#        future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
+        #        future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
       }
     }
   }else{
@@ -95,11 +95,13 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
   
   #init_params (If we're running on the head node, we want to be as polite as possible,
   #and allow users to specify files rather than vectors)
-#  chunk_opts <- prep_rss_chunks(datafiles = datafiles,logoddsvec = logodds,sigbvec = sigb,options = options)
+  #  chunk_opts <- prep_rss_chunks(datafiles = datafiles,logoddsvec = logodds,sigbvec = sigb,options = options)
   stopifnot((!is.null(options[["logodds"]])),
             (!is.null(options[["sigb"]])))
   resultl <- list()
+  datafiles <- unlist(options[["datafiles"]])
   for(i in 1:length(datafiles)){
+    cat("File: ",i,"of ",length(datafiles),"\n")
     resultl[[i]] <- list()
     sigbvec <- options[["sigb"]]
     logoddsvec <- options[["logodds"]]
@@ -108,8 +110,8 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
       options[["logodds"]] <- logoddsvec[j]
       for(k in 1:length(sigbvec)){
         options[["sigb"]]<-sigbvec[k]
-        cat("logodds: ",j,"of ",length(logodds),"\n")
-        cat("sigb: ",k,"of ",length(logodds),"\n")
+        cat("logodds: ",j,"of ",length(logoddsvec),"\n")
+        cat("sigb: ",k,"of ",length(sigbvec),"\n")
         resultl[[i]][[j]][[k]] <- future({
           data_opts <- prep_rss(datafiles[i],options=options,chunk=i,tot_chunks=length(datafiles))
           tres <- rss_varbvsr_future(options = data_opts)
