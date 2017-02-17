@@ -12,18 +12,20 @@ relerr <- function(x1, x2){
 #' normalizelogweights takes as input an array of unnormalized
 # log-probabilities logw and returns normalized probabilities such
 # that the sum is equal to 1.
-normalizeLogWeights <- function (lnZ) {
+normalizeLogWeights <- function (lnZ,na.rm=T) {
   
   # Guard against underflow or overflow by adjusting the
   # log-probabilities so that the largest probability is 1.
-  const <- max(lnZ)
+  const <- max(lnZ,na.rm = na.rm)
   w <- exp(lnZ - const)
   
   # Normalize the probabilities.
-  return(w/sum(w))
+  return(w/sum(w,na.rm = na.rm))
 }
 
 marg_pi<- function(log10odds=NULL,lnz=NULL){
+  log10odds <- log10odds[!is.na(lnz)]
+  lnz <- lnz[!is.na(lnz)]
   lw=normalizeLogWeights(lnz)
   pi=1/(1+10^(-log10odds))
   return(lw%*%pi)
@@ -31,12 +33,31 @@ marg_pi<- function(log10odds=NULL,lnz=NULL){
 
 
 marg_param <- function(lnZ,param){
+  param <- param[!is.na(lnZ)]
+  lnZ <- lnZ[!is.na(lnZ)]
   normw <- normalizeLogWeights(lnZ)
   mean_param <- c(normw%*%param)
   return(c(mean_param))
 }
+ 
 
+gen_lnzmat <- function(matlist,logoddsvec,sigbvec){
+  require(future)
+  lnzmat <- matrix(0,nrow = length(matlist),ncol = length(matlist[[1]]))
+  for(i in 1:length(logoddsvec)){
+    for(j in 1:length(sigbvec)){
+      tres <- value(matlist[[i]][[j]])
+      if(!is.null(tres)){
+        lnzmat[i,j] <- tres
+      }else{
+        lnzmat[i,j] <- NA
+      }
+    }
+  }
+  return(lnzmat)
+}
 
+  
 
 #' Function to create an HDF5 dataset
 #' @param h5filename output file name

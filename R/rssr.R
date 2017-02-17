@@ -58,7 +58,7 @@ grid_optimize_rss_varbvsr <- function(options=list()){
 }
 
 
-
+ 
 
 rss_varbvsr_parallel_future <- function(datafiles,options=list()){
 
@@ -75,9 +75,15 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
         cat("SLURM detected\n")
         plan(batchjobs_slurm,resources=options[["plan"]][["resources"]])
       }else{
-        cat("Multisession parallelism\n")
-        nodes <- as.integer(options[["plan"]][["resources"]][["nodes"]])
-        future::plan(multiprocess, workers = nodes)
+        if(options[["plan"]][["engine"]]=="MC"){
+          cat("Multisession parallelism\n")
+          nodes <- as.integer(options[["plan"]][["resources"]][["nodes"]])
+          future::plan(multiprocess, workers = nodes)
+        }else{
+          cat("Custon parallelism :",options[["plan"]][["engine"]],"\n")
+          tplan <- options[["plan"]][["plan"]]
+          future::plan(tplan)
+        }
 #        future::plan(list(future::tweak(future::multiprocess,workers=nodes)))
       }
     }
@@ -90,47 +96,31 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
   #init_params (If we're running on the head node, we want to be as polite as possible,
   #and allow users to specify files rather than vectors)
 #  chunk_opts <- prep_rss_chunks(datafiles = datafiles,logoddsvec = logodds,sigbvec = sigb,options = options)
+  stopifnot((!is.null(options[["logodds"]])),
+            (!is.null(options[["sigb"]])))
   resultl <- list()
   for(i in 1:length(datafiles)){
-    cat(datafiles[i],"\n")
-    resultl[[i]] <-future({
-      cat("Batch Job Started!\n")
-      data_opts <- prep_rss(datafiles,options,chunk=i,tot_chunks=length(datafiles))
-      sigbvec <- data_opts[["sigb"]]
-      logoddsvec <- data_opts[["logodds"]]
-      if(!is.null(options[["toFile"]])){
-        outf <- h5file(options[["toFile"]][[i]],'a')
-        outf["logoddsvec"] <- logoddsvec
-        outf["sigbvec"] <- sigbvec
-        h5close(outf)
-      }
-      lnzmat <- matrix(0,length(logoddsvec),length(sigbvec))
-      for(j in 1:length(logoddsvec)){
-        for(k in 1:length(sigbvec)){
-          data_opts[["logodds"]]<-logoddsvec[j]
-          data_opts[["sigb"]]<-sigbvec[k]
+    resultl[[i]] <- list()
+    sigbvec <- options[["sigb"]]
+    logoddsvec <- options[["logodds"]]
+    for(j in 1:length(logoddsvec)){
+      resultl[[i]][[j]] <- list()
+      options[["logodds"]] <- logoddsvec[j]
+      for(k in 1:length(sigbvec)){
+        options[["sigb"]]<-sigbvec[k]
+        cat("logodds: ",j,"of ",length(logodds),"\n")
+        cat("sigb: ",k,"of ",length(logodds),"\n")
+        resultl[[i]][[j]][[k]] <- future({
+          data_opts <- prep_rss(datafiles[i],options=options,chunk=i,tot_chunks=length(datafiles))
           tres <- rss_varbvsr_future(options = data_opts)
-          if(!is.null(options[["toFile"]])){
-            outf <- h5file(options[["toFile"]][[i]],'a')
-            outg <- createGroup(outf,paste0(j,"_",k))
-            createAttribute(outg,"logodds",logoddsvec[j])
-            createAttribute(outg,"sigb",sigbvec[k])
-            outg["alpha"] <- tres[["alpha"]]
-            outg["mu"] <- tres[["mu"]]
-            outg["lnZ"] <- tres[["lnZ"]]
-            outg["iter"] <- tres[["iter"]]
-            outg["max_err"] <- tres[["max_err"]]
-            outg["time"] <- as.numeric(tres[["run_time"]])
-            h5close(outf)
-          }
-          lnzmat[j,k] <- tres[["lnZ"]]
-        }
+          tres[["lnZ"]]
+        })
       }
-      lnzmat})
+    }
   }
-
+  
   cat("Waiting on Results")
-  num_resolved <- sum(sapply(resultl,function(x){
+  num_resolved <- sum(sapply(unlist(resultl,recursive = T),function(x){
     resolved(x)
   }))
   cat(num_resolved,"\n")
@@ -143,7 +133,6 @@ rss_varbvsr_parallel_future <- function(datafiles,options=list()){
   }
   cat("All Resolved!\n")
   resv <- values(resultl)
-
   return(resv)
 }
 
