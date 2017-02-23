@@ -182,11 +182,11 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
     options[["logodds"]] <- -2.9/log(10)
   }
   
-  tempf <- tempfile()
-  th <- h5file(tempf,'a')
-  thd <- createDataSet(th,datasetname = "tdn",data=1:5,chunksize=2L,compression=4L,maxdimensions = NA_integer_)
-  h5close(th)
-  file.remove(tempf)
+  # tempf <- tempfile()
+  # th <- h5file(tempf,'a')
+  # thd <- createDataSet(th,datasetname = "tdn",data=1:5,chunksize=2L,compression=4L,maxdimensions = NA_integer_)
+  # h5close(th)
+  # file.remove(tempf)
   
   
   
