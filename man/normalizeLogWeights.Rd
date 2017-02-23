@@ -4,7 +4,7 @@
 \alias{normalizeLogWeights}
 \title{Normalize log weights}
 \usage{
-normalizeLogWeights(lnZ)
+normalizeLogWeights(lnZ, na.rm = T)
 }
 \arguments{
 \item{lnZ}{unnormalized log probability

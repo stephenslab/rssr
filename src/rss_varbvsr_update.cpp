@@ -86,17 +86,17 @@ Rcpp::List wrap_rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
 //' @useDynLib rssr
 //[[Rcpp::export]]
 Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
-                                   const double sigma_beta,
-                                   const double logodds,
-                                   const Eigen::ArrayXd betahat,
-                                   const Eigen::ArrayXd se,
-                                   const Eigen::ArrayXd &talpha0,
-                                   const Eigen::ArrayXd &tmu0,
-                                   const Eigen::ArrayXd &tSiRiSr0,
-                                   double tolerance,
-                                   int itermax,
-                                   Rcpp::LogicalVector verbose,
-                                   Rcpp::LogicalVector lnz_tol){
+                               const double sigma_beta,
+                               const double logodds,
+                               const Eigen::ArrayXd betahat,
+                               const Eigen::ArrayXd se,
+                               const Eigen::ArrayXd &talpha0,
+                               const Eigen::ArrayXd &tmu0,
+                               const Eigen::ArrayXd &tSiRiSr0,
+                               double tolerance,
+                               int itermax,
+                               Rcpp::LogicalVector verbose,
+                               Rcpp::LogicalVector lnz_tol){
   
   
   //This function implements RSS with variational bayes and the SQUAREM algorithm.
@@ -129,7 +129,7 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
   
   Eigen::ArrayXd mu_v(p);
   Eigen::ArrayXd mu_r(p);
-
+  
   Eigen::ArrayXd sesquare =se*se;
   Eigen::ArrayXd  q= betahat/sesquare;
   Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
@@ -157,12 +157,12 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
     
     alpha_r=alpha1-alpha0;
     alpha_v=(alpha-alpha1)-alpha_r;
-      
+    
     mu_r   = mu1-mu0;
     mu_v   = mu-mu1-mu_r;
     
     mtp= -sqrt((alpha_r.square()).sum()+(mu_r.square()).sum())/sqrt((alpha_v.square()).sum()+(mu_v.square()).sum());
-
+    
     if(mtp >=-1){
       
     }else{
@@ -205,12 +205,16 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
     iter=iter+1;
   }
   return Rcpp::List::create(Rcpp::Named("alpha")=alpha,
-                     Rcpp::Named("mu")=mu,
-                     Rcpp::Named("SiRiSr")=SiRiSr,
-                     Rcpp::Named("max_err")=max_err,
-                     Rcpp::Named("lnZ")=lnZ,
-                     Rcpp::Named("iter")=iter);
+                            Rcpp::Named("mu")=mu,
+                            Rcpp::Named("SiRiSr")=SiRiSr,
+                            Rcpp::Named("max_err")=max_err,
+                            Rcpp::Named("lnZ")=lnZ,
+                            Rcpp::Named("iter")=iter);
 }
+
+
+
+
 
 //[[Rcpp::export]]
 Eigen::MatrixXd rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
