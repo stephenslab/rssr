@@ -125,7 +125,7 @@ rss_varbvsr_parallel_future <- function(options=list()){
   fr <- frac_resolved(resultl)
   cat(fr,"\n")
   while(fr<1){
-    cat("Waiting on:",length(resultl)-fr,"% of  results \n")
+    cat("Waiting on:",(1-fr)*100,"% of  results \n")
     Sys.sleep(5)
     fr <- frac_resolved(resultl)
   }
