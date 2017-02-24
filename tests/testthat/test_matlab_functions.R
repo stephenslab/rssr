@@ -24,6 +24,7 @@ alpha_test <- t(t(alpha_test))
 # R_panel <-as.matrix(R_panel)
 t_SiRiS <- SiRSi(R_shrink,1/se)
 SiRiS_f <- as.matrix(SiRSi(R_shrink,1/se))
+SiRiS <-as(SiRiS_f,"dgCMatrix")
 p <- length(betahat)
 SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
 sigb <- 1
@@ -59,7 +60,7 @@ test_that("SiRiS is generated equivalently",expect_equivalent(t_SiRiS,m_SiRiS))
 rm(m_SiRiS,t_SiRiS)
 
 mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha_test),t(mu_test))
-SiRiS <-as(SiRiS_f,"dgCMatrix")
+
 my_results <- rss_varbvsr_squarem(SiRiS = SiRiS,
                                   sigma_beta=sigb,
                                   logodds=logodds,
@@ -87,16 +88,45 @@ pm <- .CallOctave('grid_rss_varbvsr_logodds',t(t(betahat)),t(t(se)),SiRiS_f,sigb
 
 
 grid_options <- list(alpha=alpha_test,
-                mu=mu_test,betahat=betahat,
-                se=se,
-                SiRiS=SiRiS,
-                sigb=1,
-                logodds=logoddsvec,
-                verbose=F,
-                SiRiSr=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
+                     mu=mu_test,betahat=betahat,
+                     se=se,
+                     SiRiS=SiRiS,
+                     sigb=1,
+                     logodds=logoddsvec,
+                     verbose=F,
+                     SiRiSr=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
 mr <- grid_optimize_rss_varbvsr(grid_options)
 pi_mean <- marg_pi(log10odds = log10oddsvec,c(mr))
 test_that("grid optimization over logodds works as expected",expect_equal(c(pi_mean),pm$pi_mean))
+
+
+log10oddsvec <- seq(-3.1,-2.1,length.out = 10)
+logoddsvec <- log10oddsvec*log(10)
+sigb <- seq(0.8,1.2,length.out = 10)
+pm <- .CallOctave('grid_rssr_varbvsr',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
+
+
+grid_options <- list(alpha=alpha_test,
+                     mu=mu_test,betahat=betahat,
+                     se=se,
+                     SiRiS=SiRiS,
+                     sigb=sigb,
+                     logodds=logoddsvec,
+                     verbose=F,
+                     SiRiSr=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
+mr_grid <- grid_optimize_rss_varbvsr(grid_options)
+log_mean=rowMeans(mr_grid)
+pi_mean_grid <- marg_pi(log10odds = log10oddsvec,lnz = log_mean)
+sigb_mean_grid <- marg_param(colMeans(mr_grid),param = sigb)
+tpi <- 10/982
+test_that("2d grid optimization over sigb and logodds works as in MATLAB",expect_equal(mr,pm,tolerance=1e-1))
+test_that("2d grid optimization gives more or less correct values",{
+  expect_equal(1,sigb_mean_grid,tolerance=0.1)
+  expect_equal(10/982,c(pi_mean_grid),tolerance=0.1)})
+
+
+
+
 
 # hfile <- "/media/nwknoblauch/Data/GTEx/1kg_LD/EUR.chr1_1_1kg.h5"
 # SiRiS_f <- as.matrix(gen_SiRSi(hfile))

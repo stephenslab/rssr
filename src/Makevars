@@ -5,3 +5,6 @@
 ## With R 3.1.0 or later, you can uncomment the following line to tell R to 
 ## enable compilation with C++11 (or even C++14) where available
 CXX_STD = CXX11
+#PKG_CFLAGS += -daal
+#PKG_CPPFLAGS+= -c -daal -fPIC -I/opt/intel/compilers_and_libraries_2017.1.132/linux/daal/include
+PKG_LIBS+="-ltbb"

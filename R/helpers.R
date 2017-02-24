@@ -32,6 +32,10 @@ marg_pi<- function(log10odds=NULL,lnz=NULL){
 }
 
 
+marg_pi_mat <- function(lnzmat,log10odds=NULL,sigb=NULL){
+  
+}
+
 marg_param <- function(lnZ,param){
   param <- param[!is.na(lnZ)]
   lnZ <- lnZ[!is.na(lnZ)]
