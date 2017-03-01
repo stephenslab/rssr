@@ -4,13 +4,15 @@ library(RcppOctave)
 library(Matrix)
 library(testthat)
 
+#Find the location of the .m files 
 mfile <- system.file("m_files/run_install.m",package="rssr")
 mdir <- system.file("m_files",package="rssr")
-#mfiles <- dir(mdir,pattern=".m$",full.names = T)
+
+#change to the directory with the .m files in Octave
 .CallOctave('cd',mdir)
 o_source("run_install.m")
-#sapply(mfiles,o_source)
-#o_ls()
+
+#Load the simulated data
 data("betahat")
 betahat <- c(betahat)
 data("se")
@@ -18,23 +20,27 @@ se <- c(se)
 data("alpha_test")
 data("mu_test")
 data("R_shrink")
-
+#Convert the rowvector to a column vector
 mu_test <- t(t(mu_test))
 alpha_test <- t(t(alpha_test))
 # R_panel <-as.matrix(R_panel)
+
+#Generate SiRiS as both dense and sparse matrices 
 t_SiRiS <- SiRSi(R_shrink,1/se)
 SiRiS_f <- as.matrix(SiRSi(R_shrink,1/se))
 SiRiS <-as(SiRiS_f,"dgCMatrix")
 p <- length(betahat)
 SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
+
 sigb <- 1
 logodds <- -3
 s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
 I <- 1:p
 
-
+#Call with Octave and RSSR
 res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,p)
 mres <- wrap_rss_varbvsr_iter(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
+
 
 test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
   expect_equal(c(res$alpha1),c(mres$alpha1),tolerance=1e-8)
@@ -53,6 +59,7 @@ test_that("integral of variational lower bound is computed correctly",
 test_that("betavar works the same",
           expect_equal(betavar(alpha_test,mu_test,s_test),
                        c(.CallOctave('betavar',alpha_test,mu_test,s_test))))
+
 t_SiRiS = .CallOctave('gen_SiRiS',as.matrix(R_shrink),se)
 m_SiRiS <- as.matrix(SiRSi(R_shrink,1/se))
 attr(m_SiRiS,"dimnames") <- NULL
@@ -86,7 +93,7 @@ log10oddsvec <- seq(-6,-1,0.5)
 logoddsvec <- log10oddsvec*log(10)
 pm <- .CallOctave('grid_rss_varbvsr_logodds',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
 
-
+#Grid optimization has a really long parameter list
 grid_options <- list(alpha=alpha_test,
                      mu=mu_test,betahat=betahat,
                      se=se,
