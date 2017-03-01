@@ -15,9 +15,9 @@ create_h5_data(h5filename, R, betahat, se, chr = NULL)
 
 \item{SiRiS}{a sparse matrix of class `dgCMatrix`, representing the LD matrix}
 
-\item{sigma_beta}{a length p vector specifiying the current value(s) of the hyper-parameter sigma_beta}
+\item{sigma_beta}{a single value (numeric) specifying the value of the hyper-parameter sigma_beta}
 
-\item{logodds}{a length p vector specifiying the current value(s) of sigma_beta}
+\item{logodds}{a single value (numeric) specifying the value of hyper-parameter logodds}
 }
 \description{
 Function to create an HDF5 dataset

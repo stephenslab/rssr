@@ -9,9 +9,9 @@ squarem_update(SiRiS, sigma_beta, logodds, betahat, se, o_mat, reverse)
 \arguments{
 \item{SiRiS}{a sparse matrix of class `dgCMatrix`, representing the LD matrix}
 
-\item{sigma_beta}{a length p vector specifiying the current value(s) of the hyper-parameter sigma_beta}
+\item{sigma_beta}{a single value (numeric) specifying the value of the hyper-parameter sigma_beta}
 
-\item{logodds}{a length p vector specifiying the current value(s) of sigma_beta}
+\item{logodds}{a single value (numeric) specifying the value of hyper-parameter logodds}
 
 \item{betahat}{a length p vector specifying the univariate regression coefficients from the association study}
 

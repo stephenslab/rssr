@@ -119,7 +119,7 @@ log_mean=rowMeans(mr_grid)
 pi_mean_grid <- marg_pi(log10odds = log10oddsvec,lnz = log_mean)
 sigb_mean_grid <- marg_param(colMeans(mr_grid),param = sigb)
 tpi <- 10/982
-test_that("2d grid optimization over sigb and logodds works as in MATLAB",expect_equal(mr,pm,tolerance=1e-1))
+test_that("2d grid optimization over sigb and logodds works as in MATLAB",expect_equal(mr_grid,pm,tolerance=1e-1))
 test_that("2d grid optimization gives more or less correct values",{
   expect_equal(1,sigb_mean_grid,tolerance=0.1)
   expect_equal(10/982,c(pi_mean_grid),tolerance=0.1)})
