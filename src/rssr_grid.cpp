@@ -2,9 +2,9 @@
 #include "rssvarbvsr.hpp"
 #include "kl.hpp"
 #include <cstdio>
-#include "tbb/tbb.h"
+//[[Rcpp::depends(RcppParallel)]]
+#include <RcppParallel.h>
 
-using namespace tbb;
 
 //' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
 //' @template rssr
@@ -129,8 +129,12 @@ double rss_varbvsr_squarem_grid(const Eigen::MappedSparseMatrix<double> SiRiS,
   return lnZ;
 }
 
-//[[Rcpp::export]]
-Rcpp::NumericMatrix grid_search_rss_varbvsr(
+#if RCPP_PARALLEL_USE_TBB
+
+using namespace tbb;
+
+
+Rcpp::NumericMatrix grid_rss_varbvsr(
     const Eigen::MappedSparseMatrix<double> SiRiS,
     const Eigen::Map<Eigen::ArrayXd> sigma_beta,
     const Eigen::Map<Eigen::ArrayXd> logodds,
@@ -148,8 +152,10 @@ Rcpp::NumericMatrix grid_search_rss_varbvsr(
   size_t sigb_size= sigma_beta.size();
   size_t logodds_size=logodds.size();
   size_t tot_size=sigb_size*logodds_size;
-
+  
   Rcpp::NumericMatrix nlzmat(logodds_size,sigb_size);
+  
+
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r){
                  for(size_t t=r.begin(); t!=r.end(); t++){
@@ -166,8 +172,87 @@ Rcpp::NumericMatrix grid_search_rss_varbvsr(
                           tolerance,
                           itermax,
                           lnz_tol);}});
+
+  
   return(nlzmat);
 }
+
+
+
+
+#else
+
+
+Rcpp::NumericMatrix grid_rss_varbvsr(
+    const Eigen::MappedSparseMatrix<double> SiRiS,
+    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
+    const Eigen::Map<Eigen::ArrayXd> logodds,
+    const Eigen::Map<Eigen::ArrayXd> betahat,
+    const Eigen::Map<Eigen::ArrayXd> se,
+    const Eigen::Map<Eigen::ArrayXd> talpha0,
+    const Eigen::Map<Eigen::ArrayXd> tmu0,
+    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    double tolerance,
+    int itermax,
+    Rcpp::LogicalVector verbose,
+    Rcpp::LogicalVector lnz_tol){
+  
+  
+  size_t sigb_size= sigma_beta.size();
+  size_t logodds_size=logodds.size();
+  size_t tot_size=sigb_size*logodds_size;
+  
+  Rcpp::NumericMatrix nlzmat(logodds_size,sigb_size);
+  
+  for(size_t t=0; t<tot_size; t++){
+    size_t i=t/logodds_size;
+    size_t j=t%logodds_size;
+    nlzmat(i,j)=rss_varbvsr_squarem_grid(SiRiS,
+           sigma_beta(j),
+           logodds(i),
+           betahat,
+           se,
+           talpha0,
+           tmu0,
+           tSiRiSr0,
+           tolerance,
+           itermax,
+           lnz_tol);
+  }
+
+  
+  return(nlzmat);
+}
+
+#endif
+
+
+//[[Rcpp::export]]
+Rcpp::NumericMatrix grid_search_rss_varbvsr(
+    const Eigen::MappedSparseMatrix<double> SiRiS,
+    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
+    const Eigen::Map<Eigen::ArrayXd> logodds,
+    const Eigen::Map<Eigen::ArrayXd> betahat,
+    const Eigen::Map<Eigen::ArrayXd> se,
+    const Eigen::Map<Eigen::ArrayXd> talpha0,
+    const Eigen::Map<Eigen::ArrayXd> tmu0,
+    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    double tolerance,
+    int itermax,
+    Rcpp::LogicalVector verbose,
+    Rcpp::LogicalVector lnz_tol){
+
+  return grid_rss_varbvsr(SiRiS,sigma_beta,logodds,betahat,
+                          se,talpha0,tmu0,tSiRiSr0,tolerance,
+                          itermax,verbose,lnz_tol);
+}  
+
+
+
+
+
+
+
 
 
 

@@ -3,6 +3,7 @@
 #include "sigmoid.hpp"
 #include <math.h>
 
+
 // USAGE: run a single coordinate ascent of variational update to fit RSS-BVSR
 // [[Rcpp::export]]
  void rss_varbvsr_update (const double betahat,

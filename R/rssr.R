@@ -78,7 +78,7 @@ grid_optimize_rss_varbvsr <- function(options=list()){
   }
   return(lnzmat)
 }
-
+  
 
  
 
