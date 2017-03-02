@@ -10,5 +10,8 @@ License: What license is it under?
 Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM,future,future.BatchJobs,RcppParallel
 LinkingTo: Rcpp, RcppEigen,RcppParallel
 RoxygenNote: 6.0.1
-Suggests: testthat,RcppOctave
+Suggests: testthat,RcppOctave,
+    knitr,
+    rmarkdown
 SystemRequirements: GNU make
+VignetteBuilder: knitr
