@@ -173,7 +173,7 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
 
 
 //[[Rcpp::export]]
-Eigen::MatrixXd rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
+Rcpp::List rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
                                   const double sigma_beta,
                                   const double logodds,
                                   const Eigen::ArrayXd betahat,
@@ -197,7 +197,10 @@ Eigen::MatrixXd rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
   
   Eigen::ArrayXd talpha=alpha;
   Eigen::ArrayXd tmu=mu;
+  Eigen::ArrayXd sesquare=se*se;
   
+  Eigen::ArrayXd  q= betahat/sesquare;
+  Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
   
   size_t iter=0;
   //  Initialize outputs.
@@ -208,8 +211,17 @@ Eigen::MatrixXd rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
     bool reverse = iter%2==0;
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     max_err=find_maxerr(alpha,talpha,alpha*mu,talpha*tmu);
+    iter=iter+1;
   }
+  lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
   Eigen::MatrixXd retmat(p,3);
   retmat << alpha,mu,SiRiSr;
-  return(retmat);
+  
+  return Rcpp::List::create(Rcpp::Named("alpha")=alpha,
+                            Rcpp::Named("mu")=mu,
+                            Rcpp::Named("SiRiSr")=SiRiSr,
+                            Rcpp::Named("max_err")=max_err,
+                            Rcpp::Named("lnZ")=lnZ,
+                            Rcpp::Named("iter")=iter);
+  
 }

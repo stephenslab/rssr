@@ -132,7 +132,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // rss_varbvsr_naive
-Eigen::MatrixXd rss_varbvsr_naive(const Eigen::SparseMatrix<double>& SiRiS, const double sigma_beta, const double logodds, const Eigen::ArrayXd betahat, const Eigen::ArrayXd se, const Eigen::ArrayXd& alpha0, const Eigen::ArrayXd& mu0, const Eigen::ArrayXd& SiRiSr0, double tolerance);
+Rcpp::List rss_varbvsr_naive(const Eigen::SparseMatrix<double>& SiRiS, const double sigma_beta, const double logodds, const Eigen::ArrayXd betahat, const Eigen::ArrayXd se, const Eigen::ArrayXd& alpha0, const Eigen::ArrayXd& mu0, const Eigen::ArrayXd& SiRiSr0, double tolerance);
 RcppExport SEXP rssr_rss_varbvsr_naive(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP alpha0SEXP, SEXP mu0SEXP, SEXP SiRiSr0SEXP, SEXP toleranceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;

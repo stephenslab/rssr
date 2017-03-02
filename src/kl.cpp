@@ -53,6 +53,8 @@ double find_maxerr(const Eigen::ArrayXd &alpha,
 }
 
 
+
+
 //[[Rcpp::export]]
 double calculate_lnZ(const Eigen::VectorXd &q,
                      const Eigen::VectorXd &r,
