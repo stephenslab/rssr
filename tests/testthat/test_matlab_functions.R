@@ -67,10 +67,23 @@ test_that("SiRiS is generated equivalently",expect_equivalent(t_SiRiS,m_SiRiS))
 rm(m_SiRiS,t_SiRiS)
 
 mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha_test),t(mu_test))
+naive_results <- .CallOctave('wrap_rss_varbvsr_naive',t(t(betahat)),t(t(se)),SiRiS_f,sigb,-4.6,t(alpha_test),t(mu_test))
+my_naive <- rss_varbvsr_naive(SiRiS = SiRiS,sigma_beta = sigb,logodds = -4.6,betahat = betahat,se = se,alpha0 = alpha_test,mu0 = mu_test,SiRiSr0 = SiRiSr,tolerance = 1e-4)
+
+
+test_that("Naive implementations are identical",{
+  expect_equivalent(naive_results$lnZ,my_naive$lnZ)
+  expect_equivalent(c(naive_results$mu),c(my_naive$mu))
+  expect_equivalent(c(naive_results$alpha),c(my_naive$alpha))
+  expect_equivalent(naive_results$info$iter,my_naive$iter)
+  expect_equivalent(naive_results$info$max_err,my_naive$maxerr)
+})
+
+
 
 my_results <- rss_varbvsr_squarem(SiRiS = SiRiS,
                                   sigma_beta=sigb,
-                                  logodds=logodds,
+                                  logodds=-4.6,
                                   betahat = betahat,
                                   se = se,
                                   talpha0 = alpha_test,

@@ -208,14 +208,12 @@ Rcpp::List rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
   while(max_err>tolerance){
     talpha=alpha;
     tmu=mu;
-    bool reverse = iter%2==0;
+    bool reverse = iter%2!=0;
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     max_err=find_maxerr(alpha,talpha,alpha*mu,talpha*tmu);
     iter=iter+1;
   }
   lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
-  Eigen::MatrixXd retmat(p,3);
-  retmat << alpha,mu,SiRiSr;
   
   return Rcpp::List::create(Rcpp::Named("alpha")=alpha,
                             Rcpp::Named("mu")=mu,
