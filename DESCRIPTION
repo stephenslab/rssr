@@ -1,7 +1,7 @@
 Package: rssr
 Type: Package
 Title: Regression With Summary Statistics
-Version: 0.1.0
+Version: 0.1-0
 Date: 2017-01-27
 Author: Nicholas Knoblauch, Xiang Zhu, Peter Carbonetto, Matthew Stephens
 Maintainer: Who to complain to <yourfault@somewhere.net>
