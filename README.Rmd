@@ -19,9 +19,9 @@ The first step in installation is to ensure that the `devtools` library is insta
 
 ```{r installation, eval=FALSE}
 install.packages('devtools')
-devtools::install_github("stephenslab/rssr")
+devtools::install_github("stephenslab/rssr",ref="v0.1.1-alpha",build_vignettes = TRUE)
 ```
 
 ## Usage
 
-The functions  `rss_varbvsr_naive`  and `rss_varbvsr_squarem`contain the default and accelerated implementations of RSS using variational bayes.
+The functions  `rss_varbvsr_naive`  and `rss_varbvsr_squarem`contain the default and accelerated implementations of RSS using variational bayes. A vignette can be found after installation by running `vignette("example")`
