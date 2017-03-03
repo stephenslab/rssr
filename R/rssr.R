@@ -29,6 +29,23 @@ rss_varbvsr_future <- function(options=list()){
   return(int_res)
 }
 
+rss_varbvsr_optim <- function(options=list()){
+  library(stats)
+  stopifnot(length(options[["sigb"]])==2,
+            length(options[["logodds"]])==2,
+            !is.null(options[["SiRiS"]]),
+            !is.null(options[["betahat"]]),
+            !is.null(options[["alpha"]]),
+            !is.null(options[["mu"]]),
+            !is.null(options[["se"]]),
+            length(options[["se"]])==length(options[["betahat"]]),
+            length(options[["betahat"]])==length(options[["mu"]]))
+  
+  
+  
+
+}
+
 
 
 rss_varbvsr_parallel_grid <- function(options=list()){

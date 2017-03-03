@@ -4,7 +4,7 @@ author: "Xiang Zhu"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{rssr usage}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -126,10 +126,11 @@ save('example2_vb_results.mat','logw','alpha','mu','s','info');
 
 Because `rss_varbvsr_naive` and `rss_varbvs.m` are written based on the **same** algorithm, their results should be the **same** if the input data and initial values are the **same**. Here we confirm this claim.  
 
-If you do not run the `Matlab` script above to generate results from `rss_varbvsr.m`, please download the our result file [`example2_vb_results.mat`](https://uchicago.box.com/v/example2) to an directory (e.g. `/tmp`).
+If you do not run the `Matlab` script above to generate results from `rss_varbvsr.m`, please download the our result file [`example2_vb_results.mat`](https://guchicao.box.com/v/example2) to an directory (e.g. `/tmp`).
 
 ```{r}
-m_results <- R.matlab::readMat("/tmp/example2_vb_results.mat")
+matfile_name <- system.file("example2_vb_results.mat",package="rssr")
+m_results <- R.matlab::readMat(matfile_name)
 
 # number of iterations
 m_iter <- c(m_results$info[[1]])

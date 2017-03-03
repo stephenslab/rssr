@@ -7,7 +7,7 @@ Author: Nicholas Knoblauch, Xiang Zhu, Peter Carbonetto, Matthew Stephens
 Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: What license is it under?
-Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM,future,future.BatchJobs,RcppParallel
+Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),h5,SQUAREM,future,future.BatchJobs,RcppParallel,R.matlab
 LinkingTo: Rcpp, RcppEigen,RcppParallel
 RoxygenNote: 6.0.1
 Suggests: testthat,RcppOctave,

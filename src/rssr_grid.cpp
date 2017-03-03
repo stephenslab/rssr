@@ -13,7 +13,7 @@
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 //' @useDynLib rssr
 //[[Rcpp::export]]
-double rss_varbvsr_squarem_grid(const Eigen::MappedSparseMatrix<double> SiRiS,
+double rss_varbvsr_squarem_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
                                 const double sigma_beta,
                                 const double logodds,
                                 const Eigen::Map<Eigen::ArrayXd> betahat,
@@ -129,6 +129,36 @@ double rss_varbvsr_squarem_grid(const Eigen::MappedSparseMatrix<double> SiRiS,
   return lnZ;
 }
 
+
+//[[Rcpp::export]]
+double wrap_rss_varbvs_squarem_optim(Rcpp::NumericVector par, 
+                                     const Eigen::MappedSparseMatrix<double> SiRiS,
+                                     const Eigen::Map<Eigen::ArrayXd> betahat,
+                                     const Eigen::Map<Eigen::ArrayXd> se,
+                                     const Eigen::Map<Eigen::ArrayXd> talpha0,
+                                     const Eigen::Map<Eigen::ArrayXd> tmu0,
+                                     const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+                                     double tolerance,
+                                     int itermax,
+                                     Rcpp::LogicalVector lnz_tol){
+  return(rss_varbvsr_squarem_iter(SiRiS,
+         par(0),
+         par(1),
+         betahat,
+         se,
+         talpha0,
+         tmu0,
+         tSiRiSr0,
+         tolerance,
+         itermax,
+         lnz_tol));
+}
+
+
+
+
+
+
 #if RCPP_PARALLEL_USE_TBB
 
 using namespace tbb;
@@ -161,7 +191,7 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
                  for(size_t t=r.begin(); t!=r.end(); t++){
                    size_t i=t/logodds_size;
                    size_t j=t%logodds_size;
-                   nlzmat(i,j)=rss_varbvsr_squarem_grid(SiRiS,
+                   nlzmat(i,j)=rss_varbvsr_squarem_iter(SiRiS,
                           sigma_beta(j),
                           logodds(i),
                           betahat,
@@ -207,7 +237,7 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
   for(size_t t=0; t<tot_size; t++){
     size_t i=t/logodds_size;
     size_t j=t%logodds_size;
-    nlzmat(i,j)=rss_varbvsr_squarem_grid(SiRiS,
+    nlzmat(i,j)=rss_varbvsr_squarem_iter(SiRiS,
            sigma_beta(j),
            logodds(i),
            betahat,

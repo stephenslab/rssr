@@ -49,8 +49,12 @@ rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, m
 #' @param tmu0 a length p vector specifying the initial value of mu
 #' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 #' @useDynLib rssr
-rss_varbvsr_squarem_grid <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, lnz_tol) {
-    .Call('rssr_rss_varbvsr_squarem_grid', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, lnz_tol)
+rss_varbvsr_squarem_iter <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, lnz_tol) {
+    .Call('rssr_rss_varbvsr_squarem_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, lnz_tol)
+}
+
+wrap_rss_varbvs_squarem_optim <- function(par, SiRiS, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, lnz_tol) {
+    .Call('rssr_wrap_rss_varbvs_squarem_optim', PACKAGE = 'rssr', par, SiRiS, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, lnz_tol)
 }
 
 grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
