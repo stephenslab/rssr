@@ -1,6 +1,6 @@
 ---
-title: "Vignette Title"
-author: "Vignette Author"
+title: "Example of using `rss_varbvsr_naive`"
+author: "Xiang Zhu"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
@@ -9,50 +9,170 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-Vignettes are long form documentation commonly included in packages. Because they are part of the distribution of the package, they need to be as compact as possible. The `html_vignette` output type provides a custom style sheet (and tweaks some options) to ensure that the resulting html is as small as possible. The `html_vignette` format:
+In this vignette, we show how to use `rssr::rss_varbvsr_naive` on a simulated dataset ([details](https://github.com/stephenslab/rss/wiki/Example-2#details)), and then compare this `R` function with its `Matlab` counterpart, [`rss_varbvsr.m`](https://github.com/stephenslab/rss/blob/master/src_vb/rss_varbvsr.m).
 
-- Never uses retina figures
-- Has a smaller default figure size
-- Uses a custom CSS stylesheet instead of the default Twitter Bootstrap style
+Before running this example, please make sure that [`rssr`](https://github.com/stephenslab/rssr) package is installed. If you have trouble installing this package, please open an [issue](https://github.com/stephenslab/rssr/issues) and provide as many details as possible.
 
-## Vignette Info
-
-Note the various macros within the `vignette` section of the metadata block above. These are required in order to instruct R how to build the vignette. Note that you should change the `title` field and the `\VignetteIndexEntry` to match the title of your vignette.
-
-## Styles
-
-The `html_vignette` template includes a basic CSS theme. To override this theme you can specify your own CSS in the document metadata as follows:
-
-    output: 
-      rmarkdown::html_vignette:
-        css: mystyles.css
-
-## Figures
-
-The figure sizes have been customised so that you can easily put two images side-by-side. 
-
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r, eval=FALSE}
+devtools::install_github("stephenslab/rssr",ref="v0.1.0-alpha")
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+## Use `rss_varbvsr_naive`
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+### Step 1: load summary data and correlation matrix
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+The input data for fitting an `RSS` model consist of i) a vector of marginal effect estimates (`betahat`); ii) a vector of standard errors of these marginal estimates (`se`) and iii) a correlation matrix (`R`) among all covariates. To make the model fitting results reproducible, here we also provide initial values of variational parameters (`alpha_start` and `mu_start`).
 
-## More Examples
+```{r, message=FALSE}
+suppressPackageStartupMessages(library(rssr))
+suppressPackageStartupMessages(library(Matrix))
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+# marginal effect estimates 
+data("betahat")
+betahat <- c(betahat)
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+# standard errors of marginal effect estimates
+data("se")
+se <- c(se)
+
+# shrinkage estimate of correlation matrix
+# note that this matrix is sparse: look at `is(R)`
+data("R_shrink")
+R <- R_shrink
+
+# initial values of variational parameters 
+data("alpha_test")
+data("mu_test")
+
+# convert row vectors to column vectors
+mu_start <- t(t(mu_test))
+alpha_start <- t(t(alpha_test))
 ```
 
-Also a quote using `>`:
+We also compute a matrix `SiRiS`, defined as `SiRiS = diag(1/se) %*% as.matrix(R) %*% diag(1/se)`, before we start the variational update. 
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+```{r}
+# compute the matrix SiRiS
+SiRiS_f <- as.matrix(rssr::SiRSi(R, 1/se))
+# note that SiRiS can be also computed as follows:
+# SiRiS_f <- diag(1/se) %*% as.matrix(R) %*% diag(1/se)
+
+# convert SiRiS to a sparse matrix
+SiRiS <- as(SiRiS_f,"dgCMatrix")
+
+# compute the initial value of SiRiSr
+SiRiSr_start <- c(SiRiS_f %*% (alpha_start * mu_start))
+```
+
+### Step 2: fit the RSS-BVSR model via variational approximation
+
+Here we fix the values of two hyper-parameters: `sigma_beta=1` and `logodds=-4.6`.
+
+```{r}
+r_results <- rssr::rss_varbvsr_naive(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start, tolerance=1e-4)
+
+# extract certain quantities for further comparisons
+r_iter <- r_results$iter
+r_maxerr <- r_results$max_err
+r_lnZ <- r_results$lnZ
+r_alpha <- r_results$alpha
+r_mu <- r_results$mu
+```
+
+## Use `rss_varbvs.m`
+
+Now we run the same analyses on the same data in `Matlab`, using `rss_varbvsr.m`. Please note that this part **cannot** be completed within `R`. We provide the result file for this part, so you can skip this part. If you would like to run this part in your own machine, please make sure the `rss_varbvsr.m` is installed first ([details](https://github.com/stephenslab/rss/wiki/RSS-via-VB)).  
+
+```matlab
+% run this example under the folder "examples" 
+addpath(genpath('../src_vb'));
+addpath('/home/xiangzhu/varbvs-master/varbvs-MATLAB/');
+
+% load summary-level data
+example_data = matfile('example2.mat');
+
+betahat = example_data.betahat;   % single-SNP effect size estimates
+se      = example_data.se; 	      % standard error of betahat
+
+% load SNP correlation (a.k.a. LD) matrix
+genotype_data = matfile('genotype2.mat');
+
+R = genotype_data.shrink_R;       % shrinkage estimate of correlation matrix
+
+% compute SiRiS matrix
+p     = length(betahat);
+Si    = 1 ./ se;
+SiRiS = repmat(Si, 1, p) .* R .* repmat(Si', p, 1);
+SiRiS = sparse(SiRiS);
+
+% specify hyper-parameters
+sigb    = 1;
+logodds = -4.6;
+
+% specify initial values for variational parameters
+start_value = matfile('example2_start.mat');
+alpha0      = start_value.alpha_start;
+mu0         = start_value.mu_start;
+options     = struct('alpha',alpha0,'mu',mu0,'verbose',false);
+
+% run rss-varbvsr
+[logw,alpha,mu,s,info] = rss_varbvsr(betahat,se,SiRiS,sigb,logodds,options);
+
+% save results
+save('example2_vb_results.mat','logw','alpha','mu','s','info');
+```
+
+## Compare results from `rss_varbvsr_naive` and `rss_varbvs.m`
+
+Because `rss_varbvsr_naive` and `rss_varbvs.m` are written based on the **same** algorithm, their results should be the **same** if the input data and initial values are the **same**. Here we confirm this claim.  
+
+If you do not run the `Matlab` script above to generate results from `rss_varbvsr.m`, please download the our result file [`example2_vb_results.mat`](https://uchicago.box.com/v/example2) to an directory (e.g. `/tmp`).
+
+```{r}
+m_results <- R.matlab::readMat("/tmp/example2_vb_results.mat")
+
+# number of iterations
+m_iter <- c(m_results$info[[1]])
+
+# maximum relative difference between the parameters at the last two iterations
+m_maxerr <- c(m_results$info[[2]])
+
+# variational lower bound at the last iteration
+m_lnZ <- c(m_results$logw)
+
+# variational parameter estimates
+m_alpha <- c(m_results$alpha)
+m_mu <- c(m_results$mu)
+```
+
+First, we can see that both implementations yield the same number of iterations (`iter`), the same maximum relative difference between the parameters at the last two iterations (`maxerr`), and the same variational lower bound at the last iteration (`lnZ`).  
+
+```{r, echo=FALSE}
+tab.mat <- matrix(data=0, nrow=3, ncol=2)
+tab.mat[, 1] <- c(r_iter, log10(r_maxerr), r_lnZ)
+tab.mat[, 2] <- c(m_iter, log10(m_maxerr), m_lnZ)
+
+rownames(tab.mat) <- c("`iter`", "`log10(maxerr)`", "`lnZ`")
+colnames(tab.mat) <- c("`rss_varbvsr_naive`", "`rss_varbvsr.m`")
+
+suppressPackageStartupMessages(library(knitr))
+knitr::kable(tab.mat)
+```
+
+In addition, the variational parameter estimates (`alpha` and `mu`) are identical.
+
+```{r, echo=FALSE, fig.width=8, fig.height=4}
+par(mfrow=c(1,2))
+
+plot(r_mu, m_mu, pch=20, xlab="rss_varbvsr_naive", ylab="rss_varbvsr.m", main="mu")
+abline(0,1,col="red")
+
+plot(r_alpha, m_alpha, pch=20, xlab="rss_varbvsr_naive", ylab="rss_varbvsr.m", main="alpha")
+abline(0,1,col="red")
+```
+
+## Session information
+
+```{r, echo=FALSE}
+sessionInfo()
+```
