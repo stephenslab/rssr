@@ -4,7 +4,7 @@
 #' read a sparse matrix from HDF5
 #' read a sparse matrix from HDF5 stored in Compressed Column Storage (CCS) format
 #' @template h5fun
-#' @export 
+
 read_ccs_h5 <- function(h5filename,groupname,dataname="data",iname="ir",pname="jc",isSymmetric=NULL){
   require("h5")
   require("Matrix")

@@ -17,23 +17,66 @@
                          double &mu) {
   
   double se_square = se * se;
-  double sigma_beta_square = sigma_beta * sigma_beta;
+   double sigma_beta_square = sigma_beta * sigma_beta;
+   
+   // Compute the variational estimate of the posterior variance.
+   double sigma_square = (se_square * sigma_beta_square) / (se_square + sigma_beta_square);
+   
+   // Update the variational estimate of the posterior mean.
+   double r = alpha * mu;
+   mu = sigma_square * (betahat / se_square + r / se_square - SiRiSr_snp);
+   
+   // Update the variational estimate of the posterior inclusion probability.
+   double SSR = mu * mu / sigma_square;
+   alpha = sigmoid(logodds + 0.5 * (log(sigma_square/(sigma_beta_square)) + SSR));
+   
+   // Update SiRiSr = inv(S)*R*inv(S)*r
+   double r_new = alpha * mu;
+   SiRiSr+=(SiRiS_snp*(r_new-r));
+}
+
+
+
+
+void rss_varbvsr_iter_alt(const Eigen::SparseMatrix<double> SiRiS,
+                          const double sigma_beta,
+                          const double logodds,
+                          const Eigen::ArrayXd betahat,
+                          const Eigen::ArrayXd se,
+                          Eigen::ArrayXd &alpha,
+                          Eigen::ArrayXd &mu,
+                          Eigen::ArrayXd &SiRiSr,
+                          bool reverse){
+  
+  
+  // Get the number of SNPs (p) and coordinate ascent updates (m).
+  const size_t p = betahat.size();
+  
+  Eigen::ArrayXd alpha0=alpha;
+  Eigen::ArrayXd mu0=mu;
+  Eigen::SparseMatrix<double> SiRiS0=SiRiS;
+  for(size_t i=0; i<p; i++){
+    SiRiS0.coeffRef(i,i)=0;
+  }
+  
+  Eigen::ArrayXd se_square = se * se;
+  double  sigma_beta_square = sigma_beta * sigma_beta;
   
   // Compute the variational estimate of the posterior variance.
-  double sigma_square = (se_square * sigma_beta_square) / (se_square + sigma_beta_square);
-  
+  Eigen::ArrayXd sigma_square = (se_square * sigma_beta_square) / (se_square + sigma_beta_square);
   // Update the variational estimate of the posterior mean.
-  double r = alpha * mu;
-  mu = sigma_square * (betahat / se_square + r / se_square - SiRiSr_snp);
+  Eigen::ArrayXd r0 = alpha0 * mu0;
+  mu = sigma_square * (betahat / se_square - (SiRiS0*(r0.matrix())).array());
   
-  // Update the variational estimate of the posterior inclusion probability.
-  double SSR = mu * mu / sigma_square;
-  alpha = sigmoid(logodds + 0.5 * (log(sigma_square/(sigma_beta_square)) + SSR));
+  alpha = (logodds + 0.5 * ((sigma_square/(sigma_beta_square)).log() + (mu0 * mu0) / sigma_square)).unaryExpr(std::ptr_fun(sigmoid));
   
-  // Update SiRiSr = inv(S)*R*inv(S)*r
-  double r_new = alpha * mu;
-  SiRiSr+=(SiRiS_snp*(r_new-r));
+  SiRiSr  =(SiRiS*(alpha*mu).matrix()).array();
+  
+  
+    
 }
+
+
 
 
 

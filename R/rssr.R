@@ -1,4 +1,6 @@
 
+
+
 rss_varbvsr_future <- function(options=list()){
   if(options[["verbose"]]){
     cat('iter   lower bound  change vars E[b] sigma2\n');
@@ -38,12 +40,29 @@ rss_varbvsr_optim <- function(options=list()){
             !is.null(options[["alpha"]]),
             !is.null(options[["mu"]]),
             !is.null(options[["se"]]),
+            !is.null(options[["SiRiSr"]]),
+            !is.null(options[["itermax"]]),
+            !is.null(options[["lnz_tol"]]),
             length(options[["se"]])==length(options[["betahat"]]),
             length(options[["betahat"]])==length(options[["mu"]]))
   
-  
-  
-
+  sigbb <- options[["sigb"]]
+  logoddsb <- options[["logodds"]]
+  fsigb <- runif(1,min = sigbb[1],max = sigbb[2])
+  flogodds <- runif(1,min =logoddsb[1],max = logoddsb[2])
+  parv=c(flogodds,fsigb)
+  moptim <- optim(par = parv,fn = wrap_rss_varbvs_squarem_optim,
+                  lower=c(logoddsb[1],sigbb[1]),upper=c(logoddsb[2],sigbb[2]),
+                  SiRiS=options[["SiRiS"]],
+                  betahat = options[["betahat"]],
+                  se = options[["se"]],
+                  talpha0 = options[["alpha"]],
+                  tmu0 = options[["mu"]],
+                  tSiRiSr0 = options[["SiRiSr"]],
+                  tolerance = options[["tolerance"]],
+                  itermax=options[["itermax"]],
+                  lnz_tol = options[["lnz_tol"]],method="L-BFGS-B")
+  return(moptim)
 }
 
 
