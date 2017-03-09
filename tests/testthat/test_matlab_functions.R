@@ -39,7 +39,7 @@ I <- 1:p
 rI <- p:1
 
 #Call with Octave and RSSR
-res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,p)
+res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,I)
 mres <- wrap_rss_varbvsr_iter(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
 
 
@@ -48,12 +48,13 @@ test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
   expect_equal(c(res$mu1),c(mres$mu1),tolerance=1e-8)
   expect_equal(c(res$SiRiSr),c(mres$SiRiSr),tolerance=1e-8)})
 
-rres <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,p)
+rres <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,rI)
+rmres <- wrap_rss_varbvsr_iter(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,T)
 test_that("Single RSS update is the same when computed backwards",{
-  
-}
-          
-          )
+  expect_equal(c(rres$alpha1),c(rmres$alpha1),tolerance=1e-8)
+  expect_equal(c(rres$mu1),c(rmres$mu1),tolerance=1e-8)
+  expect_equal(c(rres$SiRiSr),c(rmres$SiRiSr),tolerance=1e-8)})
+
 
 
 test_that("gamma integral is calcualted correctly",
@@ -74,9 +75,8 @@ attr(m_SiRiS,"dimnames") <- NULL
 test_that("SiRiS is generated equivalently",expect_equivalent(t_SiRiS,m_SiRiS))
 rm(m_SiRiS,t_SiRiS)
 
-mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha_test),t(mu_test))
 naive_results <- .CallOctave('wrap_rss_varbvsr_naive',t(t(betahat)),t(t(se)),SiRiS_f,sigb,-4.6,t(alpha_test),t(mu_test))
-my_naive <- rss_varbvsr_naive(SiRiS = SiRiS,sigma_beta = sigb,logodds = -4.6,betahat = betahat,se = se,alpha0 = alpha_test,mu0 = mu_test,SiRiSr0 = SiRiSr,tolerance = 1e-4)
+my_naive <- rss_varbvsr_naive(SiRiS = SiRiS,sigma_beta = sigb,logodds = -4.6,betahat = betahat,se = se,talpha0 =  alpha_test,tmu0 =  mu_test,tSiRiSr0 = SiRiSr,tolerance = 1e-4,itermax = 100,verbose = T,lnz_tol = F)
 
 
 test_that("Naive implementations are identical",{
@@ -88,10 +88,10 @@ test_that("Naive implementations are identical",{
 })
 
 
-
+mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha_test),t(mu_test),1e-4)
 my_results <- rss_varbvsr_squarem(SiRiS = SiRiS,
                                   sigma_beta=sigb,
-                                  logodds=-4.6,
+                                  logodds=logodds,
                                   betahat = betahat,
                                   se = se,
                                   talpha0 = alpha_test,

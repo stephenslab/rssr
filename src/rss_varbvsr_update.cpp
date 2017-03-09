@@ -8,28 +8,33 @@
 
 
 //[[Rcpp::export]]
-Rcpp::List wrap_rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
+Rcpp::List wrap_rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
                                  const double sigma_beta,
                                  const double logodds,
-                                 const Eigen::ArrayXd betahat,
-                                 const Eigen::ArrayXd se,
-                                 Eigen::ArrayXd &alpha,
-                                 Eigen::ArrayXd &mu,
-                                 Eigen::ArrayXd &SiRiSr,
+                                 const Eigen::Map<Eigen::ArrayXd> betahat,
+                                 const Eigen::Map<Eigen::ArrayXd> se,
+                                 const Eigen::ArrayXd &alpha,
+                                 const Eigen::ArrayXd &mu,
+                                 const Eigen::ArrayXd &SiRiSr,
                                  bool reverse){
+  
+  Eigen::ArrayXd talpha=alpha;
+  Eigen::ArrayXd tmu=mu;
+  Eigen::ArrayXd tSiRiSr=SiRiSr;
+  
   
   rss_varbvsr_iter(SiRiS,
                    sigma_beta,
                    logodds,
                    betahat,
                    se,
-                   alpha,
-                   mu,
-                   SiRiSr,
+                   talpha,
+                   tmu,
+                   tSiRiSr,
                    reverse);
-  return Rcpp::List::create(Rcpp::Named("alpha1")=alpha,
-                            Rcpp::Named("mu1")=mu,
-                            Rcpp::Named("SiRiSr")=SiRiSr);
+  return Rcpp::List::create(Rcpp::Named("alpha1")=talpha,
+                            Rcpp::Named("mu1")=tmu,
+                            Rcpp::Named("SiRiSr")=tSiRiSr);
 }
 
 
@@ -40,11 +45,11 @@ Rcpp::List wrap_rss_varbvsr_iter(const Eigen::SparseMatrix<double> SiRiS,
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
+Rcpp::List rss_varbvsr_squarem(const Eigen::MappedSparseMatrix<double> &SiRiS,
                                const double sigma_beta,
                                const double logodds,
-                               const Eigen::ArrayXd betahat,
-                               const Eigen::ArrayXd se,
+                               const Eigen::Map<Eigen::ArrayXd> betahat,
+                               const Eigen::Map<Eigen::ArrayXd> se,
                                const Eigen::ArrayXd &talpha0,
                                const Eigen::ArrayXd &tmu0,
                                const Eigen::ArrayXd &tSiRiSr0,
@@ -174,11 +179,11 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::SparseMatrix<double> &SiRiS,
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_squarem_fit_logodds(const Eigen::SparseMatrix<double> &SiRiS,
+Rcpp::List rss_varbvsr_squarem_fit_logodds(const Eigen::MappedSparseMatrix<double> &SiRiS,
                                const double sigma_beta,
                                const double logodds0,
-                               const Eigen::ArrayXd betahat,
-                               const Eigen::ArrayXd se,
+                               const Eigen::Map<Eigen::ArrayXd> betahat,
+                               const Eigen::Map<Eigen::ArrayXd> se,
                                const Eigen::ArrayXd &talpha0,
                                const Eigen::ArrayXd &tmu0,
                                const Eigen::ArrayXd &tSiRiSr0,
@@ -325,11 +330,11 @@ Rcpp::List rss_varbvsr_squarem_fit_logodds(const Eigen::SparseMatrix<double> &Si
 
 
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_naive (const Eigen::SparseMatrix<double> &SiRiS,
+Rcpp::List rss_varbvsr_naive (const Eigen::MappedSparseMatrix<double> &SiRiS,
                               const double sigma_beta,
                               const double logodds,
-                              const Eigen::ArrayXd betahat,
-                              const Eigen::ArrayXd se,
+                              const Eigen::Map<Eigen::ArrayXd> betahat,
+                              const Eigen::Map<Eigen::ArrayXd> se,
                               const Eigen::ArrayXd &talpha0,
                               const Eigen::ArrayXd &tmu0,
                               const Eigen::ArrayXd &tSiRiSr0,
