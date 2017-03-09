@@ -211,5 +211,9 @@ frac_resolved <- function(job_list){
   return(tot_resolved/totsize)
 }
 
+# gen_test_data <- function(){
+#   data("betahat")
+#   data("se")
+# }
 
 

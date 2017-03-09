@@ -261,7 +261,7 @@ double rss_varbvsr_squarem_iter_fit_logodds(const Eigen::MappedSparseMatrix<doub
 using namespace tbb;
 
 
-Rcpp::NumericMatrix grid_rss_varbvsr(
+Rcpp::DataFrame grid_rss_varbvsr(
     const Eigen::MappedSparseMatrix<double> SiRiS,
     const Eigen::Map<Eigen::ArrayXd> sigma_beta,
     const Eigen::Map<Eigen::ArrayXd> logodds,
@@ -275,20 +275,25 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
     Rcpp::LogicalVector verbose,
     Rcpp::LogicalVector lnz_tol){
   
-  
+  using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
   size_t logodds_size=logodds.size();
   size_t tot_size=sigb_size*logodds_size;
   
-  Rcpp::NumericMatrix nlzmat(logodds_size,sigb_size);
+  Rcpp::NumericVector nlzvec(tot_size);
+  Rcpp::NumericVector sigbvec(tot_size);
+  Rcpp::NumericVector lovec(tot_size);
+  
   
   
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r){
                  for(size_t t=r.begin(); t!=r.end(); t++){
-                   size_t i=t/logodds_size;
-                   size_t j=t%logodds_size;
-                   nlzmat(i,j)=rss_varbvsr_squarem_iter(SiRiS,
+                   size_t i=t%logodds_size;
+                   size_t j=t/logodds_size;
+                   sigbvec(t)=sigma_beta(j);
+                   lovec(t)=logodds(i);
+                   nlzvec(t)=rss_varbvsr_squarem_iter(SiRiS,
                           sigma_beta(j),
                           logodds(i),
                           betahat,
@@ -301,7 +306,9 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
                           lnz_tol);}});
   
   
-  return(nlzmat);
+  return(Rcpp::DataFrame::create(_["logodds"]=lovec,
+                                 _["sigb"]=sigbvec,
+                                 _["lnZ"]=nlzvec));
 }
 
 
@@ -310,7 +317,7 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
 #else
 
 
-Rcpp::NumericMatrix grid_rss_varbvsr(
+Rcpp::DataFrame grid_rss_varbvsr(
     const Eigen::MappedSparseMatrix<double> SiRiS,
     const Eigen::Map<Eigen::ArrayXd> sigma_beta,
     const Eigen::Map<Eigen::ArrayXd> logodds,
@@ -324,17 +331,24 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
     Rcpp::LogicalVector verbose,
     Rcpp::LogicalVector lnz_tol){
   
-  
+  using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
   size_t logodds_size=logodds.size();
   size_t tot_size=sigb_size*logodds_size;
   
-  Rcpp::NumericMatrix nlzmat(logodds_size,sigb_size);
+  Rcpp::NumericVector nlzvec(tot_size);
+  Rcpp::NumericVector sigbvec(tot_size);
+  Rcpp::NumericVector lovec(tot_size);
+  
+  
+
   
   for(size_t t=0; t<tot_size; t++){
-    size_t i=t/logodds_size;
-    size_t j=t%logodds_size;
-    nlzmat(i,j)=rss_varbvsr_squarem_iter(SiRiS,
+    size_t i=t%logodds_size;
+    size_t j=t/logodds_size;
+    sigbvec(t)=sigma_beta(j);
+    lovec(t)=logodds(i);
+    nlzvec(t)=rss_varbvsr_squarem_iter(SiRiS,
            sigma_beta(j),
            logodds(i),
            betahat,
@@ -347,15 +361,16 @@ Rcpp::NumericMatrix grid_rss_varbvsr(
            lnz_tol);
   }
   
-  
-  return(nlzmat);
+  return(Rcpp::DataFrame::create(_["logodds"]=lovec,
+                                 _["sigb"]=sigbvec,
+                                 _["lnZ"]=nlzvec));
 }
 
 #endif
 
 
 //[[Rcpp::export]]
-Rcpp::NumericMatrix grid_search_rss_varbvsr(
+Rcpp::DataFrame grid_search_rss_varbvsr(
     const Eigen::MappedSparseMatrix<double> SiRiS,
     const Eigen::Map<Eigen::ArrayXd> sigma_beta,
     const Eigen::Map<Eigen::ArrayXd> logodds,

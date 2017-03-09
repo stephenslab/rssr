@@ -29,6 +29,23 @@ calculate_lnZ <- function(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb) {
     .Call('rssr_calculate_lnZ', PACKAGE = 'rssr', q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb)
 }
 
+rss_varbvsr_naive_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_rss_varbvsr_naive_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+}
+
+#' Run RSS with the variational bayes algorithm accelerated with SQUAREM
+#' @template rssr
+#' @param talpha0 a length p vector specifying the initial value of alpha
+#' @param tmu0 a length p vector specifying the initial value of mu
+#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
+rss_varbvsr_squarem_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_rss_varbvsr_squarem_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+}
+
+wrap_rss_varbvsr_iter_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
+    .Call('rssr_wrap_rss_varbvsr_iter_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
+}
+
 wrap_rss_varbvsr_iter <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
     .Call('rssr_wrap_rss_varbvsr_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
 }
@@ -51,17 +68,8 @@ rss_varbvsr_squarem_fit_logodds <- function(SiRiS, sigma_beta, logodds0, betahat
     .Call('rssr_rss_varbvsr_squarem_fit_logodds', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds0, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
-#' Run RSS with the variational bayes algorithm accelerated with SQUAREM
-#' @template rssr
-#' @param talpha0 a length p vector specifying the initial value of alpha
-#' @param tmu0 a length p vector specifying the initial value of mu
-#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
-rss_varbvsr_squarem_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_squarem_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
-}
-
-rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance) {
-    .Call('rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance)
+rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 #' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound

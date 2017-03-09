@@ -36,6 +36,7 @@ sigb <- 1
 logodds <- -3
 s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
 I <- 1:p
+rI <- p:1
 
 #Call with Octave and RSSR
 res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,p)
@@ -46,6 +47,13 @@ test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
   expect_equal(c(res$alpha1),c(mres$alpha1),tolerance=1e-8)
   expect_equal(c(res$mu1),c(mres$mu1),tolerance=1e-8)
   expect_equal(c(res$SiRiSr),c(mres$SiRiSr),tolerance=1e-8)})
+
+rres <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,p)
+test_that("Single RSS update is the same when computed backwards",{
+  
+}
+          
+          )
 
 
 test_that("gamma integral is calcualted correctly",
