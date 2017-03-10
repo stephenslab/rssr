@@ -45,7 +45,6 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_bigmem_squarem(file, sigb, logo
   % Set initial estimates of variational parameters.
   if isfield(options,'alpha')
     alpha = double(options.alpha(:));
-    alpha = alpha / sum(alpha);
   else
     alpha = rand(p,1);
     alpha = alpha / sum(alpha);
@@ -107,9 +106,22 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_bigmem_squarem(file, sigb, logo
   s = cell2mat(s_cell);
  
   % Initialize the fields of the structure info.
-  lnZ    = -Inf;
   iter   = 0;
   loglik = [];
+
+  % Calculate the variational lower bound based on the initial values.
+  parfor c = 1:C
+    r = alpha_cell{c,1} .* mu_cell{c,1};
+
+    lnZ_cell(c) = (q_cell{c,1})'*r - 0.5*r'*SiRiSr_cell{c,1} + intgamma(logodds,alpha_cell{c,1});
+    lnZ_cell(c) = lnZ_cell(c) - 0.5*(1./sesquare_cell{c,1})'*betavar(alpha_cell{c,1},mu_cell{c,1},s_cell{c,1});
+    lnZ_cell(c) = lnZ_cell(c) + intklbeta_rssbvsr(alpha_cell{c,1},mu_cell{c,1},s_cell{c,1},sigb_square);
+  end
+  lnZ = sum(lnZ_cell);
+  fprintf('Calculate the variational lower bound based on the initial values: %+13.6e ...\n', lnZ);
+
+  % Record the variational lower bound at each iteration.
+  loglik = [loglik; lnZ]; %#ok<AGROW>
 
   if verbose
     fprintf('       variational    max. incl max.       \n');
