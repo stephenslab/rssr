@@ -85,9 +85,16 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
   s 		= (se_square .* sigb_square) ./ (se_square + sigb_square);
 
   % Initialize the fields of the structure info.
-  lnZ    = -Inf;
   iter   = 0;
   loglik = [];
+
+  % Calculate the variational lower bound based on the initial values.
+  r   = alpha .* mu;
+  lnZ = q'*r - 0.5*r'*SiRiSr - 0.5*(1./se_square)'*betavar(alpha, mu, s);
+  lnZ = lnZ + intgamma(logodds, alpha) + intklbeta_rssbvsr(alpha, mu, s, sigb_square);
+  fprintf('Calculate the variational lower bound based on the initial values: %+13.6e ...\n', lnZ);
+
+  loglik = [loglik; lnZ]; %#ok<AGROW>
 
   if verbose
     fprintf('       variational    max. incl max.       \n');
