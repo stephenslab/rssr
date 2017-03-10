@@ -38,7 +38,6 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr(betahat, se, SiRiS, sigb, logod
   % Set initial estimates of variational parameters.
   if isfield(options,'alpha')
     alpha = double(options.alpha(:));
-    alpha = alpha / sum(alpha);
   else
     alpha = rand(p,1);
     alpha = alpha / sum(alpha);
