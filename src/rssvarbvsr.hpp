@@ -16,4 +16,18 @@ void rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
                       Eigen::ArrayXd &SiRiSr,
                       bool reverse);
 
+
+Rcpp::List rss_varbvsr_naive(const Eigen::MappedSparseMatrix<double> &SiRiS,
+                             const double sigma_beta,
+                             const double logodds,
+                             const Eigen::Map<Eigen::ArrayXd> betahat,
+                             const Eigen::Map<Eigen::ArrayXd> se,
+                             const Eigen::ArrayXd &talpha0,
+                             const Eigen::ArrayXd &tmu0,
+                             const Eigen::ArrayXd &tSiRiSr0,
+                             double tolerance,
+                             int itermax,
+                             Rcpp::LogicalVector verbose,
+                             Rcpp::LogicalVector lnz_tol);
+
 #endif

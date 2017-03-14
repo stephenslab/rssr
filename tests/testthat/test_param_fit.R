@@ -28,12 +28,10 @@ test_that("We can estimate a known value of pi by grid search",{
   # file.remove(output_h5files)
   
   
-  toutfile <- tempfile()
   options <- list(plan=list(engine="MC",resources=list(nodes=2)),
                   betahat=betahat,
                   se=se,
                   logodds=logodds,
-                  toFile=toutfile,
                   alpha=alpha_test,
                   mu=mu_test,
                   SiRiS=SiRiS,
@@ -57,7 +55,6 @@ test_that("We can estimate a value of sigb by grid search",{
                   betahat=betahat,
                   se=se,
                   logodds=logodds,
-                  toFile=toutfile,
                   alpha=alpha_test,
                   mu=mu_test,
                   SiRiS=SiRiS,
@@ -149,4 +146,6 @@ test_that("parallel and serial grid search work the same in 1d (logodds)",{
   expect_equal(rep(sigb,length(logodds)),p_df$sigb)
   expect_equal(rep(logodds,length(sigb)),p_df$logodds)
 })
+
+
 

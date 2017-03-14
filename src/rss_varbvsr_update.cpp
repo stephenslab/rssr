@@ -4,6 +4,7 @@
 #include "kl.hpp"
 #include <cstdio>
 
+//[[Rcpp::interfaces(r,cpp)]]
 
 
 
@@ -351,9 +352,8 @@ Rcpp::List rss_varbvsr_naive (const Eigen::MappedSparseMatrix<double> &SiRiS,
   Eigen::ArrayXd alpha=talpha0;
   Eigen::ArrayXd mu=tmu0;
   Eigen::ArrayXd SiRiSr=tSiRiSr0;
-  double lnZ=log(0);
-  Eigen::MatrixXd params0(p,2);
-  Eigen::MatrixXd params(p,2);
+  double lnZ=0;
+
   
   Eigen::ArrayXd talpha=alpha;
   Eigen::ArrayXd tmu=mu;

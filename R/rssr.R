@@ -1,10 +1,7 @@
 
 
 
-rss_varbvsr_future <- function(options=list()){
-  if(options[["verbose"]]){
-    cat('iter   lower bound  change vars E[b] sigma2\n');
-  }
+rss_varbvsr <- function(options=list()){
   stopifnot(length(options[["sigb"]])==1,
             length(options[["logodds"]])==1,
             !is.null(options[["SiRiS"]]),
@@ -14,7 +11,21 @@ rss_varbvsr_future <- function(options=list()){
             !is.null(options[["se"]]),
             length(options[["se"]])==length(options[["betahat"]]),
             length(options[["betahat"]])==length(options[["mu"]]))
-            
+            if(options[["method"]]=="naive"){  
+              run_time <- system.time(int_res <- rss_varbvsr_squarem(SiRiS = options[["SiRiS"]],
+                                                                     sigma_beta=options[["sigb"]],
+                                                                     logodds=options[["logodds"]],
+                                                                     betahat = options[["betahat"]],
+                                                                     se = options[["se"]],
+                                                                     talpha0 = options[["alpha"]],
+                                                                     tmu0 = options[["mu"]],
+                                                                     tSiRiSr0 = options[["SiRiSr"]],
+                                                                     tolerance = options[["tolerance"]],
+                                                                     itermax=options[["itermax"]],
+                                                                     verbose=options[["verbose"]],
+                                                                     lnz_tol = options[["lnz_tol"]]))
+              
+            }
   run_time <- system.time(int_res <- rss_varbvsr_squarem(SiRiS = options[["SiRiS"]],
                                                          sigma_beta=options[["sigb"]],
                                                          logodds=options[["logodds"]],
