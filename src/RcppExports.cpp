@@ -104,154 +104,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rss_varbvsr_naive_alt
-Rcpp::List rss_varbvsr_naive_alt(const Eigen::MappedSparseMatrix<double>& SiRiS, const double sigma_beta, const double logodds, const Eigen::Map<Eigen::ArrayXd> betahat, const Eigen::Map<Eigen::ArrayXd> se, const Eigen::ArrayXd& talpha0, const Eigen::ArrayXd& tmu0, const Eigen::ArrayXd& tSiRiSr0, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
-static SEXP rssr_rss_varbvsr_naive_alt_try(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Eigen::MappedSparseMatrix<double>& >::type SiRiS(SiRiSSEXP);
-    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
-    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::ArrayXd> >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::ArrayXd> >::type se(seSEXP);
-    Rcpp::traits::input_parameter< const Eigen::ArrayXd& >::type talpha0(talpha0SEXP);
-    Rcpp::traits::input_parameter< const Eigen::ArrayXd& >::type tmu0(tmu0SEXP);
-    Rcpp::traits::input_parameter< const Eigen::ArrayXd& >::type tSiRiSr0(tSiRiSr0SEXP);
-    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
-    Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
-    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type verbose(verboseSEXP);
-    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type lnz_tol(lnz_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(rss_varbvsr_naive_alt(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP rssr_rss_varbvsr_naive_alt(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(rssr_rss_varbvsr_naive_alt_try(SiRiSSEXP, sigma_betaSEXP, logoddsSEXP, betahatSEXP, seSEXP, talpha0SEXP, tmu0SEXP, tSiRiSr0SEXP, toleranceSEXP, itermaxSEXP, verboseSEXP, lnz_tolSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// wrap_rss_varbvsr_iter_alt
-Rcpp::List wrap_rss_varbvsr_iter_alt(const Eigen::SparseMatrix<double>& SiRiS, const double sigma_beta, const double logodds, const Eigen::Map<Eigen::ArrayXd> betahat, const Eigen::Map<Eigen::ArrayXd> se, Eigen::ArrayXd& alpha, Eigen::ArrayXd& mu, Eigen::ArrayXd& SiRiSr, bool reverse);
-static SEXP rssr_wrap_rss_varbvsr_iter_alt_try(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP SiRiSrSEXP, SEXP reverseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const Eigen::SparseMatrix<double>& >::type SiRiS(SiRiSSEXP);
-    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
-    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::ArrayXd> >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::ArrayXd> >::type se(seSEXP);
-    Rcpp::traits::input_parameter< Eigen::ArrayXd& >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< Eigen::ArrayXd& >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< Eigen::ArrayXd& >::type SiRiSr(SiRiSrSEXP);
-    Rcpp::traits::input_parameter< bool >::type reverse(reverseSEXP);
-    rcpp_result_gen = Rcpp::wrap(wrap_rss_varbvsr_iter_alt(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP rssr_wrap_rss_varbvsr_iter_alt(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP SiRiSrSEXP, SEXP reverseSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(rssr_wrap_rss_varbvsr_iter_alt_try(SiRiSSEXP, sigma_betaSEXP, logoddsSEXP, betahatSEXP, seSEXP, alphaSEXP, muSEXP, SiRiSrSEXP, reverseSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// wrap_compute_alpha
-double wrap_compute_alpha(const double sigma_square, const double sigma_beta, const double logodds, const double mu, const double alpha);
-static SEXP rssr_wrap_compute_alpha_try(SEXP sigma_squareSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP muSEXP, SEXP alphaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const double >::type sigma_square(sigma_squareSEXP);
-    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
-    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(wrap_compute_alpha(sigma_square, sigma_beta, logodds, mu, alpha));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP rssr_wrap_compute_alpha(SEXP sigma_squareSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP muSEXP, SEXP alphaSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(rssr_wrap_compute_alpha_try(sigma_squareSEXP, sigma_betaSEXP, logoddsSEXP, muSEXP, alphaSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
-// wrap_compute_mu
-double wrap_compute_mu(const double betahat, const double se_square, const double sigma_square, const double alpha, const double mu, const double SiRiSr_snp);
-static SEXP rssr_wrap_compute_mu_try(SEXP betahatSEXP, SEXP se_squareSEXP, SEXP sigma_squareSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP SiRiSr_snpSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::traits::input_parameter< const double >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< const double >::type se_square(se_squareSEXP);
-    Rcpp::traits::input_parameter< const double >::type sigma_square(sigma_squareSEXP);
-    Rcpp::traits::input_parameter< const double >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< const double >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const double >::type SiRiSr_snp(SiRiSr_snpSEXP);
-    rcpp_result_gen = Rcpp::wrap(wrap_compute_mu(betahat, se_square, sigma_square, alpha, mu, SiRiSr_snp));
-    return rcpp_result_gen;
-END_RCPP_RETURN_ERROR
-}
-RcppExport SEXP rssr_wrap_compute_mu(SEXP betahatSEXP, SEXP se_squareSEXP, SEXP sigma_squareSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP SiRiSr_snpSEXP) {
-    SEXP rcpp_result_gen;
-    {
-        Rcpp::RNGScope rcpp_rngScope_gen;
-        rcpp_result_gen = PROTECT(rssr_wrap_compute_mu_try(betahatSEXP, se_squareSEXP, sigma_squareSEXP, alphaSEXP, muSEXP, SiRiSr_snpSEXP));
-    }
-    Rboolean rcpp_isInterrupt_gen = Rf_inherits(rcpp_result_gen, "interrupted-error");
-    if (rcpp_isInterrupt_gen) {
-        UNPROTECT(1);
-        Rf_onintr();
-    }
-    Rboolean rcpp_isError_gen = Rf_inherits(rcpp_result_gen, "try-error");
-    if (rcpp_isError_gen) {
-        SEXP rcpp_msgSEXP_gen = Rf_asChar(rcpp_result_gen);
-        UNPROTECT(1);
-        Rf_error(CHAR(rcpp_msgSEXP_gen));
-    }
-    UNPROTECT(1);
-    return rcpp_result_gen;
-}
 // wrap_rss_varbvsr_iter
 Rcpp::List wrap_rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS, const double sigma_beta, const double logodds, const Eigen::Map<Eigen::ArrayXd> betahat, const Eigen::Map<Eigen::ArrayXd> se, const Eigen::ArrayXd& alpha, const Eigen::ArrayXd& mu, const Eigen::ArrayXd& SiRiSr, bool reverse);
 static SEXP rssr_wrap_rss_varbvsr_iter_try(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP SiRiSrSEXP, SEXP reverseSEXP) {
@@ -543,10 +395,6 @@ END_RCPP
 static int rssr_RcppExport_validate(const char* sig) { 
     static std::set<std::string> signatures;
     if (signatures.empty()) {
-        signatures.insert("Rcpp::List(*rss_varbvsr_naive_alt)(const Eigen::MappedSparseMatrix<double>&,const double,const double,const Eigen::Map<Eigen::ArrayXd>,const Eigen::Map<Eigen::ArrayXd>,const Eigen::ArrayXd&,const Eigen::ArrayXd&,const Eigen::ArrayXd&,double,int,Rcpp::LogicalVector,Rcpp::LogicalVector)");
-        signatures.insert("Rcpp::List(*wrap_rss_varbvsr_iter_alt)(const Eigen::SparseMatrix<double>&,const double,const double,const Eigen::Map<Eigen::ArrayXd>,const Eigen::Map<Eigen::ArrayXd>,Eigen::ArrayXd&,Eigen::ArrayXd&,Eigen::ArrayXd&,bool)");
-        signatures.insert("double(*wrap_compute_alpha)(const double,const double,const double,const double,const double)");
-        signatures.insert("double(*wrap_compute_mu)(const double,const double,const double,const double,const double,const double)");
         signatures.insert("Rcpp::List(*wrap_rss_varbvsr_iter)(const Eigen::MappedSparseMatrix<double>,const double,const double,const Eigen::Map<Eigen::ArrayXd>,const Eigen::Map<Eigen::ArrayXd>,const Eigen::ArrayXd&,const Eigen::ArrayXd&,const Eigen::ArrayXd&,bool)");
         signatures.insert("Rcpp::List(*rss_varbvsr_squarem)(const Eigen::MappedSparseMatrix<double>&,const double,const double,const Eigen::Map<Eigen::ArrayXd>,const Eigen::Map<Eigen::ArrayXd>,const Eigen::ArrayXd&,const Eigen::ArrayXd&,const Eigen::ArrayXd&,double,int,Rcpp::LogicalVector,Rcpp::LogicalVector)");
         signatures.insert("Rcpp::List(*rss_varbvsr_squarem_fit_logodds)(const Eigen::MappedSparseMatrix<double>&,const double,const double,const Eigen::Map<Eigen::ArrayXd>,const Eigen::Map<Eigen::ArrayXd>,const Eigen::ArrayXd&,const Eigen::ArrayXd&,const Eigen::ArrayXd&,double,int,Rcpp::LogicalVector,Rcpp::LogicalVector)");
@@ -557,10 +405,6 @@ static int rssr_RcppExport_validate(const char* sig) {
 
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP rssr_RcppExport_registerCCallable() { 
-    R_RegisterCCallable("rssr", "rssr_rss_varbvsr_naive_alt", (DL_FUNC)rssr_rss_varbvsr_naive_alt_try);
-    R_RegisterCCallable("rssr", "rssr_wrap_rss_varbvsr_iter_alt", (DL_FUNC)rssr_wrap_rss_varbvsr_iter_alt_try);
-    R_RegisterCCallable("rssr", "rssr_wrap_compute_alpha", (DL_FUNC)rssr_wrap_compute_alpha_try);
-    R_RegisterCCallable("rssr", "rssr_wrap_compute_mu", (DL_FUNC)rssr_wrap_compute_mu_try);
     R_RegisterCCallable("rssr", "rssr_wrap_rss_varbvsr_iter", (DL_FUNC)rssr_wrap_rss_varbvsr_iter_try);
     R_RegisterCCallable("rssr", "rssr_rss_varbvsr_squarem", (DL_FUNC)rssr_rss_varbvsr_squarem_try);
     R_RegisterCCallable("rssr", "rssr_rss_varbvsr_squarem_fit_logodds", (DL_FUNC)rssr_rss_varbvsr_squarem_fit_logodds_try);

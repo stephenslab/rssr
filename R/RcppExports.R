@@ -29,22 +29,6 @@ calculate_lnZ <- function(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb) {
     .Call('rssr_calculate_lnZ', PACKAGE = 'rssr', q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb)
 }
 
-rss_varbvsr_naive_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_naive_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
-}
-
-wrap_rss_varbvsr_iter_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
-    .Call('rssr_wrap_rss_varbvsr_iter_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
-}
-
-wrap_compute_alpha <- function(sigma_square, sigma_beta, logodds, mu, alpha) {
-    .Call('rssr_wrap_compute_alpha', PACKAGE = 'rssr', sigma_square, sigma_beta, logodds, mu, alpha)
-}
-
-wrap_compute_mu <- function(betahat, se_square, sigma_square, alpha, mu, SiRiSr_snp) {
-    .Call('rssr_wrap_compute_mu', PACKAGE = 'rssr', betahat, se_square, sigma_square, alpha, mu, SiRiSr_snp)
-}
-
 wrap_rss_varbvsr_iter <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
     .Call('rssr_wrap_rss_varbvsr_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
 }
