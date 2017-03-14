@@ -22,7 +22,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
   % Convergence is reached when the maximum relative distance between
   % successive updates of the variational parameters is less than this
   % quantity.
-  tolerance = 1e-4;  
+
 
   % Get the number of variables (p).
   p = length(betahat);
@@ -32,8 +32,14 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
     SiRiS = sparse(double(SiRiS));
   end
 
-  if ~exist('options', 'var')
-    options = [];
+  %  if ~exist('options', 'var')
+  %  options = [];
+  %end
+  
+  if isfield(options,'tolerance')
+      tolerance = double(options.tolerance);
+  else
+      tolerance = 1e-4; 
   end
 
   % Set initial estimates of variational parameters.

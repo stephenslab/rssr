@@ -52,6 +52,12 @@ double find_maxerr(const Eigen::ArrayXd &alpha,
   return(terr);
 }
 
+//[[Rcpp::export]]
+double update_logodds(const Eigen::ArrayXd &alpha){
+  double pi=alpha.mean();
+  return log((pi+double_lim::epsilon())/((1-pi)+double_lim::epsilon()));
+}
+
 
 
 

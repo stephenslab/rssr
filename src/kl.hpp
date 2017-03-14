@@ -25,5 +25,6 @@ double calculate_lnZ(const Eigen::VectorXd &q,
                      const Eigen::VectorXd &mu,
                      const Eigen::VectorXd &s,
                      const double sigb);
+double update_logodds(const Eigen::ArrayXd &alpha);
 
 #endif
