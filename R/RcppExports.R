@@ -92,7 +92,3 @@ rss_varbvsr_iter_naive_reference <- function(SiRiS, sigma_beta, logodds, betahat
     .Call('rssr_rss_varbvsr_iter_naive_reference', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, reverse)
 }
 
-# Register entry points for exported C++ functions
-methods::setLoadAction(function(ns) {
-    .Call('rssr_RcppExport_registerCCallable', PACKAGE = 'rssr')
-})

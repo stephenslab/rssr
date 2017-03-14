@@ -4,7 +4,7 @@
 #include "kl.hpp"
 #include <cstdio>
 
-//[[Rcpp::interfaces(r,cpp)]]
+
 
 
 
