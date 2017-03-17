@@ -3,6 +3,8 @@
 #ifndef INCLUDE_SIGMOID
 #define INCLUDE_SIGMOID
 #include <RcppEigen.h>
+#include "rssr_types.h"
+
 
 // Function declarations.
 // -----------------------------------------------------------------
@@ -18,19 +20,23 @@
 // performed in a numerically stable manner.
 
 
-inline double logpexp (double x) {
+inline double logpexp (const double x) {
   return (x >= 16) * x + (x < 16)  * log(1 + exp(x));
 }
 
-inline double sigmoid (double x) {
+inline double sigmoid (const double x) {
   return 1/(1 + exp(-x));
 }
 
-inline double logsigmoid (double x) {
+inline Eigen::ArrayXd sigmoid (const c_arrayxd_internal x) {
+  return 1/(1 + (-x).exp());
+}
+
+inline double logsigmoid (const double x) {
   return -logpexp(-x);
 }
 
-inline Eigen::ArrayXd logsigmoid(Eigen::ArrayXd x){
+inline Eigen::ArrayXd logsigmoid(const c_arrayxd_internal x){
   return -(-x).unaryExpr(&logpexp);
 }
 

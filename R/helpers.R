@@ -216,4 +216,10 @@ frac_resolved <- function(job_list){
 #   data("se")
 # }
 
-
+libpath <- function() {
+  cat(sprintf(
+    "%s/rssr/libs/rssr%s",
+    installed.packages()["rssr","LibPath"][1],
+    .Platform$dynlib.ext
+  ))
+}

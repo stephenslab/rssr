@@ -1,7 +1,7 @@
 // For a description of this C code, see rss_varbvsr_update.m.
 #include <RcppEigen.h>
-#include "rssvarbvsr.hpp"
-#include "kl.hpp"
+#include "rssr.h"
+
 #include <cstdio>
 
 
@@ -9,14 +9,14 @@
 
 
 //[[Rcpp::export]]
-Rcpp::List wrap_rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
+Rcpp::List wrap_rss_varbvsr_iter(const sparseMatrix_external SiRiS,
                                  const double sigma_beta,
                                  const double logodds,
-                                 const Eigen::Map<Eigen::ArrayXd> betahat,
-                                 const Eigen::Map<Eigen::ArrayXd> se,
-                                 const Eigen::ArrayXd &alpha,
-                                 const Eigen::ArrayXd &mu,
-                                 const Eigen::ArrayXd &SiRiSr,
+                                 const arrayxd_external betahat,
+                                 const arrayxd_external se,
+                                 const arrayxd_external alpha,
+                                 const arrayxd_external mu,
+                                 const arrayxd_external SiRiSr,
                                  bool reverse){
   
   Eigen::ArrayXd talpha=alpha;
@@ -46,14 +46,14 @@ Rcpp::List wrap_rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_squarem(const Eigen::MappedSparseMatrix<double> &SiRiS,
+Rcpp::List rss_varbvsr_squarem(const sparseMatrix_external SiRiS,
                                const double sigma_beta,
                                const double logodds,
-                               const Eigen::Map<Eigen::ArrayXd> betahat,
-                               const Eigen::Map<Eigen::ArrayXd> se,
-                               const Eigen::ArrayXd &talpha0,
-                               const Eigen::ArrayXd &tmu0,
-                               const Eigen::ArrayXd &tSiRiSr0,
+                               const arrayxd_external betahat,
+                               const arrayxd_external se,
+                               const arrayxd_external talpha0,
+                               const arrayxd_external tmu0,
+                               const arrayxd_external tSiRiSr0,
                                double tolerance,
                                int itermax,
                                Rcpp::LogicalVector verbose,
@@ -105,7 +105,9 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::MappedSparseMatrix<double> &SiRiS,
   double rel_l0=0;
   double rel_li=0;
   while(max_err>tolerance){
+
     lnZ0=lnZ;
+
     alpha0=alpha;
     mu0=mu;
     bool reverse = iter%2!=0;
@@ -127,14 +129,22 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::MappedSparseMatrix<double> &SiRiS,
     if(mtp >=-1){
       
     }else{
+      // Rcpp::Rcout<<"mtp <1: "<<mtp<<std::endl;
+      // Rcpp::Rcout<<"mean(alpha.col(c)): "<<alpha.mean()<<std::endl;
+      // Rcpp::Rcout<<"mean(mu.col(c)): "<<mu.mean()<<std::endl;
+      // Rcpp::Rcout<<"mean(SiRiSr.col(c)): "<<SiRiSr.mean()<<std::endl;
       alpha=alpha0-2*mtp*alpha_r+(mtp*mtp)*alpha_v;
       mu=mu0-2*mtp*mu_r+(mtp*mtp)*mu_v;
       SiRiSr=SiRiS*(alpha*mu).matrix();
+      // Rcpp::Rcout<<"mean(alpha.col(c)): "<<alpha.mean()<<std::endl;
+      // Rcpp::Rcout<<"mean(mu.col(c)): "<<mu.mean()<<std::endl;
+      // Rcpp::Rcout<<"mean(SiRiSr.col(c)): "<<SiRiSr.mean()<<std::endl;
     }
     
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
     if((mtp<(-1)) && (lnZ < lnZ0)){
+      Rcpp::Rcout<<"begin bt "<<std::endl;
       size_t num_bt=0;
       while((lnZ<lnZ0) &&(num_bt < 10)){
         mtp = 0.5*(mtp-1);
@@ -180,18 +190,18 @@ Rcpp::List rss_varbvsr_squarem(const Eigen::MappedSparseMatrix<double> &SiRiS,
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_squarem_fit_logodds(const Eigen::MappedSparseMatrix<double> &SiRiS,
-                               const double sigma_beta,
-                               const double logodds0,
-                               const Eigen::Map<Eigen::ArrayXd> betahat,
-                               const Eigen::Map<Eigen::ArrayXd> se,
-                               const Eigen::ArrayXd &talpha0,
-                               const Eigen::ArrayXd &tmu0,
-                               const Eigen::ArrayXd &tSiRiSr0,
-                               double tolerance,
-                               int itermax,
-                               Rcpp::LogicalVector verbose,
-                               Rcpp::LogicalVector lnz_tol){
+Rcpp::List rss_varbvsr_squarem_fit_logodds(const sparseMatrix_external SiRiS,
+                                           const double sigma_beta,
+                                           const double logodds0,
+                                           const arrayxd_external betahat,
+                                           const arrayxd_external se,
+                                           const arrayxd_external talpha0,
+                                           const arrayxd_external tmu0,
+                                           const arrayxd_external tSiRiSr0,
+                                           double tolerance,
+                                           int itermax,
+                                           Rcpp::LogicalVector verbose,
+                                           Rcpp::LogicalVector lnz_tol){
   
   
   //This function implements RSS with variational bayes and the SQUAREM algorithm.
@@ -331,14 +341,14 @@ Rcpp::List rss_varbvsr_squarem_fit_logodds(const Eigen::MappedSparseMatrix<doubl
 
 
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_naive (const Eigen::MappedSparseMatrix<double> &SiRiS,
+Rcpp::List rss_varbvsr_naive (const sparseMatrix_external SiRiS,
                               const double sigma_beta,
                               const double logodds,
-                              const Eigen::Map<Eigen::ArrayXd> betahat,
-                              const Eigen::Map<Eigen::ArrayXd> se,
-                              const Eigen::ArrayXd &talpha0,
-                              const Eigen::ArrayXd &tmu0,
-                              const Eigen::ArrayXd &tSiRiSr0,
+                              const arrayxd_external betahat,
+                              const arrayxd_external se,
+                              const arrayxd_external talpha0,
+                              const arrayxd_external tmu0,
+                              const arrayxd_external tSiRiSr0,
                               double tolerance,
                               int itermax,
                               Rcpp::LogicalVector verbose,
@@ -348,6 +358,7 @@ Rcpp::List rss_varbvsr_naive (const Eigen::MappedSparseMatrix<double> &SiRiS,
   
   
   // Get the number of SNPs (p) and coordinate ascent updates (m).
+  
   const size_t p = betahat.size();
   Eigen::ArrayXd alpha=talpha0;
   Eigen::ArrayXd mu=tmu0;
@@ -375,8 +386,10 @@ Rcpp::List rss_varbvsr_naive (const Eigen::MappedSparseMatrix<double> &SiRiS,
   while(max_err>tolerance){
     talpha=alpha;
     tmu=mu;
+    lnZ0=lnZ;
     bool reverse = iter%2!=0;
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
+    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
     rel_li=rel_err(lnZ,lnZ0);
     if(lnztol){
       max_err=rel_li;

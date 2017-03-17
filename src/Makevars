@@ -8,5 +8,5 @@
 CXX_STD = CXX11
 
 #PKG_CFLAGS += -daal
-#PKG_CPPFLAGS+= -c -daal -fPIC -I/opt/intel/compilers_and_libraries_2017.1.132/linux/daal/include
+PKG_CPPFLAGS+= -I../inst/include/
 PKG_LIBS+= $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")

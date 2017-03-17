@@ -1,9 +1,11 @@
 #include <RcppEigen.h>
-#include "rssvarbvsr.hpp"
-#include "sigmoid.hpp"
+#include "rssr.h"
+
 #include <math.h>
 
 using namespace Rcpp;
+
+
 
 // RcppExport SEXP start_profiler(SEXP str) {
 //   ProfilerStart(as<const char*>(str));
@@ -16,12 +18,13 @@ using namespace Rcpp;
 // }
 
 // USAGE: run a single coordinate ascent of variational update to fit RSS-BVSR
-// [[Rcpp::export]]
+
+
 void rss_varbvsr_update (const double betahat,
                          const double se,
                          const double sigma_beta,
-                         const Eigen::ArrayXd &SiRiS_snp,
-                         Eigen::ArrayXd &SiRiSr,
+                         const c_arrayxd_internal SiRiS_snp,
+                         arrayxd_internal  SiRiSr,
                          const double SiRiSr_snp,
                          const double logodds,
                          double &alpha,
@@ -54,14 +57,14 @@ void rss_varbvsr_update (const double betahat,
 
 
 
-void rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
+void rss_varbvsr_iter(const c_sparseMatrix_internal SiRiS,
                       const double sigma_beta,
                       const double logodds,
-                      const Eigen::Map<Eigen::ArrayXd> betahat,
-                      const Eigen::Map<Eigen::ArrayXd> se,
-                      Eigen::ArrayXd &alpha,
-                      Eigen::ArrayXd &mu,
-                      Eigen::ArrayXd &SiRiSr,
+                      const c_arrayxd_internal betahat,
+                      const c_arrayxd_internal se,
+                      arrayxd_internal alpha,
+                      arrayxd_internal mu,
+                      arrayxd_internal SiRiSr,
                       bool reverse){
   
   
@@ -90,11 +93,15 @@ void rss_varbvsr_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
     // copySparseColumn(SiRiS_snp, k, SiRiS.elems, Ir, Jc, p);
     
     // Copy the kth element of vector inv(S)*R*inv(S)*r.
-    double SiRiSr_snp = SiRiSr(i);
+    double SiRiSr_snp = SiRiSr.coeff(i);
     
     // Perform the mean-field variational update.
-    rss_varbvsr_update(betahat(i), se(i), sigma_beta, 
+    rss_varbvsr_update(betahat.coeff(i), se.coeff(i), sigma_beta, 
                        SiRiS_snp, SiRiSr, SiRiSr_snp, 
-                       logodds, alpha(i), mu(i));
+                       logodds, alpha.coeffRef(i), mu.coeffRef(i));
   }
 }
+
+
+
+

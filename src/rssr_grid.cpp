@@ -1,9 +1,11 @@
 #include <RcppEigen.h>
-#include "rssvarbvsr.hpp"
-#include "kl.hpp"
+#include "rssr.h"
 #include <cstdio>
+#include <cmath>
 //[[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
+
+
 
 
 //' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
@@ -12,15 +14,15 @@
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 //' @useDynLib rssr
-//[[Rcpp::export]]
-double rss_varbvsr_squarem_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
+
+double rss_varbvsr_squarem_iter(const c_sparseMatrix_internal SiRiS,
                                 const double sigma_beta,
                                 const double logodds,
-                                const Eigen::Map<Eigen::ArrayXd> betahat,
-                                const Eigen::Map<Eigen::ArrayXd> se,
-                                const Eigen::Map<Eigen::ArrayXd> talpha0,
-                                const Eigen::Map<Eigen::ArrayXd> tmu0,
-                                const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+                                const c_arrayxd_internal  betahat,
+                                const c_arrayxd_internal se,
+                                const c_arrayxd_internal talpha0,
+                                const c_arrayxd_internal tmu0,
+                                const c_arrayxd_internal tSiRiSr0,
                                 double tolerance,
                                 int itermax,
                                 Rcpp::LogicalVector lnz_tol){
@@ -72,6 +74,7 @@ double rss_varbvsr_squarem_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
   while(max_err>tolerance){
     lnZ0=lnZ;
     alpha0=alpha;
+
     mu0=mu; 
     bool reverse = iter%2!=0;
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
@@ -99,6 +102,10 @@ double rss_varbvsr_squarem_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
     
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
+   if(!std::isfinite(lnZ)){
+     Rcpp::stop("lnZ isn't finite!");
+   }
+   
     if((mtp<(-1)) && (lnZ < lnZ0)){
       size_t num_bt=0;
       while((lnZ<lnZ0) &&(num_bt < 10)){
@@ -113,7 +120,7 @@ double rss_varbvsr_squarem_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
     }
     rel_l0=rel_err(lnZ00,lnZ);
     rel_li=rel_err(lnZ,lnZ0);
-
+    
     if(lnztol){
       max_err=rel_li;
     }else{
@@ -131,14 +138,14 @@ double rss_varbvsr_squarem_iter(const Eigen::MappedSparseMatrix<double> SiRiS,
 }
 
 
-double rss_varbvsr_squarem_iter_fit_logodds(const Eigen::MappedSparseMatrix<double> SiRiS,
+double rss_varbvsr_squarem_iter_fit_logodds(const c_sparseMatrix_internal SiRiS,
                                 const double sigma_beta,
                                 double &logodds,
-                                const Eigen::Map<Eigen::ArrayXd> betahat,
-                                const Eigen::Map<Eigen::ArrayXd> se,
-                                const Eigen::Map<Eigen::ArrayXd> talpha0,
-                                const Eigen::Map<Eigen::ArrayXd> tmu0,
-                                const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+                                const c_arrayxd_internal betahat,
+                                const c_arrayxd_internal se,
+                                const c_arrayxd_internal talpha0,
+                                const c_arrayxd_internal tmu0,
+                                const c_arrayxd_internal tSiRiSr0,
                                 double tolerance,
                                 int itermax,
                                 Rcpp::LogicalVector lnz_tol){
@@ -262,18 +269,19 @@ using namespace tbb;
 
 
 Rcpp::DataFrame grid_rss_varbvsr(
-    const Eigen::MappedSparseMatrix<double> SiRiS,
-    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
-    const Eigen::Map<Eigen::ArrayXd> logodds,
-    const Eigen::Map<Eigen::ArrayXd> betahat,
-    const Eigen::Map<Eigen::ArrayXd> se,
-    const Eigen::Map<Eigen::ArrayXd> talpha0,
-    const Eigen::Map<Eigen::ArrayXd> tmu0,
-    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    const c_sparseMatrix_internal SiRiS,
+    const c_arrayxd_internal sigma_beta,
+    const c_arrayxd_internal logodds,
+    const c_arrayxd_internal  betahat,
+    const c_arrayxd_internal  se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    const c_arrayxd_internal tSiRiSr0,
     double tolerance,
     int itermax,
-    Rcpp::LogicalVector verbose,
-    Rcpp::LogicalVector lnz_tol){
+    bool isVerbose,
+    bool islnz_tol){
+  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
   
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
@@ -284,7 +292,10 @@ Rcpp::DataFrame grid_rss_varbvsr(
   Rcpp::NumericVector sigbvec(tot_size);
   Rcpp::NumericVector lovec(tot_size);
   
-  
+  Rcpp::LogicalVector verbose(1);
+  verbose(0)=isVerbose;
+  Rcpp::LogicalVector lnz_tol(1);
+  lnz_tol(0)=islnz_tol;
   
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r){
@@ -305,7 +316,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
                           itermax,
                           lnz_tol);}});
   
-  
+//  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
   return(Rcpp::DataFrame::create(_["logodds"]=lovec,
                                  _["sigb"]=sigbvec,
                                  _["lnZ"]=nlzvec));
@@ -318,18 +329,18 @@ Rcpp::DataFrame grid_rss_varbvsr(
 
 
 Rcpp::DataFrame grid_rss_varbvsr(
-    const Eigen::MappedSparseMatrix<double> SiRiS,
-    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
-    const Eigen::Map<Eigen::ArrayXd> logodds,
-    const Eigen::Map<Eigen::ArrayXd> betahat,
-    const Eigen::Map<Eigen::ArrayXd> se,
-    const Eigen::Map<Eigen::ArrayXd> talpha0,
-    const Eigen::Map<Eigen::ArrayXd> tmu0,
-    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    const c_sparseMatrix_internal SiRiS,
+    const c_arrayxd_internal sigma_beta,
+    const c_arrayxd_internal logodds,
+    const c_arrayxd_internal  betahat,
+    const c_arrayxd_internal  se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    const c_arrayxd_internal tSiRiSr0,
     double tolerance,
     int itermax,
-    Rcpp::LogicalVector verbose,
-    Rcpp::LogicalVector lnz_tol){
+    bool isVerbose,
+    bool islnz_tol){
   
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
@@ -340,8 +351,13 @@ Rcpp::DataFrame grid_rss_varbvsr(
   Rcpp::NumericVector sigbvec(tot_size);
   Rcpp::NumericVector lovec(tot_size);
   
+  std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
   
-
+  Rcpp::LogicalVector verbose(1);
+  verbose(0)=isVerbose;
+  Rcpp::LogicalVector lnz_tol(1);
+  lnz_tol(0)=islnz_tol;
+  
   
   for(size_t t=0; t<tot_size; t++){
     size_t i=t%logodds_size;
@@ -369,30 +385,6 @@ Rcpp::DataFrame grid_rss_varbvsr(
 #endif
 
 
-//[[Rcpp::export]]
-Rcpp::DataFrame grid_search_rss_varbvsr(
-    const Eigen::MappedSparseMatrix<double> SiRiS,
-    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
-    const Eigen::Map<Eigen::ArrayXd> logodds,
-    const Eigen::Map<Eigen::ArrayXd> betahat,
-    const Eigen::Map<Eigen::ArrayXd> se,
-    const Eigen::Map<Eigen::ArrayXd> talpha0,
-    const Eigen::Map<Eigen::ArrayXd> tmu0,
-    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
-    double tolerance,
-    int itermax,
-    Rcpp::LogicalVector verbose,
-    Rcpp::LogicalVector lnz_tol){
-  
-  return grid_rss_varbvsr(SiRiS,sigma_beta,logodds,betahat,
-                          se,talpha0,tmu0,tSiRiSr0,tolerance,
-                          itermax,verbose,lnz_tol);
-}  
-
-
-
-
-
 
 
 
@@ -402,14 +394,14 @@ using namespace tbb;
 
 
 Rcpp::DataFrame fit_rss_logodds(
-    const Eigen::MappedSparseMatrix<double> SiRiS,
-    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
+    const c_sparseMatrix_internal SiRiS,
+    const c_arrayxd_internal sigma_beta,
     const double logodds0,
-    const Eigen::Map<Eigen::ArrayXd> betahat,
-    const Eigen::Map<Eigen::ArrayXd> se,
-    const Eigen::Map<Eigen::ArrayXd> talpha0,
-    const Eigen::Map<Eigen::ArrayXd> tmu0,
-    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    const c_arrayxd_internal betahat,
+    const c_arrayxd_internal se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    const c_arrayxd_internal tSiRiSr0,
     double tolerance,
     int itermax,
     Rcpp::LogicalVector verbose,
@@ -453,14 +445,14 @@ Rcpp::DataFrame fit_rss_logodds(
 #else
 
 Rcpp::DataFrame fit_rss_logodds(
-    const Eigen::MappedSparseMatrix<double> SiRiS,
-    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
+    const c_sparseMatrix_internal SiRiS,
+    const c_arrayxd_internal sigma_beta,
     const double logodds0,
-    const Eigen::Map<Eigen::ArrayXd> betahat,
-    const Eigen::Map<Eigen::ArrayXd> se,
-    const Eigen::Map<Eigen::ArrayXd> talpha0,
-    const Eigen::Map<Eigen::ArrayXd> tmu0,
-    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    const c_arrayxd_internal betahat,
+    const c_arrayxd_internal se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    const c_arrayxd_internal tSiRiSr0,
     double tolerance,
     int itermax,
     Rcpp::LogicalVector verbose,
@@ -502,14 +494,14 @@ Rcpp::DataFrame fit_rss_logodds(
 
 //[[Rcpp::export]]
 Rcpp::DataFrame rss_varbvsr_fit_hyperparameters(
-    const Eigen::MappedSparseMatrix<double> SiRiS,
-    const Eigen::Map<Eigen::ArrayXd> sigma_beta,
-    const Eigen::Map<Eigen::ArrayXd> logodds0,
-    const Eigen::Map<Eigen::ArrayXd> betahat,
-    const Eigen::Map<Eigen::ArrayXd> se,
-    const Eigen::Map<Eigen::ArrayXd> talpha0,
-    const Eigen::Map<Eigen::ArrayXd> tmu0,
-    const Eigen::Map<Eigen::ArrayXd> tSiRiSr0,
+    const sparseMatrix_external SiRiS,
+    const arrayxd_external sigma_beta,
+    const arrayxd_external logodds0,
+    const arrayxd_external betahat,
+    const arrayxd_external se,
+    const arrayxd_external talpha0,
+    const arrayxd_external tmu0,
+    const arrayxd_external tSiRiSr0,
     double tolerance,
     int itermax,
     Rcpp::LogicalVector verbose,
