@@ -1,6 +1,6 @@
 #include <RcppEigen.h>
 #include "rssr.h"
-
+#include "mkl.h"
 #include <math.h>
 
 using namespace Rcpp;
@@ -32,7 +32,7 @@ void rss_varbvsr_update (const double betahat,
   
   double se_square = se * se;
   double sigma_beta_square = sigma_beta * sigma_beta;
-  
+  size_t p=SiRiS_snp.size();
   // Compute the variational estimate of the posterior variance.
   double sigma_square = (se_square * sigma_beta_square) / (se_square + sigma_beta_square);
   
@@ -43,11 +43,16 @@ void rss_varbvsr_update (const double betahat,
   // Update the variational estimate of the posterior inclusion probability.
   double SSR = mu * mu / sigma_square;
   alpha = sigmoid(logodds + 0.5 * (log(sigma_square/(sigma_beta_square)) + SSR));
-  
+
   // Update SiRiSr = inv(S)*R*inv(S)*r
   double r_new = alpha * mu;
-  SiRiSr+=(SiRiS_snp*(r_new-r));
+  cblas_daxpy(p,(r_new-r),SiRiS_snp.data(),1,SiRiSr.data(),1);
+//  SiRiSr+=(SiRiS_snp*(r_new-r));
 }
+
+
+
+
 
 
 

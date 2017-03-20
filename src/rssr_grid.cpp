@@ -13,7 +13,6 @@
 //' @param talpha0 a length p vector specifying the initial value of alpha
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
-//' @useDynLib rssr
 
 double rss_varbvsr_squarem_iter(const c_sparseMatrix_internal SiRiS,
                                 const double sigma_beta,
@@ -102,9 +101,9 @@ double rss_varbvsr_squarem_iter(const c_sparseMatrix_internal SiRiS,
     
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
-   if(!std::isfinite(lnZ)){
-     Rcpp::stop("lnZ isn't finite!");
-   }
+   // if(!std::isfinite(lnZ)){
+   //   Rcpp::stop("lnZ isn't finite!");
+   // }
    
     if((mtp<(-1)) && (lnZ < lnZ0)){
       size_t num_bt=0;
@@ -282,21 +281,21 @@ Rcpp::DataFrame grid_rss_varbvsr(
     bool isVerbose,
     bool islnz_tol){
   std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
-  
+
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
   size_t logodds_size=logodds.size();
   size_t tot_size=sigb_size*logodds_size;
-  
+
   Rcpp::NumericVector nlzvec(tot_size);
   Rcpp::NumericVector sigbvec(tot_size);
   Rcpp::NumericVector lovec(tot_size);
-  
+
   Rcpp::LogicalVector verbose(1);
   verbose(0)=isVerbose;
   Rcpp::LogicalVector lnz_tol(1);
   lnz_tol(0)=islnz_tol;
-  
+
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r){
                  for(size_t t=r.begin(); t!=r.end(); t++){
@@ -315,7 +314,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
                           tolerance,
                           itermax,
                           lnz_tol);}});
-  
+
 //  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
   return(Rcpp::DataFrame::create(_["logodds"]=lovec,
                                  _["sigb"]=sigbvec,

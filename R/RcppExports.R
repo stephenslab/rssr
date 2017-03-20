@@ -64,31 +64,10 @@ grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, tal
 #' @param talpha0 a length p vector specifying the initial value of alpha
 #' @param tmu0 a length p vector specifying the initial value of mu
 #' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
-#' @useDynLib rssr
 NULL
 
 rss_varbvsr_fit_hyperparameters <- function(SiRiS, sigma_beta, logodds0, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
     .Call('rssr_rss_varbvsr_fit_hyperparameters', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds0, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
-}
-
-wrap_rss_varbvsr_iter_grid <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
-    .Call('rssr_wrap_rss_varbvsr_iter_grid', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
-}
-
-rss_varbvsr_alt_naive_grid <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnztol) {
-    .Call('rssr_rss_varbvsr_alt_naive_grid', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnztol)
-}
-
-grid_search_rss_varbvsr_alt_grid <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_alt_grid', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
-}
-
-wrap_rss_varbvsr_iter_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
-    .Call('rssr_wrap_rss_varbvsr_iter_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
-}
-
-grid_search_rss_varbvsr_alt <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_alt', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 SiRSi <- function(R, Si) {

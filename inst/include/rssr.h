@@ -9,8 +9,7 @@
 #include "rssr/sigmoid.hpp"
 #include "rssr/assert.h"
 #include "rssr/kl.h"
-#include "rssr/rssr_grid_alt.h"
-#include "rssr/rssr_grid_alt_grid.h"
+
 #include "rssr/rssr_grid.h"
 
 #include "rssr/sparse_matrix.h"
