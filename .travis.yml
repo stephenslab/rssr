@@ -8,5 +8,4 @@ notifications:
 addons:
   apt:
     packages:
-      - libhdf5-7
-      - libhdf5-serial-dev
+      - libhdf5-serial-1.8.4
