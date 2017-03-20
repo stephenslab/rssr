@@ -1,4 +1,7 @@
 language: r
 cache: packages
-apt_packages:
-  - libhdf5-dev
+sudo: false
+addons:
+  apt:
+    packages:
+      - libhdf5-dev
