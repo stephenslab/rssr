@@ -1,7 +1,8 @@
 language: r
 cache: packages
-sudo: false
 addons:
   apt:
     packages:
       - libhdf5-serial-dev
+
+sudo: false
