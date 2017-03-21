@@ -35,6 +35,7 @@ addons:
       - build-essential
       - libtool
       - libmagick++-dev
+      - liboctave-dev
       
 before_install: 
   - chmod +x travis_setup.sh
