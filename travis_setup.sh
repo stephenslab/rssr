@@ -13,5 +13,5 @@ else # install from source
   cd "hdf5-$HDF5_VERSION"
   ./configure --prefix=/usr/local
   sudo make install
-  cd ../h5
+  cd ../rssr
 fi
