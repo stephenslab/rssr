@@ -40,6 +40,13 @@ Rcpp::List wrap_rss_varbvsr_iter(const sparseMatrix_external SiRiS,
 
 
 
+
+
+
+
+
+
+
 //' Run RSS with the variational bayes algorithm accelerated with SQUAREM
 //' @template rssr
 //' @param talpha0 a length p vector specifying the initial value of alpha

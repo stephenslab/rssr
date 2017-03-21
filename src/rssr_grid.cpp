@@ -2,9 +2,8 @@
 #include "rssr.h"
 #include <cstdio>
 #include <cmath>
-//[[Rcpp::depends(RcppParallel)]]
 #include <RcppParallel.h>
-
+//[[Rcpp::depends(RcppParallel)]]
 
 
 

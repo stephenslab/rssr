@@ -1,6 +1,6 @@
 #include <RcppEigen.h>
 #include "rssr.h"
-#include "mkl.h"
+//#include "mkl.h"
 #include <math.h>
 
 using namespace Rcpp;
@@ -46,8 +46,8 @@ void rss_varbvsr_update (const double betahat,
 
   // Update SiRiSr = inv(S)*R*inv(S)*r
   double r_new = alpha * mu;
-  cblas_daxpy(p,(r_new-r),SiRiS_snp.data(),1,SiRiSr.data(),1);
-//  SiRiSr+=(SiRiS_snp*(r_new-r));
+//  cblas_daxpy(p,(r_new-r),SiRiS_snp.data(),1,SiRiSr.data(),1);
+  SiRiSr+=(SiRiS_snp*(r_new-r));
 }
 
 
