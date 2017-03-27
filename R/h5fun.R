@@ -11,10 +11,15 @@ create_h5_data <- function(h5filename,R,betahat,se,chr=NULL){
   }
   stopifnot(nrow(R)==length(betahat),length(betahat)==length(se))
   #make sure that chromosome vector is same length as other data vectors
+  
   chr <- chr[rep(1,length(betahat))]
+  cat("Writing chr")
   write_vec(h5filename,chr,"chr")
+  cat("Writing betahat")
   write_vec(h5filename,betahat,"betahat")
+  cat("Writing se")
   write_vec(h5filename,se,"se")
+  cat("Writing R")
   write_ccs_h5(h5filename=h5filename,spmat = R,groupname = "R")
   cat("Finished writing file ",h5filename,"\n")
   return(T)
@@ -81,7 +86,7 @@ read_lnzmat_h5 <- function(h5filename){
 #' write a sparse matrix to HDF5
 #' write a sparse matrix to HDF5 stored in the Compressed Column Storage (CCS) format)
 #' @template h5fun
-write_ccs_h5 <- function(h5filename,spmat,groupname,dataname="data",iname="ir",pname="jc",compression_level=8,symmetric=F){
+write_ccs_h5 <- function(h5filename,spmat,groupname,dataname="data",iname="ir",pname="jc",compression_level=0,symmetric=F){
   require(h5)
   h5f <- h5::h5file(h5filename,'a')
   h5g <- createGroup(h5f,groupname)
@@ -119,6 +124,7 @@ write_ccs_h5 <- function(h5filename,spmat,groupname,dataname="data",iname="ir",p
 #' @describeIn read_ccs_h5 Read vector from an HDF5 file
 read_vec <- function(h5filename,datapath){
   requireNamespace("h5")
+  require(h5)
   h5f <- h5::h5file(h5filename,'r')
   data <- h5f[datapath][]
   h5::h5close(h5f)
@@ -128,8 +134,10 @@ read_vec <- function(h5filename,datapath){
 #' @describeIn read_ccs_h5 Read vector from an HDF5 file
 write_vec <- function(h5filename,vec,datapath){
   requireNamespace("h5")
-  h5f <- h5::h5file(h5filename,'a')
-  data <- h5f[datapath] <- vec
+  require(h5)
+  h5f <- h5file(h5filename,'a')
+  data <- createDataSet(h5f,datasetname=datapath,data=vec)
+#  data <- h5f[datapath] <- vec
   h5::h5close(h5f)
 }
 
@@ -138,6 +146,7 @@ write_vec <- function(h5filename,vec,datapath){
 #' @describeIn read_ccs_h5 Read in R and standard error, and generate the SiRiS matrix
 gen_SiRSi <- function(h5filename,Rpath=NULL,se=NULL,check=T){
   requireNamespace("h5")
+  require(h5)
   if(check){
     h5f <- h5::h5file(h5filename,'r')
     if(h5::existsGroup(h5f,"SiRiS")){
@@ -181,9 +190,9 @@ gen_SiRSi <- function(h5filename,Rpath=NULL,se=NULL,check=T){
 #'betahatpath: path in HDF5 file to look for betahat vector 
 #'sepath: path in HDF5 file to look for se vector 
 
-prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
-  require(h5)
-  options[["datafile"]] <- prep_list(options[["datafile"]],datafile,chunk,tot_chunks)
+prep_rss <- function(options=list(),chunk=NULL,tot_chunks=NULL){
+  requireNamespace("h5")
+  options[["datafile"]] <- prep_list(options[["datafile"]],NULL,chunk,tot_chunks)
   options[["tolerance"]] <- prep_list(options[["tolerance"]],1e-4,chunk,tot_chunks)
   options[["itermax"]] <- prep_list(options[["itermax"]],100,chunk,tot_chunks)
   
@@ -196,6 +205,7 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
   options[["se"]] <- prep_list(options[["se"]],  c(read_vec(options[["sefile"]],options[["sepath"]])),chunk,tot_chunks)
   options[["verbose"]] <- prep_list(options[["verbose"]],T,chunk,tot_chunks)
   options[["lnz_tol"]] <- prep_list(options[["lnz_tol"]],T,chunk,tot_chunks)
+  options[["method"]] <- prep_list(options[["method"]],"SQUAREM",NULL,NULL)
   p <- length(options[["se"]])
   stopifnot(length(options[["se"]])==length(options[["betahat"]]))
   if(is.null(options[["SiRiS"]])){
@@ -204,27 +214,15 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
     options[["se"]] <- prep_list(options[["se"]],  c(read_vec(options[["sefile"]],options[["sepath"]])),chunk,tot_chunks)
     options[["SiRiS"]] <- gen_SiRSi(options[["Rfile"]],options[["Rpath"]],options[["se"]],check=F)
   }
-  options[["alphafile"]] <- prep_list(options[["alphafile"]],NULL,chunk,tot_chunks)
-  options[["mufile"]] <- prep_list(options[["mufile"]],NULL,chunk,tot_chunks)
+  options[["alphafile"]] <- prep_list(options[["alphafile"]],options[["datafile"]],chunk,tot_chunks)
+  options[["alphapath"]] <- prep_list(options[["alphapath"]],"alpha",chunk,tot_chunks)
+  options[["alpha"]] <- prep_list(options[["alpha"]],c(read_vec(options[["alphafile"]],options[["alphapath"]])),chunk,tot_chunks)
   
-  if(!is.null(options[["alphafile"]])){
-    stopifnot(file.exists(options[["alphafile"]]))
-    options[["alpha"]] <- scan(options[["alphafile"]],what=numeric())
-  }else{
-    options[["alpha"]] <- prep_list(options[["alpha"]],NULL,chunk,tot_chunks)
-    if(is.null(options[["alpha"]])){
-      options[["alpha"]] <- ralpha(p)
-    }
-  }
-  if(!is.null(options[["mufile"]])){
-    stopifnot(file.exists(options[["mufile"]]))
-    options[["mu"]] <- scan(options[["mufile"]],what=numeric())
-  }else{
-    options[["mu"]] <- prep_list(options[["mu"]],NULL,chunk,tot_chunks)
-    if(is.null(options[["mu"]])){
-      options[["mu"]] <- rmu(p)
-    }
-  }
+  options[["mufile"]] <- prep_list(options[["mufile"]],options[["datafile"]],chunk,tot_chunks)
+  options[["mupath"]] <- prep_list(options[["mupath"]],"mu",chunk,tot_chunks)
+  options[["mu"]] <- prep_list(options[["mu"]],c(read_vec(options[["mufile"]],options[["mupath"]])),chunk,tot_chunks)
+  
+
   if(is.null(options[["SiRiSr"]])){
     options[["SiRiSr"]] <- (options[["SiRiS"]]%*%(options[["alpha"]]*options[["mu"]]))@x
   }
@@ -235,14 +233,19 @@ prep_rss <- function(datafile=NULL,options=list(),chunk=NULL,tot_chunks=NULL){
     options[["logodds"]] <- -2.9/log(10)
   }
   
-  # tempf <- tempfile()
-  # th <- h5file(tempf,'a')
-  # thd <- createDataSet(th,datasetname = "tdn",data=1:5,chunksize=2L,compression=4L,maxdimensions = NA_integer_)
-  # h5close(th)
-  # file.remove(tempf)
-  
-  
-  
+  stopifnot(!is.null(options[["alpha"]]),
+            !is.null(options[["mu"]]),
+            !is.null(options[["betahat"]]),
+            !is.null(options[["se"]]),
+            !is.null(options[["SiRiS"]]),
+            !is.null(options[["SiRiSr"]]),
+            !is.null(options[["sigb"]]),
+            !is.null(options[["logodds"]]),
+            !is.null(options[["verbose"]]),
+            !is.null(options[["lnz_tol"]]),
+            !is.null(options[["method"]]),
+            !is.null(options[["tolerance"]])
+            )
   return(options)
 }
 

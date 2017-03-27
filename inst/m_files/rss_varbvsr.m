@@ -84,13 +84,13 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr(betahat, se, SiRiS, sigb, logod
   r   = alpha .* mu;
   lnZ = q'*r - 0.5*r'*SiRiSr - 0.5*(1./se_square)'*betavar(alpha, mu, s);
   lnZ = lnZ + intgamma(logodds, alpha) + intklbeta_rssbvsr(alpha, mu, s, sigb_square);
-  fprintf('Calculate the variational lower bound based on the initial values: %+13.6e ...\n', lnZ);
+  %fprintf('Calculate the variational lower bound based on the initial values: %+13.6e ...\n', lnZ);
   
   loglik = [loglik; lnZ]; %#ok<AGROW>
 
   if verbose
-    fprintf('       variational    max. incl max.       \n');
-    fprintf('iter   lower bound  change vars E[b] sigma2\n');
+    %fprintf('       variational    max. incl max.       \n');
+    %fprintf('iter   lower bound  change vars E[b] sigma2\n');
   end
 
   % Repeat until convergence criterion is met.
@@ -142,14 +142,14 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr(betahat, se, SiRiS, sigb, logod
     if verbose
       status = sprintf('%4d %+13.6e %0.1e %4d %0.2f %5.2f',...
                        iter,lnZ,maxerr,round(sum(alpha)),max(abs(r)),sigb_square);
-      fprintf(status);
-      fprintf(repmat('\b',1,length(status)));
+      %fprintf(status);
+      %fprintf(repmat('\b',1,length(status)));
     end
 
     if lnZ < lnZ0
       if verbose
-        fprintf('\n');
-        fprintf('WARNING: the log variational lower bound decreased by %+0.2e\n',lnZ0-lnZ);
+        %fprintf('\n');
+        %fprintf('WARNING: the log variational lower bound decreased by %+0.2e\n',lnZ0-lnZ);
       end
       alpha = alpha0;
       mu    = mu0;
@@ -161,9 +161,9 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr(betahat, se, SiRiS, sigb, logod
 
       sigb = sqrt(sigb_square);
       if verbose
-        fprintf('\n');
-        fprintf('Convergence reached: maximum relative error %+0.2e\n',maxerr);
-        fprintf('The log variational lower bound of the last step increased by %+0.2e\n',lnZ-lnZ0);
+        %fprintf('\n');
+        %fprintf('Convergence reached: maximum relative error %+0.2e\n',maxerr);
+        %fprintf('The log variational lower bound of the last step increased by %+0.2e\n',lnZ-lnZ0);
       end
       break
 

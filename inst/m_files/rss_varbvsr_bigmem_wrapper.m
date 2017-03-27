@@ -26,11 +26,11 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_bigmem_wrapper(method, file, si
   switch method
 
     case 'original'
-      fprintf('The parallel bigmem implementation of rss-varbvsr is used.\n');
+      %fprintf('The parallel bigmem implementation of rss-varbvsr is used.\n');
       [lnZ,alpha,mu,s,info] = rss_varbvsr_bigmem(file,sigb,logodds,options);
 
     case 'squarem'
-      fprintf('The parallel bigmem implementation with SQUAREM add-on of rss-varbvsr is used.\n');
+      %fprintf('The parallel bigmem implementation with SQUAREM add-on of rss-varbvsr is used.\n');
       [lnZ,alpha,mu,s,info] = rss_varbvsr_bigmem_squarem(file,sigb,logodds,options);
 
     otherwise

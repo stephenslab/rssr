@@ -24,4 +24,4 @@ corefiles = {'C/doublevectormatlab.c '
 
 eval(['mex C/rss_varbvsr_update_matlab.c ',corefiles{1:5}]);
 
-fprintf('Compilation of MEX files is complete.\n');
+%fprintf('Compilation of MEX files is complete.\n');

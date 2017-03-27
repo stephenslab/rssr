@@ -133,17 +133,6 @@ test_that("SQUAREM updates are identical",{
 
 
 
-#Grid optimization has a really long parameter list
-# grid_options <- list(alpha=alpha_test,
-#                      mu=mu_test,betahat=betahat,
-#                      se=se,
-#                      SiRiS=SiRiS,
-#                      sigb=1,
-#                      logodds=logoddsvec,
-#                      verbose=F,
-#                      SiRiSr=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
-
-
 test_that("grid optimization over logodds works as expected",{
   sigb <- 1
   log10oddsvec <- seq(-6,-1,0.5)

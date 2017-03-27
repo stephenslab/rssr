@@ -98,13 +98,13 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
   r   = alpha .* mu;
   lnZ = q'*r - 0.5*r'*SiRiSr - 0.5*(1./se_square)'*betavar(alpha, mu, s);
   lnZ = lnZ + intgamma(logodds, alpha) + intklbeta_rssbvsr(alpha, mu, s, sigb_square);
-  fprintf('Calculate the variational lower bound based on the initial values: %+13.6e ...\n', lnZ);
+  %fprintf('Calculate the variational lower bound based on the initial values: %+13.6e ...\n', lnZ);
 
   loglik = [loglik; lnZ]; %#ok<AGROW>
 
   if verbose
-    fprintf('       variational    max. incl max.       \n');
-    fprintf('iter   lower bound  change vars E[b] sigma2\n');
+    %fprintf('       variational    max. incl max.       \n');
+    %fprintf('iter   lower bound  change vars E[b] sigma2\n');
   end
 
   % Repeat until convergence criterion is met.
@@ -125,11 +125,11 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
     else
       I = (p:-1:1);
     end
-   % fprintf('       First Update       \n');
+   % %fprintf('       First Update       \n');
 
     % Run the first fix-point mapping step (line 1 of Table 1).
     [alpha1, mu1, SiRiSr] = rss_varbvsr_update(SiRiS, sigb, logodds, betahat, se, alpha0, mu0, SiRiSr, I); 
-  %      fprintf('       Second Update   \n');
+  %      %fprintf('       Second Update   \n');
 
     % Run the second fix-point mapping step (line 2 of Table 1).
     [alpha2, mu2, SiRiSr] = rss_varbvsr_update(SiRiS, sigb, logodds, betahat, se, alpha1, mu1, SiRiSr, I);
@@ -159,7 +159,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
       mu3     = mu0 - 2*mtp*mu_r + (mtp^2)*mu_v;
       SiRiSr3 = full(SiRiS * (alpha3 .* mu3));
     end
-     %   fprintf('       Last Update   \n');
+     %   %fprintf('       Last Update   \n');
 
     % Run the last fix-point mapping step for scenario 1 and 2 (line 8 of Table 1).
     [alpha, mu, SiRiSr] = rss_varbvsr_update(SiRiS, sigb, logodds, betahat, se, alpha3, mu3, SiRiSr3, I);
@@ -171,7 +171,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
     if modify_step && (mtp < -1) && (lnZ < lnZ0)
       num_bt = 0;
       while (lnZ < lnZ0) && (num_bt < 10)
-   %           fprintf('Backtrack!:       %d   \n',num_bt);
+   %           %fprintf('Backtrack!:       %d   \n',num_bt);
 
         mtp 		    = 0.5*(mtp-1); % back-tracking
     	alpha3              = alpha0 - 2*mtp*alpha_r + (mtp^2)*alpha_v;
@@ -207,19 +207,19 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
     maxerr = max(err);
 
     %if verbose
-    fprintf('%4d \n',iter)
-    fprintf('%+0.4e \n',maxerr);
+    %fprintf('%4d \n',iter)
+    %fprintf('%+0.4e \n',maxerr);
       status = sprintf('%4d %+13.6e %0.1e %4d %0.2f %5.2f',...
 		       iter,lnZ,maxerr,round(sum(alpha)),max(abs(r)),sigb_square);
-      fprintf(status);
-      fprintf(repmat('\b',1,length(status)));
+      %fprintf(status);
+      %fprintf(repmat('\b',1,length(status)));
     %end
 
     if lnZ < lnZ0
 
       %if verbose
-        fprintf('\n');
-        fprintf('WARNING: the log variational lower bound decreased by %+0.2e\n',lnZ0-lnZ);
+        %fprintf('\n');
+        %fprintf('WARNING: the log variational lower bound decreased by %+0.2e\n',lnZ0-lnZ);
     %  end
       alpha  = alpha0;
       mu     = mu0;
@@ -231,9 +231,9 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
 
       sigb = sqrt(sigb_square);
      % if verbose
-        fprintf('\n');
-        fprintf('Convergence reached: maximum relative error %+0.2e\n',maxerr);
-        fprintf('The log variational lower bound of the last step increased by %+0.2e\n',lnZ-lnZ0);
+        %fprintf('\n');
+        %fprintf('Convergence reached: maximum relative error %+0.2e\n',maxerr);
+        %fprintf('The log variational lower bound of the last step increased by %+0.2e\n',lnZ-lnZ0);
      % end
       break
 
