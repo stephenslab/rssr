@@ -5,7 +5,9 @@ os:
   - linux
   - osx
 dist: trusty
-  
+
+warnings_are_errors: false
+
 env:
   global:
     - PKG_CFLAGS="-pedantic"
