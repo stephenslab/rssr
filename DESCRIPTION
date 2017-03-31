@@ -5,7 +5,7 @@ Version: 0.1-0
 Date: 2017-01-27
 Author: Nicholas Knoblauch, Xiang Zhu, Peter Carbonetto, Matthew Stephens
 Maintainer: Nicholas Knoblauch <nwknoblauch@gmail.com>
-Description: More about what it does (maybe more than one line)
+Description: Implements the method Regression with Summary Statistics.
 License: What license is it under?
 Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),RcppParallel
 LinkingTo: Rcpp, RcppEigen,RcppParallel
