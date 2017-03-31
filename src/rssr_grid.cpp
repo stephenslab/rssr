@@ -257,6 +257,147 @@ double rss_varbvsr_squarem_iter_fit_logodds(const c_sparseMatrix_internal SiRiS,
 
 
 
+// 
+// 
+// Rcpp::List wrap_rss_varbvsr_iter_grid(const sparseMatrix_external SiRiS,
+//                                       const arrayxd_external sigma_beta,
+//                                       const arrayxd_external logodds,
+//                                       const arrayxd_external betahat,
+//                                       const arrayxd_external se,
+//                                       const arrayxd_external alpha,
+//                                       const arrayxd_external mu,
+//                                       const arrayxd_external SiRiSr,
+//                                       Rcpp::LogicalVector reverse){
+//   
+//   int p = betahat.size();
+//   int tot_size=sigma_beta.size();
+//   Eigen::ArrayXd sesquare=se*se;
+//   Eigen::ArrayXXd talpha(p,tot_size);
+//   talpha.colwise()=alpha;
+//   
+//   Eigen::ArrayXXd tmu(p,tot_size);
+//   tmu.colwise()=mu;
+//   Eigen::ArrayXXd tSiRiSr(p,tot_size);
+//   tSiRiSr.colwise()=SiRiSr;
+//   
+//   Eigen::ArrayXXd s(p,tot_size);
+//   for(int i=0; i<tot_size; i++){
+//     s.col(i)=(sesquare*(sigma_beta(i)*sigma_beta(i)))/(sesquare+(sigma_beta(i)*sigma_beta(i)));
+//   }
+//   
+//   rss_varbvsr_iter_alt_grid(SiRiS,
+//                             sigma_beta,
+//                             logodds,
+//                             betahat,
+//                             se,
+//                             s,
+//                             talpha,
+//                             tmu,
+//                             tSiRiSr,
+//                             reverse(0));
+//   return Rcpp::List::create(Rcpp::Named("alpha1")=talpha,
+//                             Rcpp::Named("mu1")=tmu,
+//                             Rcpp::Named("SiRiSr")=tSiRiSr);
+// }
+// 
+// 
+// 
+// Rcpp::List rss_varbvsr_alt_naive_grid(const c_sparseMatrix_internal SiRiS,
+//                                       const arrayxd_external sigma_beta,
+//                                       const arrayxd_external logodds,
+//                                       const arrayxd_external betahat,
+//                                       const arrayxd_external se,
+//                                       const arrayxd_external talpha0,
+//                                       const arrayxd_external tmu0,
+//                                       const arrayxd_external tSiRiSr0,
+//                                       double tolerance,
+//                                       int itermax,
+//                                       bool verbose,
+//                                       bool lnztol){
+//   
+//   
+//   //  bool lnztol=lnz_tol[0];
+//   using namespace Rcpp;
+//   using namespace Eigen;
+//   int sigb_size= sigma_beta.size();
+//   int logodds_size=logodds.size();
+//   int tot_size=sigb_size;
+//   if(tot_size!=logodds_size){
+//     Rcpp::stop("tot_size!=logodds_size");
+//   }
+//   int p=betahat.size();
+//   
+//   ArrayXXd alpha(p,tot_size);
+//   alpha.colwise()=talpha0;
+//   ArrayXXd mu(p,tot_size);
+//   mu.colwise()=tmu0;
+//   
+//   ArrayXXd SiRiSr(p,tot_size);
+//   SiRiSr.colwise()=tSiRiSr0;
+//   
+//   RowArray lnZ(tot_size);
+//   
+//   
+//   Eigen::ArrayXXd alpha0=alpha;
+//   Eigen::ArrayXXd mu0=mu;
+//   //  Eigen::ArrayXXd SiRiSr0=SiRiSr;
+//   
+//   Eigen::ArrayXXd alpha1=alpha;
+//   Eigen::ArrayXXd mu1=mu;
+//   //  Eigen::ArrayXXd SiRiSr1=SiRiSr;
+//   
+//   
+//   
+//   Eigen::ArrayXd sesquare =se*se;
+//   Eigen::ArrayXd  q= betahat/sesquare;
+//   Eigen::ArrayXXd s(p,tot_size);
+//   // Rcout<<"Initializing sigma_square and initial lnZ values"<<std::endl;
+//   for(int i=0; i<tot_size; i++){
+//     s.col(i)=(sesquare*(sigma_beta(i)*sigma_beta(i)))/(sesquare+(sigma_beta(i)*sigma_beta(i)));
+//     lnZ(i)=calculate_lnZ(q,alpha.col(i)*mu.col(i),SiRiSr.col(i),logodds(i),sesquare,alpha.col(i),mu.col(i),s.col(i),sigma_beta(i));
+//   }
+//   
+//   RowArray max_err(tot_size);
+//   max_err.setOnes();
+//   RowArray lnZ0=lnZ;
+//   RowArray rel_li(tot_size);
+//   rel_li.setZero();
+//   int iter=0;
+//   while(max_err.maxCoeff()>tolerance){
+//     //    Rcout<<iter<<": worst error is "<<max_err.maxCoeff()<<" tolerance is "<<tolerance<<std::endl;
+//     lnZ0=lnZ;
+//     alpha0=alpha;
+//     mu0=mu;
+//     
+//     bool reverse = iter%2!=0;
+//     
+//     rss_varbvsr_iter_alt_grid(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
+//     
+//     for(int c=0; c<tot_size; c++){
+//       lnZ(c)=calculate_lnZ(q,alpha.col(c)*mu.col(c),SiRiSr.col(c),logodds(c),sesquare,alpha.col(c),mu.col(c),s.col(c),sigma_beta(c));
+//     }
+//     //    rel_l0=rel_err(lnZ00,lnZ);
+//     rel_li=(lnZ-lnZ0).abs()/(lnZ.abs()+lnZ0.abs()+double_lim::epsilon());
+//     if(lnztol){
+//       max_err=rel_li;
+//     }else{
+//       for(int c=0; c<tot_size; c++){
+//         max_err(c)=find_maxerr(alpha.col(c),alpha0.col(c),alpha.col(c)*mu.col(c),alpha0.col(c)*mu0.col(c));
+//       }
+//     }
+//     iter++;
+//   }
+//   return Rcpp::List::create(Rcpp::Named("alpha")=alpha,
+//                             Rcpp::Named("mu")=mu,
+//                             Rcpp::Named("SiRiSr")=SiRiSr,
+//                             Rcpp::Named("max_err")=max_err,
+//                             Rcpp::Named("lnZ")=lnZ,
+//                             Rcpp::Named("iter")=iter);
+// }
+
+
+
+
 
 
 
@@ -384,129 +525,129 @@ Rcpp::DataFrame grid_rss_varbvsr(
 
 
 
+// 
+// 
+// #if RCPP_PARALLEL_USE_TBB
+// 
+// using namespace tbb;
+// 
+// 
+// Rcpp::DataFrame fit_rss_logodds(
+//     const c_sparseMatrix_internal SiRiS,
+//     const c_arrayxd_internal sigma_beta,
+//     const double logodds0,
+//     const c_arrayxd_internal betahat,
+//     const c_arrayxd_internal se,
+//     const c_arrayxd_internal talpha0,
+//     const c_arrayxd_internal tmu0,
+//     const c_arrayxd_internal tSiRiSr0,
+//     double tolerance,
+//     int itermax,
+//     Rcpp::LogicalVector verbose,
+//     Rcpp::LogicalVector lnz_tol){
+//   using namespace Rcpp;  
+//   
+//   size_t sigb_size= sigma_beta.size();
+//   size_t tot_size=sigb_size;
+//   Rcpp::NumericVector tlogodds(sigb_size);
+//   std::fill(tlogodds.begin(),tlogodds.end(),logodds0);
+//   Rcpp::NumericVector nlzvec(sigb_size);
+//   //  Rcpp::NumericVector sigb_val(sigb_size);
+//   Rcpp::NumericVector logodds_val(sigb_size);
+//   
+//   parallel_for(blocked_range<size_t>(0,tot_size),
+//                [&](const blocked_range<size_t>& r){
+//                  for(size_t t=r.begin(); t!=r.end(); t++){
+//                    nlzvec[t]=rss_varbvsr_squarem_iter_fit_logodds(SiRiS,
+//                                                       sigma_beta(t),
+//                                                       tlogodds(t),
+//                                                       betahat,
+//                                                       se,
+//                                                       talpha0,
+//                                                       tmu0,
+//                                                       tSiRiSr0,
+//                                                       tolerance,
+//                                                       itermax,
+//                                                       lnz_tol);
+//                    logodds_val(t)=tlogodds(t);
+//                  }});
+//   
+//   
+//   return DataFrame::create(_["logodds"]=logodds_val,
+//                            _["sigb"]=sigma_beta,
+//                            _["lnZ"]=nlzvec);
+// }
+// 
+// 
+// 
+// 
+// #else
+// 
+// Rcpp::DataFrame fit_rss_logodds(
+//     const c_sparseMatrix_internal SiRiS,
+//     const c_arrayxd_internal sigma_beta,
+//     const double logodds0,
+//     const c_arrayxd_internal betahat,
+//     const c_arrayxd_internal se,
+//     const c_arrayxd_internal talpha0,
+//     const c_arrayxd_internal tmu0,
+//     const c_arrayxd_internal tSiRiSr0,
+//     double tolerance,
+//     int itermax,
+//     Rcpp::LogicalVector verbose,
+//     Rcpp::LogicalVector lnz_tol){
+//   using namespace Rcpp;  
+//   
+//   size_t sigb_size= sigma_beta.size();
+//   size_t tot_size=sigb_size;
+//   Rcpp::NumericVector tlogodds(sigb_size);
+//   std::fill(tlogodds.begin(),tlogodds.end(),logodds0);
+//   Rcpp::NumericVector nlzvec(sigb_size);
+//   //  Rcpp::NumericVector sigb_val(sigb_size);
+//   Rcpp::NumericVector logodds_val(sigb_size);
+//   
+//   for(size_t t=0; t<sigb_size; t++){
+//     nlzvec[t]=rss_varbvsr_squarem_iter_fit_logodds(SiRiS,
+//                                        sigma_beta(t),
+//                                        tlogodds(t),
+//                                        betahat,
+//                                        se,
+//                                        talpha0,
+//                                        tmu0,
+//                                        tSiRiSr0,
+//                                        tolerance,
+//                                        itermax,
+//                                        lnz_tol);
+//     logodds_val(t)=tlogodds(t);
+//   }
+//   
+//   
+//   return DataFrame::create(_["logodds"]=logodds_val,
+//                            _["sigb"]=sigma_beta,
+//                            _["lnZ"]=nlzvec);
+// }
+// 
+// #endif
+// 
+// 
+// 
 
-
-#if RCPP_PARALLEL_USE_TBB
-
-using namespace tbb;
-
-
-Rcpp::DataFrame fit_rss_logodds(
-    const c_sparseMatrix_internal SiRiS,
-    const c_arrayxd_internal sigma_beta,
-    const double logodds0,
-    const c_arrayxd_internal betahat,
-    const c_arrayxd_internal se,
-    const c_arrayxd_internal talpha0,
-    const c_arrayxd_internal tmu0,
-    const c_arrayxd_internal tSiRiSr0,
-    double tolerance,
-    int itermax,
-    Rcpp::LogicalVector verbose,
-    Rcpp::LogicalVector lnz_tol){
-  using namespace Rcpp;  
-  
-  size_t sigb_size= sigma_beta.size();
-  size_t tot_size=sigb_size;
-  Rcpp::NumericVector tlogodds(sigb_size);
-  std::fill(tlogodds.begin(),tlogodds.end(),logodds0);
-  Rcpp::NumericVector nlzvec(sigb_size);
-  //  Rcpp::NumericVector sigb_val(sigb_size);
-  Rcpp::NumericVector logodds_val(sigb_size);
-  
-  parallel_for(blocked_range<size_t>(0,tot_size),
-               [&](const blocked_range<size_t>& r){
-                 for(size_t t=r.begin(); t!=r.end(); t++){
-                   nlzvec[t]=rss_varbvsr_squarem_iter_fit_logodds(SiRiS,
-                                                      sigma_beta(t),
-                                                      tlogodds(t),
-                                                      betahat,
-                                                      se,
-                                                      talpha0,
-                                                      tmu0,
-                                                      tSiRiSr0,
-                                                      tolerance,
-                                                      itermax,
-                                                      lnz_tol);
-                   logodds_val(t)=tlogodds(t);
-                 }});
-  
-  
-  return DataFrame::create(_["logodds"]=logodds_val,
-                           _["sigb"]=sigma_beta,
-                           _["lnZ"]=nlzvec);
-}
-
-
-
-
-#else
-
-Rcpp::DataFrame fit_rss_logodds(
-    const c_sparseMatrix_internal SiRiS,
-    const c_arrayxd_internal sigma_beta,
-    const double logodds0,
-    const c_arrayxd_internal betahat,
-    const c_arrayxd_internal se,
-    const c_arrayxd_internal talpha0,
-    const c_arrayxd_internal tmu0,
-    const c_arrayxd_internal tSiRiSr0,
-    double tolerance,
-    int itermax,
-    Rcpp::LogicalVector verbose,
-    Rcpp::LogicalVector lnz_tol){
-  using namespace Rcpp;  
-  
-  size_t sigb_size= sigma_beta.size();
-  size_t tot_size=sigb_size;
-  Rcpp::NumericVector tlogodds(sigb_size);
-  std::fill(tlogodds.begin(),tlogodds.end(),logodds0);
-  Rcpp::NumericVector nlzvec(sigb_size);
-  //  Rcpp::NumericVector sigb_val(sigb_size);
-  Rcpp::NumericVector logodds_val(sigb_size);
-  
-  for(size_t t=0; t<sigb_size; t++){
-    nlzvec[t]=rss_varbvsr_squarem_iter_fit_logodds(SiRiS,
-                                       sigma_beta(t),
-                                       tlogodds(t),
-                                       betahat,
-                                       se,
-                                       talpha0,
-                                       tmu0,
-                                       tSiRiSr0,
-                                       tolerance,
-                                       itermax,
-                                       lnz_tol);
-    logodds_val(t)=tlogodds(t);
-  }
-  
-  
-  return DataFrame::create(_["logodds"]=logodds_val,
-                           _["sigb"]=sigma_beta,
-                           _["lnZ"]=nlzvec);
-}
-
-#endif
-
-
-
-//[[Rcpp::export]]
-Rcpp::DataFrame rss_varbvsr_fit_hyperparameters(
-    const sparseMatrix_external SiRiS,
-    const arrayxd_external sigma_beta,
-    const arrayxd_external logodds0,
-    const arrayxd_external betahat,
-    const arrayxd_external se,
-    const arrayxd_external talpha0,
-    const arrayxd_external tmu0,
-    const arrayxd_external tSiRiSr0,
-    double tolerance,
-    int itermax,
-    Rcpp::LogicalVector verbose,
-    Rcpp::LogicalVector lnz_tol){
-  
-  return fit_rss_logodds(SiRiS,sigma_beta,logodds0(0),betahat,
-                          se,talpha0,tmu0,tSiRiSr0,tolerance,
-                          itermax,verbose,lnz_tol);
-}  
+// Rcpp::DataFrame rss_varbvsr_fit_hyperparameters(
+//     const sparseMatrix_external SiRiS,
+//     const arrayxd_external sigma_beta,
+//     const arrayxd_external logodds0,
+//     const arrayxd_external betahat,
+//     const arrayxd_external se,
+//     const arrayxd_external talpha0,
+//     const arrayxd_external tmu0,
+//     const arrayxd_external tSiRiSr0,
+//     double tolerance,
+//     int itermax,
+//     Rcpp::LogicalVector verbose,
+//     Rcpp::LogicalVector lnz_tol){
+//   
+//   return fit_rss_logodds(SiRiS,sigma_beta,logodds0(0),betahat,
+//                           se,talpha0,tmu0,tSiRiSr0,tolerance,
+//                           itermax,verbose,lnz_tol);
+// }  
 

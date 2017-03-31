@@ -66,10 +66,6 @@ grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, tal
 #' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 NULL
 
-rss_varbvsr_fit_hyperparameters <- function(SiRiS, sigma_beta, logodds0, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_fit_hyperparameters', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds0, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
-}
-
 SiRSi <- function(R, Si) {
     .Call('rssr_SiRSi', PACKAGE = 'rssr', R, Si)
 }
