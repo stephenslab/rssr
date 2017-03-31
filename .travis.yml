@@ -1,47 +1,4 @@
 language: r
-sudo: true
-cache: packages
-os:
-  - linux
-  - osx
-dist: trusty
-
-warnings_are_errors: false
-
-env:
-  global:
-    - PKG_CFLAGS="-pedantic"
-    - _R_CHECK_CRAN_INCOMING_=FALSE
-    - ASAN="-fsanitize=address -fno-omit-frame-pointer"
-    - HDF5_RELEASE_URL="https://support.hdfgroup.org/ftp/HDF5/releases"
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-  matrix:
-    - HDF5_VERSION=1.10.0-patch1
-
-matrix:
-  exclude:
-    - os: osx
-  include:
-    - os: osx
-      env: HDF5_VERSION=1.8.16
-  allow_failures:
-    - os: osx
-  fast_finish: true
-  
-
-addons:
-  apt:
-    packages:
-      - subversion
-      - autoconf
-      - build-essential
-      - libtool
-      - libmagick++-dev
-      - liboctave-dev
-      
-before_install: 
-  - chmod +x travis_setup.sh
-  - ./travis_setup.sh
 
 notifications:
   email:

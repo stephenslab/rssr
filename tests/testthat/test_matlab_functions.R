@@ -162,18 +162,3 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
 
 
 
-
-# hfile <- "/media/nwknoblauch/Data/GTEx/1kg_LD/EUR.chr1_1_1kg.h5"
-# SiRiS_f <- as.matrix(gen_SiRSi(hfile))
-# #R <- as.matrix(read_ccs_h5("/media/nwknoblauch/Data/GTEx/1kg_LD/EUR.chr1_1_1kg.h5",groupname = "R"))
-# betahat <- read_vec(hfile,"betahat")
-# se <- read_vec(hfile,"se")
-# p <- length(se)
-# alpha <- ralpha(p)
-# mu <- rmu(p)
-# sigb <- 0.058
-# logodds <- -2.9/log(10)
-# mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha),t(mu))
-
-
-

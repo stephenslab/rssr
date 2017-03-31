@@ -81,31 +81,6 @@ rss_varbvsr_optim <- function(options=list()){
 
 
 
-rss_varbvsr_parallel_grid <- function(options=list()){
-  
-  resultl <- list()
-  datafile <- options[["datafile"]]
-  for(i in 1:length(options[["datafile"]])){
-    data_opts <- prep_rss(datafile[i],options=options,chunk=i,tot_chunks=length(datafile))
-    resultl[[i]] <- grid_search_rss_varbvsr(SiRiS = data_opts[["SiRiS"]],
-                                sigma_beta=unlist(data_opts[["sigb"]]),
-                                logodds=unlist(data_opts[["logodds"]]),
-                                betahat = data_opts[["betahat"]],
-                                se = data_opts[["se"]],
-                                talpha0 = data_opts[["alpha"]],
-                                tmu0 = data_opts[["mu"]],
-                                tSiRiSr0 = data_opts[["SiRiSr"]],
-                                tolerance = data_opts[["tolerance"]],
-                                itermax=data_opts[["itermax"]],
-                                verbose=data_opts[["verbose"]],
-                                lnz_tol = data_opts[["lnz_tol"]])
-  }
-  return(resultl)
-  
-  
-}
-
-  
 
  
 

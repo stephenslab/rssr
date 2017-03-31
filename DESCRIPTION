@@ -10,8 +10,6 @@ License: What license is it under?
 Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),RcppParallel
 LinkingTo: Rcpp, RcppEigen,RcppParallel
 RoxygenNote: 6.0.1
-Suggests: testthat,RcppOctave,R.matlab,h5,
-    knitr,
-    rmarkdown
+Suggests: testthat,RcppOctave,R.matlab,knitr,rmarkdown
 SystemRequirements: GNU make
 VignetteBuilder: knitr
