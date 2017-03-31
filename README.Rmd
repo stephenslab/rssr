@@ -14,6 +14,9 @@ knitr::opts_chunk$set(
 
 **NOTE: This package is still under very active development**
 
+[![Travis-CI Build Status](https://travis-ci.org/stephenslab/rssr.svg?branch=master)](https://travis-ci.org/stephenslab/rssr)
+
+
 ## Installation
 The first step in installation is to ensure that the `devtools` library is installed
 

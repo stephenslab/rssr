@@ -3,3 +3,5 @@ language: r
 notifications:
   email:
     false
+apt_packages:
+  - liboctave-dev
