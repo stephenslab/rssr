@@ -1,14 +1,20 @@
 #include <RcppEigen.h>
-#include "sigmoid.hpp"
-#include "kl.hpp"
+#include "rssr.h"
 
 
-//[[Rcpp::export]]
-Eigen::ArrayXd betavar(const Eigen::ArrayXd &p,const Eigen::ArrayXd &mu,const Eigen::ArrayXd &s){
+
+Eigen::ArrayXd betavar(const c_arrayxd_internal p,const c_arrayxd_internal mu,const c_arrayxd_internal s){
   return p*(s+(1-p)*mu.square());
 }
-//[[Rcpp::export]]
-double intklbeta_rssbvsr(const Eigen::ArrayXd &alpha,const Eigen::ArrayXd &mu,const Eigen::ArrayXd &sigma_square, double sigma_beta_square){
+
+//[[Rcpp::export(name="betavar")]]
+Eigen::ArrayXd exp_betavar(const arrayxd_external p, const arrayxd_external mu, const arrayxd_external s){
+  return betavar(p,mu,s);
+}
+
+
+
+double intklbeta_rssbvsr(const c_arrayxd_internal alpha,const c_arrayxd_internal mu,const c_arrayxd_internal sigma_square, double sigma_beta_square){
   double tres = alpha.sum()+alpha.matrix().transpose()*((sigma_square/sigma_beta_square).log()).matrix();
   double sres = alpha.matrix().transpose()*(sigma_square+mu.square()).matrix();
   double thres = alpha.matrix().transpose()*((alpha+double_lim::epsilon()).log()).matrix();
@@ -16,22 +22,36 @@ double intklbeta_rssbvsr(const Eigen::ArrayXd &alpha,const Eigen::ArrayXd &mu,co
   return (tres-sres/sigma_beta_square)*0.5-thres-fres;
 }
 
-//[[Rcpp::export]]
-double intgamma(double logodds, const Eigen::ArrayXd &alpha){
+//[[Rcpp::export(name="intklbeta_rssbvsr")]]
+double exp_intklbeta_rssbvsr(const arrayxd_external alpha,const arrayxd_external mu,const arrayxd_external sigma_square, double sigma_beta_square){
+  return(intklbeta_rssbvsr(alpha,mu,sigma_square,sigma_beta_square));
+}
+
+
+double intgamma(double logodds, const c_arrayxd_internal alpha){
   Eigen::ArrayXd tres = ((alpha-1)*logodds+logsigmoid(logodds));
   return tres.sum();
 }
+
+//[[Rcpp::export(name="intgamma")]]
+double exp_intgamma(double logodds, const arrayxd_external alpha){
+  return(intgamma(logodds,alpha));
+}
+
+
+
 
 //[[Rcpp::export]]
 double rel_err(double p0,double p1){
   return fabs(p0-p1)/(fabs(p0)+fabs(p1)+double_lim::epsilon());
 }
 
-//[[Rcpp::export]]
-double find_maxerr(const Eigen::ArrayXd &alpha,
-                   const Eigen::ArrayXd &alpha0,
-                   const Eigen::ArrayXd &r,
-                   const Eigen::ArrayXd &r0){
+
+
+double find_maxerr(const c_arrayxd_internal alpha,
+                   const c_arrayxd_internal alpha0,
+                   const c_arrayxd_internal r,
+                   const c_arrayxd_internal r0){
   double terr=0;
   double cerr;
   size_t p=alpha.size();
@@ -52,24 +72,37 @@ double find_maxerr(const Eigen::ArrayXd &alpha,
   return(terr);
 }
 
-//[[Rcpp::export]]
-double update_logodds(const Eigen::ArrayXd &alpha){
+//[[Rcpp::export(name="find_maxerr")]]
+double exp_find_maxerr(const arrayxd_external alpha,
+                   const arrayxd_external alpha0,
+                   const arrayxd_external r,
+                   const arrayxd_external r0){
+  return(find_maxerr(alpha,alpha0,r,r0));
+}
+
+
+double update_logodds(const c_arrayxd_internal alpha){
   double pi=alpha.mean();
   return log((pi+double_lim::epsilon())/((1-pi)+double_lim::epsilon()));
 }
 
+//[[Rcpp::export(name="update_logodds")]]
+double exp_update_logodds(const arrayxd_external alpha){
+  return(update_logodds(alpha));
+}
+  
 
 
 
-//[[Rcpp::export]]
-double calculate_lnZ(const Eigen::VectorXd &q,
-                     const Eigen::VectorXd &r,
-                     const Eigen::VectorXd &SiRiSr,
+
+double calculate_lnZ(const c_vectorxd_internal q,
+                     const c_vectorxd_internal r,
+                     const c_vectorxd_internal SiRiSr,
                      double logodds,
-                     const Eigen::VectorXd &sesquare,
-                     const Eigen::VectorXd &alpha,
-                     const Eigen::VectorXd &mu,
-                     const Eigen::VectorXd &s,
+                     const c_vectorxd_internal sesquare,
+                     const c_vectorxd_internal alpha,
+                     const c_vectorxd_internal mu,
+                     const c_vectorxd_internal s,
                      double sigb){
   
 
@@ -79,9 +112,19 @@ double calculate_lnZ(const Eigen::VectorXd &q,
   return(lnz2);
 }
 
+//[[Rcpp::export(name="calculate_lnZ")]]
+double exp_calculate_lnZ(const vectorxd_external q,
+                     const vectorxd_external r,
+                     const vectorxd_external SiRiSr,
+                     double logodds,
+                     const vectorxd_external sesquare,
+                     const vectorxd_external alpha,
+                     const vectorxd_external mu,
+                     const vectorxd_external s,
+                     double sigb){
 
 
-
-
+  return(calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigb));
+}
 
 

@@ -39,7 +39,7 @@ SiRiS <- as(SiRiS_f,"dgCMatrix")
 SiRiSr_start <- c(SiRiS_f %*% (alpha_start * mu_start))
 
 ## ------------------------------------------------------------------------
-r_results <- rssr::rss_varbvsr_naive(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start, tolerance=1e-4)
+r_results <- rssr::rss_varbvsr_naive(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start,itermax=100,verbose = F,lnz_tol = F, tolerance=1e-4)
 
 # extract certain quantities for further comparisons
 r_iter <- r_results$iter

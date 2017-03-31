@@ -1,5 +1,5 @@
 #include <RcppEigen.h>
-#include "sparse_matrix.hpp"
+#include "rssr.h"
 
 
 // [[Rcpp::export]]

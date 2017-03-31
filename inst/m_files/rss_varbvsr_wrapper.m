@@ -28,7 +28,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_wrapper(method, betahat, se, Si
   % make sure summary-level data are stored as C by 1 cell arrays
   cell_check = prod([iscell(betahat),iscell(se),iscell(SiRiS)]);
   if cell_check == 1
-    fprintf('Summary-level data are stored as cell arrays. \n');
+    %fprintf('Summary-level data are stored as cell arrays. \n');
   end
 
   C = length(betahat);
@@ -49,7 +49,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_wrapper(method, betahat, se, Si
 	SiRiS 	= cell2mat(SiRiS);
       end
 
-      fprintf('The original implementation of rss-varbvsr is used.\n');
+      %fprintf('The original implementation of rss-varbvsr is used.\n');
       [lnZ,alpha,mu,s,info] = rss_varbvsr(betahat,se,SiRiS,sigb,logodds,options);
 
     case 'squarem'
@@ -62,7 +62,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_wrapper(method, betahat, se, Si
         SiRiS   = cell2mat(SiRiS);
       end
 
-      fprintf('The serial implementation with SQUAREM add-on of rss-varbvsr is used.\n');
+      %fprintf('The serial implementation with SQUAREM add-on of rss-varbvsr is used.\n');
       [lnZ,alpha,mu,s,info] = rss_varbvsr_squarem(betahat,se,SiRiS,sigb,logodds,options);
 
     case 'parallel'
@@ -70,7 +70,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_wrapper(method, betahat, se, Si
         error('Use serial implementations.');
       end
 
-      fprintf('The parallel implementation of rss-varbvsr is used.\n');
+      %fprintf('The parallel implementation of rss-varbvsr is used.\n');
       [lnZ,alpha,mu,s,info] = rss_varbvsr_parallel(betahat,se,SiRiS,sigb,logodds,options);
 
     case 'pasquarem'
@@ -78,7 +78,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_wrapper(method, betahat, se, Si
         error('Use serial implementations.');
       end
 
-      fprintf('The parallel implementation with SQUAREM add-on of rss-varbvsr is used.\n');
+      %fprintf('The parallel implementation with SQUAREM add-on of rss-varbvsr is used.\n');
       [lnZ,alpha,mu,s,info] = rss_varbvsr_pasquarem(betahat,se,SiRiS,sigb,logodds,options);
 
     otherwise

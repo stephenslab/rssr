@@ -1,6 +1,5 @@
 #include <RcppEigen.h>
-#include "rssvarbvsr.hpp"
-#include "kl.hpp"
+#include "rssr.h"
 
 
 //' Single update of RSS with variational method

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Xiang Zhu" />
 
-<meta name="date" content="2017-03-03" />
+<meta name="date" content="2017-03-21" />
 
 <title>Example of using rss_varbvsr_naive</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Example of using <code>rss_varbvsr_naive</code></h1>
 <h4 class="author"><em>Xiang Zhu</em></h4>
-<h4 class="date"><em>2017-03-03</em></h4>
+<h4 class="date"><em>2017-03-21</em></h4>
 
 
 
@@ -120,7 +120,7 @@ SiRiSr_start &lt;-<span class="st"> </span><span class="kw">c</span>(SiRiS_f %*%
 <div id="step-2-fit-the-rss-bvsr-model-via-variational-approximation" class="section level3">
 <h3>Step 2: fit the RSS-BVSR model via variational approximation</h3>
 <p>Here we fix the values of two hyper-parameters: <code>sigma_beta=1</code> and <code>logodds=-4.6</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r_results &lt;-<span class="st"> </span>rssr::<span class="kw">rss_varbvsr_naive</span>(SiRiS, <span class="dt">sigma_beta=</span><span class="dv">1</span>, <span class="dt">logodds=</span>-<span class="fl">4.6</span>, betahat, se, alpha_start, mu_start, SiRiSr_start, <span class="dt">tolerance=</span><span class="fl">1e-4</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">r_results &lt;-<span class="st"> </span>rssr::<span class="kw">rss_varbvsr_naive</span>(SiRiS, <span class="dt">sigma_beta=</span><span class="dv">1</span>, <span class="dt">logodds=</span>-<span class="fl">4.6</span>, betahat, se, alpha_start, mu_start, SiRiSr_start,<span class="dt">itermax=</span><span class="dv">100</span>,<span class="dt">verbose =</span> F,<span class="dt">lnz_tol =</span> F, <span class="dt">tolerance=</span><span class="fl">1e-4</span>)
 
 <span class="co"># extract certain quantities for further comparisons</span>
 r_iter &lt;-<span class="st"> </span>r_results$iter
@@ -221,13 +221,13 @@ m_mu &lt;-<span class="st"> </span><span class="kw">c</span>(m_results$mu)</code
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
-<pre><code>## R version 3.3.2 (2016-10-31)
+<pre><code>## R version 3.3.3 (2017-03-06)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: Ubuntu 16.04.2 LTS
 ## 
 ## locale:
 ##  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
-##  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=C              
+##  [3] LC_TIME=C                  LC_COLLATE=C              
 ##  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
 ##  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
 ##  [9] LC_ADDRESS=C               LC_TELEPHONE=C            
@@ -237,34 +237,20 @@ m_mu &lt;-<span class="st"> </span><span class="kw">c</span>(m_results$mu)</code
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] knitr_1.15.1   Matrix_1.2-7.1 rssr_0.1-0    
+## [1] knitr_1.15.1 Matrix_1.2-8 rssr_0.1-0  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] Rcpp_0.12.9.4           highr_0.6              
-##  [3] R.matlab_3.6.1          R.methodsS3_1.7.1      
-##  [5] base64enc_0.1-3         R.utils_2.5.0          
-##  [7] BatchJobs_1.6           tools_3.3.2            
-##  [9] testthat_1.0.2          digest_0.6.12          
-## [11] evaluate_0.10           memoise_1.0.0          
-## [13] RSQLite_1.1-2           checkmate_1.8.2        
-## [15] lattice_0.20-34         DBI_0.5-1              
-## [17] commonmark_1.1          yaml_2.1.14            
-## [19] parallel_3.3.2          withr_1.0.2            
-## [21] stringr_1.2.0           roxygen2_6.0.1         
-## [23] xml2_1.1.1              desc_1.1.0             
-## [25] future.BatchJobs_0.13.1 globals_0.8.0          
-## [27] devtools_1.12.0         rprojroot_1.2          
-## [29] grid_3.3.2              listenv_0.6.0          
-## [31] R6_2.2.0                fail_1.3               
-## [33] rmarkdown_1.3           sendmailR_1.2-1        
-## [35] magrittr_1.5            htmltools_0.3.5        
-## [37] backports_1.0.5         BBmisc_1.10            
-## [39] codetools_0.2-15        assertthat_0.1         
-## [41] future_1.3.0            h5_0.9.8               
-## [43] brew_1.0-6              stringi_1.1.2          
-## [45] RcppParallel_4.3.20     SQUAREM_2016.8-2       
-## [47] RcppEigen_0.3.2.9.0     crayon_1.3.2           
-## [49] R.oo_1.21.0</code></pre>
+##  [1] Rcpp_0.12.10        xml2_1.1.1          magrittr_1.5       
+##  [4] roxygen2_6.0.1      devtools_1.12.0     lattice_0.20-34    
+##  [7] R6_2.2.0            brew_1.0-6          highr_0.6          
+## [10] stringr_1.2.0       tools_3.3.3         grid_3.3.3         
+## [13] R.oo_1.21.0         R.matlab_3.6.1      withr_1.0.2        
+## [16] htmltools_0.3.5     commonmark_1.2      yaml_2.1.14        
+## [19] RcppParallel_4.3.20 digest_0.6.12       assertthat_0.1     
+## [22] rprojroot_1.2       RcppEigen_0.3.2.9.1 crayon_1.3.2       
+## [25] R.utils_2.5.0       testthat_1.0.2      memoise_1.0.0      
+## [28] evaluate_0.10       rmarkdown_1.3       stringi_1.1.2      
+## [31] R.methodsS3_1.7.1   desc_1.1.0          backports_1.0.5</code></pre>
 </div>
 
 

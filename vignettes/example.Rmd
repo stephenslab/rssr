@@ -69,7 +69,7 @@ SiRiSr_start <- c(SiRiS_f %*% (alpha_start * mu_start))
 Here we fix the values of two hyper-parameters: `sigma_beta=1` and `logodds=-4.6`.
 
 ```{r}
-r_results <- rssr::rss_varbvsr_naive(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start, tolerance=1e-4)
+r_results <- rssr::rss_varbvsr_naive(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start,itermax=100,verbose = F,lnz_tol = F, tolerance=1e-4)
 
 # extract certain quantities for further comparisons
 r_iter <- r_results$iter

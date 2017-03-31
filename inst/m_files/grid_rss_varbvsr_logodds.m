@@ -6,7 +6,7 @@ logoddsvec=log(10) * log10oddsvec;
 [t,nl] = size(logoddsvec);
 lnzl=zeros(nl,1);
 for i=1:nl
-fprintf('%3f \n',logoddsvec(i));
+%fprintf('%3f \n',logoddsvec(i));
 [logw,alpha,mu,s]=rss_varbvsr(betahat,se,SiRiS,sigb,logoddsvec(i));
 lnzl(i)=logw;
 end
