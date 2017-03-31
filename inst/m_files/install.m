@@ -17,7 +17,7 @@ corefiles = {'C/doublevectormatlab.c '
 	     'C/sparsematrixmatlab.c '};
 	    
 % These are the commands to build the build the MEX shared library files.
-#options = sprintf(['-O -largeArrayDims -IC -I%s ' 'COPTIMFLAGS="%s" LDOPTIMFLAGS="%s" '],'C/', cflags,ldflags);
+options = sprintf(['-O -largeArrayDims -IC -I%s ' 'COPTIMFLAGS="%s" LDOPTIMFLAGS="%s" '],'C/', cflags,ldflags);
 
 eval(['mex C/rss_varbvsr_update_matlab.c ',corefiles{1:5}]);
 
