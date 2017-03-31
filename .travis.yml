@@ -7,6 +7,6 @@ notifications:
 addons:
   apt:
     packages:
-      - libhdf5-serial-dev
+      - libhdf5-dev
       - liboctave-dev
       
