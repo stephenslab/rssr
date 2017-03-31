@@ -1,7 +1,10 @@
 language: r
-
+sudo: true
 notifications:
   email:
     false
-apt_packages:
-  - liboctave-dev
+
+addons:
+  apt:
+    packages:
+      - liboctave-dev
