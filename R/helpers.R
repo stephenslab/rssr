@@ -43,23 +43,6 @@ marg_param <- function(lnZ,param){
  
 
 
-gen_lnzmat <- function(matlist,logoddsvec,sigbvec){
-  require(future)
-  lnzmat <- matrix(0,nrow = length(matlist),ncol = length(matlist[[1]]))
-  for(i in 1:length(logoddsvec)){
-    for(j in 1:length(sigbvec)){
-      tres <- value(matlist[[i]][[j]])
-      if(!is.null(tres)){
-        lnzmat[i,j] <- tres
-      }else{
-        lnzmat[i,j] <- NA
-      }
-    }
-  }
-  return(lnzmat)
-}
-
-  
 
 
 ralpha <- function(p){
