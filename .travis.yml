@@ -1,6 +1,7 @@
 language: r
 dist: trusty
 sudo: required
+cache: packages
 notifications:
   email:
     false
