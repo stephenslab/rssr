@@ -20,7 +20,7 @@ using namespace Rcpp;
 // USAGE: run a single coordinate ascent of variational update to fit RSS-BVSR
 
 
-void rss_varbvsr_update (const double betahat,
+void rss_varbvsr_update(const double betahat,
                          const double se,
                          const double sigma_beta,
                          const c_arrayxd_internal SiRiS_snp,
@@ -63,14 +63,14 @@ void rss_varbvsr_update (const double betahat,
 
 
 void rss_varbvsr_iter(const c_sparseMatrix_internal SiRiS,
-                      const double sigma_beta,
-                      const double logodds,
-                      const c_arrayxd_internal betahat,
-                      const c_arrayxd_internal se,
-                      arrayxd_internal alpha,
-                      arrayxd_internal mu,
-                      arrayxd_internal SiRiSr,
-                      bool reverse){
+                         const double sigma_beta,
+                         const double logodds,
+                         const c_arrayxd_internal betahat,
+                         const c_arrayxd_internal se,
+                         arrayxd_internal alpha,
+                         arrayxd_internal mu,
+                         arrayxd_internal SiRiSr,
+                         bool reverse){
   
   
   // Get the number of SNPs (p) and coordinate ascent updates (m).
@@ -106,6 +106,51 @@ void rss_varbvsr_iter(const c_sparseMatrix_internal SiRiS,
                        logodds, alpha.coeffRef(i), mu.coeffRef(i));
   }
 }
+
+
+void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
+                         const double sigma_beta,
+                         const double logodds,
+                         const c_arrayxd_internal betahat,
+                         const c_arrayxd_internal se,
+                         arrayxd_internal alpha,
+                         arrayxd_internal mu,
+                         arrayxd_internal SiRiSr,
+                         bool reverse){
+  
+  
+  // Get the number of SNPs (p) and coordinate ascent updates (m).
+  const size_t p = betahat.size();
+  
+  // Initialize outputs.
+  
+  // Store a single column of matrix inv(S)*R*inv(S).
+  
+
+  
+  // Run coordinate ascent updates.
+  // Repeat for each coordinate ascent update.
+  size_t i=0;
+  for (size_t j = 0; j < p; j++) {
+    if(reverse){
+      i=p-1-j;
+    }else{
+      i=j;
+    }
+    // Copy the kth column of matrix inv(S)*R*inv(S).
+    // copySparseColumn(SiRiS_snp, k, SiRiS.elems, Ir, Jc, p);
+    
+    // Copy the kth element of vector inv(S)*R*inv(S)*r.
+    double SiRiSr_snp = SiRiSr.coeff(i);
+    
+    // Perform the mean-field variational update.
+    rss_varbvsr_update(betahat.coeff(i), se.coeff(i), sigma_beta, 
+                       SiRiS.col(i), SiRiSr, SiRiSr_snp, 
+                       logodds, alpha.coeffRef(i), mu.coeffRef(i));
+  }
+}
+
+
 
 
 

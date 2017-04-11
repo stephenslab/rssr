@@ -8,20 +8,32 @@ using namespace Eigen;
 
 
 
-void rss_varbvsr_update (const double betahat, const double se, const double sigma_beta, const c_arrayxd_internal SiRiS_snp, 
+void rss_varbvsr_update(const double betahat, const double se, const double sigma_beta, const c_arrayxd_internal SiRiS_snp, 
                          arrayxd_internal SiRiSr, const double SiRiSr_snp, const double logodds, double &alpha, double &mu);
+
 void rss_varbvsr_iter(const c_sparseMatrix_internal SiRiS,
-                      const double sigma_beta,
-                      const double logodds,
-                      const c_arrayxd_internal betahat,
-                      const c_arrayxd_internal se,
-                      arrayxd_internal alpha,
-                      arrayxd_internal mu,
-                      arrayxd_internal SiRiSr,
-                      bool reverse);
+                         const double sigma_beta,
+                         const double logodds,
+                         const c_arrayxd_internal betahat,
+                         const c_arrayxd_internal se,
+                         arrayxd_internal alpha,
+                         arrayxd_internal mu,
+                         arrayxd_internal SiRiSr,
+                         bool reverse);
 
 
-Rcpp::List rss_varbvsr_naive(const c_sparseMatrix_internal SiRiS,
+void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
+                         const double sigma_beta,
+                         const double logodds,
+                         const c_arrayxd_internal betahat,
+                         const c_arrayxd_internal se,
+                         arrayxd_internal alpha,
+                         arrayxd_internal mu,
+                         arrayxd_internal SiRiSr,
+                         bool reverse);
+
+
+Rcpp::List rss_varbvsr_naive_sp(const c_sparseMatrix_internal SiRiS,
                              const double sigma_beta,
                              const double logodds,
                              const c_arrayxd_internal betahat,

@@ -29,8 +29,43 @@ calculate_lnZ <- function(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb) {
     .Call('rssr_exp_calculate_lnZ', PACKAGE = 'rssr', q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb)
 }
 
+#' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
+#' @template rssr
+#' @param talpha0 a length p vector specifying the initial value of alpha
+#' @param tmu0 a length p vector specifying the initial value of mu
+#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
+NULL
+
+#' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
+#' @template rssr
+#' @param talpha0 a length p vector specifying the initial value of alpha
+#' @param tmu0 a length p vector specifying the initial value of mu
+#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
+NULL
+
+grid_search_rss_varbvsr_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_grid_search_rss_varbvsr_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+}
+
+grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_grid_search_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+}
+
+wrap_rss_varbvsr_iter_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
+    .Call('rssr_wrap_rss_varbvsr_iter_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
+}
+
 wrap_rss_varbvsr_iter <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
     .Call('rssr_wrap_rss_varbvsr_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
+}
+
+#' Run RSS with the variational bayes algorithm accelerated with SQUAREM
+#' @template rssr
+#' @param talpha0 a length p vector specifying the initial value of alpha
+#' @param tmu0 a length p vector specifying the initial value of mu
+#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
+rss_varbvsr_squarem_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_rss_varbvsr_squarem_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 #' Run RSS with the variational bayes algorithm accelerated with SQUAREM
@@ -51,23 +86,20 @@ rss_varbvsr_squarem_fit_logodds <- function(SiRiS, sigma_beta, logodds0, betahat
     .Call('rssr_rss_varbvsr_squarem_fit_logodds', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds0, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
+rss_varbvsr_naive_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
+    .Call('rssr_rss_varbvsr_naive_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+}
+
 rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
     .Call('rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
-grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
-}
-
-#' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
-#' @template rssr
-#' @param talpha0 a length p vector specifying the initial value of alpha
-#' @param tmu0 a length p vector specifying the initial value of mu
-#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
-NULL
-
 SiRSi <- function(R, Si) {
     .Call('rssr_SiRSi', PACKAGE = 'rssr', R, Si)
+}
+
+SiRSi_d <- function(R, Si) {
+    .Call('rssr_SiRSi_d', PACKAGE = 'rssr', R, Si)
 }
 
 genSymm <- function(R) {

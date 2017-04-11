@@ -25,9 +25,10 @@ alpha_test <- t(t(alpha_test))
 # R_panel <-as.matrix(R_panel)
 
 #Generate SiRiS as both dense and sparse matrices 
-t_SiRiS <- SiRSi(R_shrink,1/se)
-SiRiS_f <- as.matrix(SiRSi(R_shrink,1/se))
-SiRiS <-as(SiRiS_f,"dgCMatrix")
+SiRiS <- SiRSi(R_shrink,1/se)
+SiRiS_f <- SiRSi_d(as.matrix(R_shrink),1/se)
+#SiRiS_f <- as.matrix(SiRSi(R_shrink,1/se))
+#SiRiS <-as(SiRiS_f,"dgCMatrix")
 p <- length(betahat)
 SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
 
@@ -45,7 +46,7 @@ test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
   sigb <- 1
   logodds <- -3
   res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,I)
-  mres <- wrap_rss_varbvsr_iter(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
+  mres <- wrap_rss_varbvsr_iter_sp(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
   expect_equal(c(res$alpha1),c(mres$alpha1),tolerance=1e-8)
   expect_equal(c(res$mu1),c(mres$mu1),tolerance=1e-8)
   expect_equal(c(res$SiRiSr),c(mres$SiRiSr),tolerance=1e-8)})
@@ -57,7 +58,7 @@ test_that("Single RSS update is the same when computed backwards",{
   sigb <- 1
   logodds <- -3
   rres <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,rI)
-  rmres <- wrap_rss_varbvsr_iter(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,T)
+  rmres <- wrap_rss_varbvsr_iter_sp(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,T)
   expect_equal(c(rres$alpha1),c(rmres$alpha1),tolerance=1e-8)
   expect_equal(c(rres$mu1),c(rmres$mu1),tolerance=1e-8)
   expect_equal(c(rres$SiRiSr),c(rmres$SiRiSr),tolerance=1e-8)})
@@ -95,9 +96,9 @@ test_that("SiRiS is generated equivalently",{
 
 test_that("Naive implementations are identical",{
   sigb <- 1
-
+  
   naive_results <- .CallOctave('wrap_rss_varbvsr_naive',t(t(betahat)),t(t(se)),SiRiS_f,sigb,-4.6,t(alpha_test),t(mu_test))
-  my_naive <- rss_varbvsr_naive(SiRiS = SiRiS,sigma_beta = sigb,logodds = -4.6,betahat = betahat,se = se,talpha0 =  alpha_test,tmu0 =  mu_test,tSiRiSr0 = SiRiSr,tolerance = 1e-4,itermax = 100,verbose = T,lnz_tol = F)
+  my_naive <- rss_varbvsr_naive_sp(SiRiS = SiRiS,sigma_beta = sigb,logodds = -4.6,betahat = betahat,se = se,talpha0 =  alpha_test,tmu0 =  mu_test,tSiRiSr0 = SiRiSr,tolerance = 1e-4,itermax = 100,verbose = T,lnz_tol = F)
   expect_equivalent(naive_results$lnZ,my_naive$lnZ)
   expect_equivalent(c(naive_results$mu),c(my_naive$mu))
   expect_equivalent(c(naive_results$alpha),c(my_naive$alpha))
@@ -111,18 +112,18 @@ test_that("SQUAREM updates are identical",{
   sigb <- 1  
   logodds <- -3
   mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha_test),t(mu_test),1e-4)
-  my_results <- rss_varbvsr_squarem(SiRiS = SiRiS,
-                                    sigma_beta=sigb,
-                                    logodds=logodds,
-                                    betahat = betahat,
-                                    se = se,
-                                    talpha0 = alpha_test,
-                                    tmu0 = mu_test,
-                                    tSiRiSr0 = SiRiSr,
-                                    tolerance = 1e-4,
-                                    itermax=900,
-                                    verbose=T,
-                                    lnz_tol=F)
+  my_results <- rss_varbvsr_squarem_sp(SiRiS = SiRiS,
+                                       sigma_beta=sigb,
+                                       logodds=logodds,
+                                       betahat = betahat,
+                                       se = se,
+                                       talpha0 = alpha_test,
+                                       tmu0 = mu_test,
+                                       tSiRiSr0 = SiRiSr,
+                                       tolerance = 1e-4,
+                                       itermax=900,
+                                       verbose=T,
+                                       lnz_tol=F)
   
   expect_equivalent(my_results$lnZ,mat_results$lnZ)
   expect_equivalent(my_results$mu,c(mat_results$mu))
@@ -138,25 +139,26 @@ test_that("grid optimization over logodds works as expected",{
   log10oddsvec <- seq(-6,-1,0.5)
   logoddsvec <- log10oddsvec*log(10)
   pm <- .CallOctave('grid_rss_varbvsr_logodds',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
-  mr <- grid_search_rss_varbvsr(SiRiS=SiRiS,sigma_beta =1,logodds=logoddsvec,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
+  mr <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =1,logodds=logoddsvec,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
   pi_mean <- marg_pi(log10odds = log10oddsvec,c(mr$lnZ))  
   expect_equal(c(pi_mean),pm$pi_mean)
-  })
+})
 
 test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
   log10oddsvec <- seq(-3.1,-2.1,length.out = 5)
   logoddsvec <- log10oddsvec*log(10)
   sigb <- seq(0.8,1.2,length.out = 5)
   pm <- .CallOctave('grid_rssr_varbvsr',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
-  mr_grid <- grid_search_rss_varbvsr(talpha0=alpha_test,
-                                     tmu0=mu_test,betahat=betahat,
-                                     se=se,
-                                     SiRiS=SiRiS,
-                                     sigma_beta =sigb,
-                                     logodds=logoddsvec,
-                                     verbose=F,
-                                     tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
-  expect_equal(c(mr_grid$lnZ),c(pm))})
+  mr_grid <- grid_search_rss_varbvsr_sp(talpha0=alpha_test,
+                                        tmu0=mu_test,betahat=betahat,
+                                        se=se,
+                                        SiRiS=SiRiS,
+                                        sigma_beta =sigb,
+                                        logodds=logoddsvec,
+                                        verbose=F,
+                                        tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
+  expect_equal(c(mr_grid$lnZ),c(pm))}
+)
 
 
 

@@ -2,6 +2,8 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 **NOTE: This package is still under very active development**
 
+[![Travis-CI Build Status](https://travis-ci.org/stephenslab/rssr.svg?branch=master)](https://travis-ci.org/stephenslab/rssr)
+
 Installation
 ------------
 
