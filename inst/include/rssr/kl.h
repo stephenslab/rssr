@@ -14,6 +14,7 @@ double intklbeta_rssbvsr(const c_arrayxd_internal alpha,const c_arrayxd_internal
 
 double intgamma(double logodds, const c_arrayxd_internal alpha);
 double rel_err(double p0,double p1);
+Eigen::ArrayXd rel_err(c_arrayxd_internal p0,c_arrayxd_internal p1);
 double find_maxerr(const c_arrayxd_internal alpha,
                    const c_arrayxd_internal alpha0,
                    const c_arrayxd_internal r,

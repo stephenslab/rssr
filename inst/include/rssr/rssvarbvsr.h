@@ -32,6 +32,16 @@ void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
                          arrayxd_internal SiRiSr,
                          bool reverse);
 
+void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
+                      const c_arrayxd_internal sigma_beta,
+                      const c_arrayxd_internal logodds,
+                      const c_arrayxd_internal betahat,
+                      const c_arrayxd_internal se,
+                      arrayxxd_internal alpha,
+                      arrayxxd_internal mu,
+                      arrayxxd_internal SiRiSr,
+                      bool reverse);
+
 
 Rcpp::List rss_varbvsr_naive_sp(const c_sparseMatrix_internal SiRiS,
                              const double sigma_beta,

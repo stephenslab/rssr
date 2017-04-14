@@ -11,16 +11,16 @@
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 Eigen::ArrayXd rss_varbvsr_squarem_iter_array(const c_Matrix_internal SiRiS,
-                                const c_arrayxd_internal sigma_beta,
-                                const c_arrayxd_internal logodds,
-                                const c_arrayxd_internal  betahat,
-                                const c_arrayxd_internal se,
-                                const c_arrayxd_internal talpha0,
-                                const c_arrayxd_internal tmu0,
-                                const c_arrayxd_internal tSiRiSr0,
-                                double tolerance,
-                                int itermax,
-                                Rcpp::LogicalVector lnz_tol){
+                                              const c_arrayxd_internal sigma_beta,
+                                              const c_arrayxd_internal logodds,
+                                              const c_arrayxd_internal  betahat,
+                                              const c_arrayxd_internal se,
+                                              const c_arrayxd_internal talpha0,
+                                              const c_arrayxd_internal tmu0,
+                                              const c_arrayxd_internal tSiRiSr0,
+                                              double tolerance,
+                                              int itermax,
+                                              Rcpp::LogicalVector lnz_tol){
   
   
   //This function implements RSS with variational bayes and the SQUAREM algorithm.
@@ -74,8 +74,9 @@ Eigen::ArrayXd rss_varbvsr_squarem_iter_array(const c_Matrix_internal SiRiS,
   double max_err=1;
   Eigen::ArrayXd lnZ0=lnZ;
 
-  double rel_l0=0;
-  double rel_li=0;
+//  double rel_l0=0;
+  Eigen::ArrayXi rel_li(gsize);
+  rel_li.setZero();
   while(max_err>tolerance){
     lnZ0=lnZ;
     alpha0=alpha;
@@ -94,47 +95,57 @@ Eigen::ArrayXd rss_varbvsr_squarem_iter_array(const c_Matrix_internal SiRiS,
     
     mu_r   = mu1-mu0;
     mu_v   = mu-mu1-mu_r;
-    
-    mtp= -sqrt((alpha_r.square()).sum()+(mu_r.square()).sum())/sqrt((alpha_v.square()).sum()+(mu_v.square()).sum());
-    
-    if(mtp >=-1){
-      
-    }else{
-      alpha=alpha0-2*mtp*alpha_r+(mtp*mtp)*alpha_v;
-      mu=mu0-2*mtp*mu_r+(mtp*mtp)*mu_v;
-      SiRiSr=SiRiS*(alpha*mu).matrix();
+    for(int i=0; i<gsize;i++){
+      mtp.coeffRef(i)= -sqrt((alpha_r.square()).sum()+(mu_r.square()).sum())/sqrt((alpha_v.square()).sum()+(mu_v.square()).sum());
+    }
+    for(int i=0; i<gsize; i++){
+      if(mtp.coeff(i) >=-1){
+        
+      }else{
+        alpha.col(i)=alpha0.col(i)-2*mtp.coeff(i)*alpha_r.col(i)+(mtp.coeff(i)*mtp.coeff(i))*alpha_v.col(i);
+        mu.col(i)=mu0.col(i)-2*mtp.coeff(i)*mu_r.col(i)+(mtp.coeff(i)*mtp.coeff(i))*mu_v.col(i);
+        SiRiSr.col(i)=SiRiS*(alpha.col(i)*mu.col(i)).matrix();
+      }
     }
     
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
-    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
+    for(int i=0;i<gsize;i++){
+      lnZ.coeffRef(i)=  calculate_lnZ(q,alpha.col(i)*mu.col(i),SiRiSr.col(i),logodds.coeff(i),sesquare,alpha.col(i),mu.col(i),s.col(i),sigma_beta.coeff(i));
+    }
     // if(!std::isfinite(lnZ)){
     //   Rcpp::stop("lnZ isn't finite!");
     // }
-    
-    if((mtp<(-1)) && (lnZ < lnZ0)){
-      size_t num_bt=0;
-      while((lnZ<lnZ0) &&(num_bt < 10)){
-        mtp = 0.5*(mtp-1);
-        alpha = alpha0-2*mtp*alpha_r+(mtp*mtp)*alpha_v;
-        mu = mu0-2*mtp*mu_r+(mtp*mtp)*mu_v;
-        SiRiSr = SiRiS*(alpha*mu).matrix();
-        rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
-        lnZ=calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);          
-        num_bt=num_bt+1;
+    for(int i=0; i<gsize; i++){
+      double tmtp = mtp.coeff(i);
+      double tlnZ = lnZ.coeff(i);
+      double tlnZ0 = lnZ0.coeff(i);
+      if((tmtp<(-1)) && (tlnZ < tlnZ0)){
+        size_t num_bt=0;
+        while((tlnZ<tlnZ0) &&(num_bt < 10)){
+          tmtp = 0.5*(tmtp-1);
+          alpha.col(i) = alpha0.col(i)-2*tmtp*alpha_r.col(i)+(tmtp*tmtp)*alpha_v.col(i);
+          mu.col(i) = mu0.col(i)-2*tmtp*mu_r.col(i)+(tmtp*tmtp)*mu_v.col(i);
+          SiRiSr.col(i) = SiRiS*(alpha.col(i)*mu.col(i)).matrix();
+          rss_varbvsr_iter(SiRiS,sigma_beta.coeff(i),logodds.coeff(i),betahat,se,alpha.col(i),mu.col(i),SiRiSr.col(i),reverse);
+          lnZ.coeffRef(i)=  calculate_lnZ(q,alpha.col(i)*mu.col(i),SiRiSr.col(i),logodds.coeff(i),sesquare,alpha.col(i),mu.col(i),s.col(i),sigma_beta.coeff(i));
+          tlnZ=lnZ.coeff(i);
+          num_bt=num_bt+1;
+          //          lnZ=calculate_lnZ(q,alpha.col(i)*mu.col(i),SiRiSr.col(i),logodds.coeff(i),sesquare,alpha.col(i),mu.col(i),s.col(i),sigma_beta.coeff(i));          
+        }
       }
+      rel_li.coeffRef(i)=rel_err(lnZ.coeff(i),lnZ0.coeff(i));
     }
-    rel_l0=rel_err(lnZ00,lnZ);
-    rel_li=rel_err(lnZ,lnZ0);
+
     
     if(lnztol){
-      max_err=rel_li;
+      max_err=rel_li.maxCoeff();
     }else{
       max_err=find_maxerr(alpha,alpha0,alpha*mu,alpha0*mu0);
     }
     
     if(iter>itermax){
       printf("Maximum iteration number reached: %+0.2d \n",(int)iter);
-      printf("The log variational lower bound of the last step increased by %+0.2e\n",lnZ-lnZ0);
+      printf("The log variational lower bound of the last step increased by %+0.2e\n",(lnZ-lnZ0).maxCoeff());
       break;
     }
     iter=iter+1;

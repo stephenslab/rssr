@@ -141,16 +141,16 @@ double rss_varbvsr_squarem_iter(const c_sparseMatrix_internal SiRiS,
 //' @param tmu0 a length p vector specifying the initial value of mu
 //' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 double rss_varbvsr_squarem_iter(const c_Matrix_internal SiRiS,
-                                   const double sigma_beta,
-                                   const double logodds,
-                                   const c_arrayxd_internal  betahat,
-                                   const c_arrayxd_internal se,
-                                   const c_arrayxd_internal talpha0,
-                                   const c_arrayxd_internal tmu0,
-                                   const c_arrayxd_internal tSiRiSr0,
-                                   double tolerance,
-                                   int itermax,
-                                   Rcpp::LogicalVector lnz_tol){
+                                const double sigma_beta,
+                                const double logodds,
+                                const c_arrayxd_internal  betahat,
+                                const c_arrayxd_internal se,
+                                const c_arrayxd_internal talpha0,
+                                const c_arrayxd_internal tmu0,
+                                const c_arrayxd_internal tSiRiSr0,
+                                double tolerance,
+                                int itermax,
+                                Rcpp::LogicalVector lnz_tol){
   
   
   //This function implements RSS with variational bayes and the SQUAREM algorithm.
@@ -783,6 +783,73 @@ Rcpp::DataFrame grid_rss_varbvsr(
 }
 
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+Rcpp::DataFrame grid_rss_varbvsr_array(
+    const c_Matrix_internal SiRiS,
+    const c_arrayxd_internal sigma_beta,
+    const c_arrayxd_internal logodds,
+    const c_arrayxd_internal  betahat,
+    const c_arrayxd_internal  se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    const c_arrayxd_internal tSiRiSr0,
+    double tolerance,
+    int itermax,
+    bool isVerbose,
+    bool islnz_tol){
+//  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
+  
+  using namespace Rcpp;
+  size_t sigb_size= sigma_beta.size();
+  size_t logodds_size=logodds.size();
+  size_t tot_size=sigb_size*logodds_size;
+  
+  Eigen::ArrayXd nlzvec(tot_size);
+  
+  Rcpp::LogicalVector verbose(1);
+  verbose(0)=isVerbose;
+  Rcpp::LogicalVector lnz_tol(1);
+  lnz_tol(0)=islnz_tol;
+  
+  nlzvec = rss_varbvsr_squarem_iter_array(SiRiS,
+                           sigma_beta,
+                           logodds,
+                           betahat,
+                           se,
+                           talpha0,
+                           tmu0,
+                           tSiRiSr0,
+                           tolerance,
+                           itermax,
+                           lnz_tol);
+  
+  
+  //  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
+  return(Rcpp::DataFrame::create(_["logodds"]=Rcpp::wrap(logodds),
+                                 _["sigb"]=Rcpp::wrap(sigma_beta),
+                                 _["lnZ"]=Rcpp::wrap(nlzvec)));
+}
+
+
+
+
+
+
+
+
+
 
 
 

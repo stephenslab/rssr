@@ -46,6 +46,10 @@ double rel_err(double p0,double p1){
   return fabs(p0-p1)/(fabs(p0)+fabs(p1)+double_lim::epsilon());
 }
 
+Eigen::ArrayXd rel_err(c_arrayxd_internal p0,c_arrayxd_internal p1){
+  return ((p0-p1).cwiseAbs())/(p0.cwiseAbs()+p1.cwiseAbs()+double_lim::epsilon());
+}
+
 
 
 double find_maxerr(const c_arrayxd_internal alpha,
