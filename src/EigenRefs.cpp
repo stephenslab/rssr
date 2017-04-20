@@ -1,15 +1,20 @@
-// #include <RcppEigen.h> 	// Gregorian calendar types, no I/O
-// 
-// namespace Rcpp {
-// 
-// // 'date' class boost::gregorian::date
-// //
-// // non-intrusive extension via template specialisation
-// template <> Eigen::Ref<Eigen::SparseMatrix<double> > as(SEXP dt){
-//   Eigen::SparseMatrix<double> dat(dt);
-//   
-// }
-// //
-// // non-intrusive extension via template specialisation
-// template <> SEXP wrap(const Eigen::Ref<Eigen::SparseMatrix<double> > &d);
-// }
+#include <RcppEigen.h>
+#include "rssr.h"
+//#include "mkl.h"
+#include <math.h>
+
+//[[Rcpp::export(name="logsigmoid")]]
+Eigen::ArrayXd logsigmoid_exp(const arrayxd_external x){
+  return(logsigmoid(x));
+  //  return -(-x).unaryExpr(&logpexp);
+}
+
+
+//[[Rcpp::export(name="sigmoid")]]
+Eigen::ArrayXd sigmoid_exp(const arrayxd_external x){
+  return(sigmoid(x));
+  //  return -(-x).unaryExpr(&logpexp);
+}
+
+
+

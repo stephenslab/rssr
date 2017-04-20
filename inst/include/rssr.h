@@ -1,6 +1,10 @@
 #ifndef RCPP_rssr_H_GEN_
 #define RCPP_rssr_H_GEN_
 
+#include<math.h>
+#include <xmmintrin.h>
+#include <pmmintrin.h>
+
 
 #include <RcppEigen.h>
 

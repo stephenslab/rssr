@@ -46,7 +46,7 @@ test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
   sigb <- 1
   logodds <- -3
   res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,I)
-  mres <- wrap_rss_varbvsr_iter_sp(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
+  mres <- wrap_rss_varbvsr_iter_sp(SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
   expect_equal(c(res$alpha1),c(mres$alpha1),tolerance=1e-8)
   expect_equal(c(res$mu1),c(mres$mu1),tolerance=1e-8)
   expect_equal(c(res$SiRiSr),c(mres$SiRiSr),tolerance=1e-8)})
@@ -58,7 +58,7 @@ test_that("Single RSS update is the same when computed backwards",{
   sigb <- 1
   logodds <- -3
   rres <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,rI)
-  rmres <- wrap_rss_varbvsr_iter_sp(t_SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,T)
+  rmres <- wrap_rss_varbvsr_iter_sp(SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,T)
   expect_equal(c(rres$alpha1),c(rmres$alpha1),tolerance=1e-8)
   expect_equal(c(rres$mu1),c(rmres$mu1),tolerance=1e-8)
   expect_equal(c(rres$SiRiSr),c(rmres$SiRiSr),tolerance=1e-8)})
@@ -91,6 +91,9 @@ test_that("SiRiS is generated equivalently",{
   attr(m_SiRiS,"dimnames") <- NULL
   expect_equivalent(t_SiRiS,m_SiRiS)
 })
+
+
+
 
 
 

@@ -28,16 +28,25 @@ inline double sigmoid (const double x) {
   return 1/(1 + exp(-x));
 }
 
-inline Eigen::ArrayXd sigmoid (const c_arrayxd_internal x) {
-  return 1/(1 + (-x).exp());
+inline Eigen::ArrayXd sigmoid(const c_arrayxd_internal x){
+  return((1+(-x).exp()).inverse());
 }
+
+// inline Eigen::ArrayXd sigmoid (const c_arrayxd_internal x) {
+//   return 1/(1 + (-x).exp());
+// }
+
 
 inline double logsigmoid (const double x) {
   return -logpexp(-x);
 }
 
+// inline Eigen::ArrayXd logsigmoid(const c_arrayxd_internal x){
+//   log1pexp
+// }
+
 inline Eigen::ArrayXd logsigmoid(const c_arrayxd_internal x){
-  return -(-x).unaryExpr(&logpexp);
+  return -(-x).unaryExpr(&log1pexp);
 }
 
 

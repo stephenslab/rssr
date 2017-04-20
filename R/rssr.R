@@ -1,7 +1,7 @@
 
 
 
-
+# rssr <- function(R,betahat_mat,se_mat)
 
 rss_varbvsr <- function(options=list()){
   stopifnot(length(options[["sigb"]])==1,

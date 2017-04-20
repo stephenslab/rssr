@@ -4,33 +4,10 @@
 #include <math.h>
 
 
-
-
-
-
-// void rss_varbvsr_iter_alt_grid(const c_sparseMatrix_internal SiRiS,
-//                                const c_arrayxd_internal sigma_beta,
-//                                const c_arrayxd_internal tlogodds,
-//                                const c_arrayxd_internal betahat,
-//                                const c_arrayxd_internal se,
-//                                arrayxxd_internal alpha,
-//                                arrayxxd_internal mu,
-//                                arrayxxd_internal SiRiSr,
-//                                bool reverse){
-//   
-//   using namespace Rcpp;
-//     size_t tot_size = sigma_beta.size();
-//     // Get the number of SNPs (p) and coordinate ascent updates (m).
-//     const size_t p = betahat.size();
-//   for(size_t i=0; i<tot_size; i++){
-//     rss_varbvsr_iter(SiRiS,sigma_beta(i),tlogodds(i),betahat,se,alpha.col(i),mu.col(i),SiRiSr.col(i),reverse);
-//     
-//   }
-// }
   
   
 
-void rss_varbvsr_iter_alt_grid(const c_sparseMatrix_internal SiRiS,
+void rss_varbvsr_iter_array(const c_Matrix_internal SiRiS,
                                const c_arrayxd_internal sigma_beta,
                                const c_arrayxd_internal tlogodds,
                                const c_arrayxd_internal betahat,
@@ -93,10 +70,8 @@ void rss_varbvsr_iter_alt_grid(const c_sparseMatrix_internal SiRiS,
 
     // Update SiRiSr = inv(S)*R*inv(S)*r
     r_new = alpha.row(i) * mu.row(i);
-    SiRiS_snp=SiRiS.col(i);
     for(size_t c=0; c<r_new.size(); c++){
-
-      SiRiSr.col(c)+=(SiRiS_snp.array())*(r_new.coeff(c)-r.coeff(c));
+      SiRiSr.col(c)+=(SiRiS.col(i).array())*(r_new.coeff(c)-r.coeff(c));
     }
   }
 
@@ -105,7 +80,7 @@ void rss_varbvsr_iter_alt_grid(const c_sparseMatrix_internal SiRiS,
 
 
 //[[Rcpp::export]]
-Rcpp::List wrap_rss_varbvsr_iter_grid(const sparseMatrix_external SiRiS,
+Rcpp::List wrap_rss_varbvsr_iter_array(const Matrix_external SiRiS,
                                       const arrayxd_external sigma_beta,
                                       const arrayxd_external logodds,
                                       const arrayxd_external betahat,
@@ -131,7 +106,7 @@ Rcpp::List wrap_rss_varbvsr_iter_grid(const sparseMatrix_external SiRiS,
     s.col(i)=(sesquare*(sigma_beta(i)*sigma_beta(i)))/(sesquare+(sigma_beta(i)*sigma_beta(i)));
   }
   
-  rss_varbvsr_iter_alt_grid(SiRiS,
+  rss_varbvsr_iter_array(SiRiS,
                             sigma_beta,
                             logodds,
                             betahat,
@@ -148,7 +123,7 @@ Rcpp::List wrap_rss_varbvsr_iter_grid(const sparseMatrix_external SiRiS,
 
 
 
-Rcpp::DataFrame rss_varbvsr_alt_grid(const c_sparseMatrix_internal SiRiS,
+Rcpp::DataFrame rss_varbvsr_squarem_array(const c_Matrix_internal SiRiS,
                                      const c_arrayxd_internal sigma_beta,
                                      const c_arrayxd_internal logodds,
                                      const c_arrayxd_internal betahat,
@@ -234,12 +209,12 @@ Rcpp::DataFrame rss_varbvsr_alt_grid(const c_sparseMatrix_internal SiRiS,
     
     bool reverse = iter%2!=0;
 //    Rcout<<"First update"<<std::endl;
-    rss_varbvsr_iter_alt_grid(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter_array(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
     alpha1=alpha;
     mu1=mu;
 //    SiRiSr1=SiRiSr;
 //    Rcout<<"Second update"<<std::endl;
-    rss_varbvsr_iter_alt_grid(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter_array(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
     
     alpha_r=alpha1-alpha0;
     alpha_v=(alpha-alpha1)-alpha_r;
@@ -270,7 +245,7 @@ Rcpp::DataFrame rss_varbvsr_alt_grid(const c_sparseMatrix_internal SiRiS,
     }
 //    Rcout<<"Third update"<<std::endl;
     
-    rss_varbvsr_iter_alt_grid(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter_array(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
 //    Rcout<<"Calculating lower bound"<<std::endl;
     for(size_t c=0; c<tot_size; c++){
   //    std::cout<<"c:"<<c<<std::endl;
@@ -331,14 +306,14 @@ Rcpp::DataFrame rss_varbvsr_alt_grid(const c_sparseMatrix_internal SiRiS,
     // 
     
   }
-  Rcpp::Rcout<<"mean lnZ is: "<<lnZ.mean()<<std::endl;
+//  Rcpp::Rcout<<"mean lnZ is: "<<lnZ.mean()<<std::endl;
   return(Rcpp::DataFrame::create(_["logodds"]=logodds,_["sigb"]=sigma_beta,_["lnZ"]=lnZ.transpose()));
   
 }
 
 
 //[[Rcpp::export]]
-Rcpp::List rss_varbvsr_alt_naive_grid(const c_sparseMatrix_internal SiRiS,
+Rcpp::List rss_varbvsr_naive_array(const Matrix_external SiRiS,
                                            const arrayxd_external sigma_beta,
                                            const arrayxd_external logodds,
                                            const arrayxd_external betahat,
@@ -349,10 +324,10 @@ Rcpp::List rss_varbvsr_alt_naive_grid(const c_sparseMatrix_internal SiRiS,
                                            double tolerance,
                                            int itermax,
                                            bool verbose,
-                                           bool lnztol){
+                                           bool lnz_tol){
   
   
-  //  bool lnztol=lnz_tol[0];
+  bool lnztol=lnz_tol;
   using namespace Rcpp;
   using namespace Eigen;
   size_t sigb_size= sigma_beta.size();
@@ -407,7 +382,7 @@ Rcpp::List rss_varbvsr_alt_naive_grid(const c_sparseMatrix_internal SiRiS,
     
     bool reverse = iter%2!=0;
     
-    rss_varbvsr_iter_alt_grid(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter_array(SiRiS,sigma_beta,logodds,betahat,se,s,alpha,mu,SiRiSr,reverse);
     
     for(size_t c=0; c<tot_size; c++){
       lnZ(c)=calculate_lnZ(q,alpha.col(c)*mu.col(c),SiRiSr.col(c),logodds(c),sesquare,alpha.col(c),mu.col(c),s.col(c),sigma_beta(c));
@@ -433,21 +408,4 @@ Rcpp::List rss_varbvsr_alt_naive_grid(const c_sparseMatrix_internal SiRiS,
 
 
 
-
-//[[Rcpp::export]]
-Rcpp::DataFrame grid_search_rss_varbvsr_alt_grid(const sparseMatrix_external SiRiS,
-                                                 const arrayxd_external sigma_beta,
-                                                 const arrayxd_external logodds,
-                                                 const arrayxd_external betahat,
-                                                 const arrayxd_external se,
-                                                 const arrayxd_external talpha0,
-                                                 const arrayxd_external tmu0,
-                                                 const arrayxd_external tSiRiSr0,
-                                                 double tolerance,
-                                                 int itermax,
-                                                 Rcpp::LogicalVector verbose,
-                                                 Rcpp::LogicalVector lnz_tol){
-  
-  return(rss_varbvsr_alt_grid(SiRiS,sigma_beta,logodds,betahat,se,talpha0,tmu0,tSiRiSr0,tolerance,itermax,verbose(0),lnz_tol(0)));
-}
 

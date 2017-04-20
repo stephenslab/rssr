@@ -263,10 +263,7 @@ Rcpp::List rss_varbvsr_squarem(const Matrix_external SiRiS,
   Eigen::ArrayXd alpha1=alpha;
   Eigen::ArrayXd mu1=mu;
   Eigen::ArrayXd SiRiSr1=SiRiSr;
-  
-  Eigen::ArrayXd alpha3=alpha;
-  Eigen::ArrayXd mu3=mu;
-  Eigen::ArrayXd SiRiSr3=SiRiSr;
+
   
   Eigen::ArrayXd alpha_r(p);
   Eigen::ArrayXd alpha_v(p);
@@ -287,7 +284,7 @@ Rcpp::List rss_varbvsr_squarem(const Matrix_external SiRiS,
   double lnZ00=lnZ0;
   double rel_l0=0;
   double rel_li=0;
-  while(max_err>tolerance){
+  while((max_err>tolerance)|(iter<100)){
     
     lnZ0=lnZ;
     
@@ -326,8 +323,14 @@ Rcpp::List rss_varbvsr_squarem(const Matrix_external SiRiS,
     
     rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
+
+    if(!std::isfinite(lnZ)){
+      Rcpp::stop("lnZ isn't finite!");
+    }
+    
+    
     if((mtp<(-1)) && (lnZ < lnZ0)){
-      Rcpp::Rcout<<"begin bt "<<std::endl;
+//      Rcpp::Rcout<<"begin bt "<<std::endl;
       size_t num_bt=0;
       while((lnZ<lnZ0) &&(num_bt < 10)){
         mtp = 0.5*(mtp-1);
@@ -347,6 +350,9 @@ Rcpp::List rss_varbvsr_squarem(const Matrix_external SiRiS,
       max_err=find_maxerr(alpha,alpha0,alpha*mu,alpha0*mu0);
     }
     if(verbosev){
+      if(iter==0){
+        Rcpp::Rcout<<"iter lnZ max_err asum rel_l0 rel_li"<<std::endl;
+      }
       double absr=(alpha*mu).abs().maxCoeff();
       int asum=round(alpha.sum());
       printf("%4d %+13.6e %1.9e %4d %1.9e %1.9e\n",(int)iter,lnZ,max_err,(int) asum,rel_l0,rel_li);
@@ -600,17 +606,17 @@ Rcpp::List rss_varbvsr_naive_sp (const sparseMatrix_external SiRiS,
 
 //[[Rcpp::export]]
 Rcpp::List rss_varbvsr_naive (const Matrix_external SiRiS,
-                                 const double sigma_beta,
-                                 const double logodds,
-                                 const arrayxd_external betahat,
-                                 const arrayxd_external se,
-                                 const arrayxd_external talpha0,
-                                 const arrayxd_external tmu0,
-                                 const arrayxd_external tSiRiSr0,
-                                 double tolerance,
-                                 int itermax,
-                                 Rcpp::LogicalVector verbose,
-                                 Rcpp::LogicalVector lnz_tol){
+                              const double sigma_beta,
+                              const double logodds,
+                              const arrayxd_external betahat,
+                              const arrayxd_external se,
+                              const arrayxd_external talpha0,
+                              const arrayxd_external tmu0,
+                              const arrayxd_external tSiRiSr0,
+                              double tolerance,
+                              int itermax,
+                              Rcpp::LogicalVector verbose,
+                              Rcpp::LogicalVector lnz_tol){
   
   // This is the variational implementation in pure C++, it does not have the SQUAREM update.
   

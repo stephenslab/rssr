@@ -38,12 +38,33 @@ void rss_varbvsr_update(const double betahat,
   
   // Update the variational estimate of the posterior mean.
   double r = alpha * mu;
+  // double tmu=mu;
   mu = sigma_square * (betahat / se_square + r / se_square - SiRiSr_snp);
+  // if(!std::isfinite(mu)){
+  //   Rcpp::Rcerr<<"old mu was "<<tmu<<std::endl;
+  //   Rcpp::Rcerr<<"new mu is "<<mu<<std::endl;
+  //   Rcpp::stop("mu is not finite");
+  // }
   
   // Update the variational estimate of the posterior inclusion probability.
   double SSR = mu * mu / sigma_square;
-  alpha = sigmoid(logodds + 0.5 * (log(sigma_square/(sigma_beta_square)) + SSR));
-  
+  // double talpha=alpha;
+
+  alpha = sigmoid(logodds + 0.5 * (log(sigma_square)-log(sigma_beta_square) + SSR));
+  // if(!std::isfinite(alpha)){
+  //   double psigmoid =logodds+0.5*(log(sigma_square)-log(sigma_beta_square)+SSR);
+  //   Rcpp::Rcerr<<"old alpha was "<<talpha<<std::endl;
+  //   Rcpp::Rcerr<<"new alpha is "<<alpha<<std::endl;
+  //   Rcpp::Rcerr<<"psigmoid is "<<psigmoid<<std::endl;
+  //   Rcpp::Rcerr<<"logodds is "<<logodds<<std::endl;
+  //   Rcpp::Rcerr<<"sigma_square is "<<logodds<<std::endl;
+  //   Rcpp::Rcerr<<"sigma_beta_square is "<<sigma_beta_square<<std::endl;
+  //   Rcpp::Rcerr<<"sigma_beta is "<<sigma_beta<<std::endl;
+  //   Rcpp::Rcerr<<"SSR is "<<SSR<<std::endl;
+  //   
+  //   
+  //   Rcpp::stop("alpha is not finite");
+  // }
   // Update SiRiSr = inv(S)*R*inv(S)*r
   double r_new = alpha * mu;
   //  cblas_daxpy(p,(r_new-r),SiRiS_snp.data(),1,SiRiSr.data(),1);
