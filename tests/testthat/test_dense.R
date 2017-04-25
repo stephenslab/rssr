@@ -74,9 +74,8 @@ test_that("grid optimization over logodds works as expected",{
   logoddsvec <- log10oddsvec*log(10)
   mr_s <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =1,logodds=logoddsvec,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
   mr_d <- grid_search_rss_varbvsr(SiRiS=SiRiS_f,sigma_beta =1,logodds=logoddsvec,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
-  pi_mean_s <- marg_pi(log10odds = log10oddsvec,c(mr_s$lnZ))  
-  pi_mean_d <- marg_pi(log10odds = log10oddsvec,c(mr_d$lnZ))  
-  expect_equal(c(pi_mean_s),c(pi_mean_d))
+  expect_equal(mr_s$logodds,mr_d$logodds)
+  expect_equal(mr_s$sigb,mr_d$sigb)
   expect_equal(mr_s,mr_d)
 })
 

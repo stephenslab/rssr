@@ -41,14 +41,45 @@ Rcpp::List wrap_rss_varbvsr_iter_sp(const sparseMatrix_external SiRiS,
 
 //[[Rcpp::export]]
 Rcpp::List wrap_rss_varbvsr_iter(const Matrix_external SiRiS,
-                                    const double sigma_beta,
-                                    const double logodds,
-                                    const arrayxd_external betahat,
-                                    const arrayxd_external se,
-                                    const arrayxd_external alpha,
-                                    const arrayxd_external mu,
-                                    const arrayxd_external SiRiSr,
-                                    bool reverse){
+                                 const double sigma_beta,
+                                 const double logodds,
+                                 const arrayxd_external betahat,
+                                 const arrayxd_external se,
+                                 const arrayxd_external alpha,
+                                 const arrayxd_external mu,
+                                 const arrayxd_external SiRiSr,
+                                 bool reverse){
+  
+  Eigen::ArrayXd talpha=alpha;
+  Eigen::ArrayXd tmu=mu;
+  Eigen::ArrayXd tSiRiSr=SiRiSr;
+  
+  
+  rss_varbvsr_iter(SiRiS,
+                   sigma_beta,
+                   logodds,
+                   betahat,
+                   se,
+                   talpha,
+                   tmu,
+                   tSiRiSr,
+                   reverse);
+  return Rcpp::List::create(Rcpp::Named("alpha1")=talpha,
+                            Rcpp::Named("mu1")=tmu,
+                            Rcpp::Named("SiRiSr")=tSiRiSr);
+}
+
+
+//[[Rcpp::export]]
+Rcpp::List wrap_rss_varbvsr_iter_alt(const Matrix_external SiRiS,
+                                 const double sigma_beta,
+                                 const double logodds,
+                                 const arrayxd_external betahat,
+                                 const arrayxd_external se,
+                                 const arrayxd_external alpha,
+                                 const arrayxd_external mu,
+                                 const arrayxd_external SiRiSr,
+                                 bool reverse){
   
   Eigen::ArrayXd talpha=alpha;
   Eigen::ArrayXd tmu=mu;

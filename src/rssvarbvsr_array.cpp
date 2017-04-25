@@ -40,7 +40,7 @@ void rss_varbvsr_iter_array(const c_Matrix_internal SiRiS,
   RowArray r(tot_size);
   RowArray SSR(tot_size);
   RowArray r_new(tot_size);
-  Eigen::VectorXd SiRiS_snp(p);
+
   // Update SiRiSr = inv(S)*R*inv(S)*r
 
   RowArray new_alpha(tot_size);
@@ -251,9 +251,9 @@ Rcpp::DataFrame rss_varbvsr_squarem_array(const c_Matrix_internal SiRiS,
   //    std::cout<<"c:"<<c<<std::endl;
       lnZ(c)=calculate_lnZ(q,alpha.col(c)*mu.col(c),SiRiSr.col(c),logodds(c),sesquare,alpha.col(c),mu.col(c),s.col(c),sigma_beta(c));
 //      std::cout<<"lnZ(c):"<<lnZ(c)<<std::endl;
-      if(!lnZ.allFinite()){
-        Rcpp::stop("lnZ(c) is NaN");
-      }
+      // if(!lnZ.allFinite()){
+      //   Rcpp::stop("lnZ(c) is NaN");
+      // }
       //      lnZ.coeff(i)=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
       double tmtp = mtp.coeff(c);
       

@@ -212,13 +212,6 @@ double rss_varbvsr_naive_iter (const Matrix_external SiRiS,
 
 
 
-
-
-
-
-
-
-
 //' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
 //' @template rssr
 //' @param talpha0 a length p vector specifying the initial value of alpha
@@ -266,11 +259,11 @@ double rss_varbvsr_squarem_iter(const c_Matrix_internal SiRiS,
   
   Eigen::ArrayXd mu_v(p);
   Eigen::ArrayXd mu_r(p);
-  
+  double sigma_beta_square=sigma_beta*sigma_beta;
   Eigen::ArrayXd sesquare =se*se;
   Eigen::ArrayXd  q= betahat/sesquare;
   Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
-  
+  Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
   if(r.hasNaN()){
     Rcpp::Rcerr<<"In iteration iter 0(0)"<<std::endl;
     Rcpp::stop("alpha*mu is not finite!");
@@ -290,13 +283,12 @@ double rss_varbvsr_squarem_iter(const c_Matrix_internal SiRiS,
     
     mu0=mu; 
     bool reverse = iter%2!=0;
-    rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
 //    r=alpha*mu;
     alpha1=alpha;
     mu1=mu;
     SiRiSr1=SiRiSr;
-    
-    rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
     
     alpha_r=alpha1-alpha0;
     alpha_v=(alpha-alpha1)-alpha_r;
@@ -314,7 +306,7 @@ double rss_varbvsr_squarem_iter(const c_Matrix_internal SiRiS,
       SiRiSr=SiRiS*(alpha*mu).matrix();
     }
     
-    rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
+    rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
     r=alpha*mu;
 
     // if(r.hasNaN()){
@@ -339,7 +331,7 @@ double rss_varbvsr_squarem_iter(const c_Matrix_internal SiRiS,
         alpha = alpha0-2*mtp*alpha_r+(mtp*mtp)*alpha_v;
         mu = mu0-2*mtp*mu_r+(mtp*mtp)*mu_v;
         SiRiSr = SiRiS*(alpha*mu).matrix();
-        rss_varbvsr_iter(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,reverse);
+        rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,se,ssrat,alpha,mu,SiRiSr,reverse);
         r=alpha*mu;
         // if(r.hasNaN()){
         //   Rcpp::Rcerr<<"In iteration iter: "<<iter<<" (num_bt: "<<num_bt<<")"<<std::endl;
@@ -800,7 +792,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
     int itermax,
     bool isVerbose,
     bool islnz_tol){
-//  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
+  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
   
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
@@ -870,7 +862,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
   Rcpp::NumericVector sigbvec(tot_size);
   Rcpp::NumericVector lovec(tot_size);
   
-  //  std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
+  std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
   
   Rcpp::LogicalVector verbose(1);
   verbose(0)=isVerbose;
@@ -929,7 +921,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
     int itermax,
     bool isVerbose,
     bool islnz_tol){
-//  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
+  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
   
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
@@ -999,7 +991,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
   Rcpp::NumericVector sigbvec(tot_size);
   Rcpp::NumericVector lovec(tot_size);
   
-//  std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
+   std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
   
   Rcpp::LogicalVector verbose(1);
   verbose(0)=isVerbose;
@@ -1037,6 +1029,59 @@ Rcpp::DataFrame grid_rss_varbvsr(
 
 
 
+Rcpp::DataFrame grid_rss_varbvsr_serial(
+    const c_Matrix_internal SiRiS,
+    const c_arrayxd_internal sigma_beta,
+    const c_arrayxd_internal logodds,
+    const c_arrayxd_internal  betahat,
+    const c_arrayxd_internal  se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    const c_arrayxd_internal tSiRiSr0,
+    double tolerance,
+    int itermax,
+    bool isVerbose,
+    bool islnz_tol){
+  
+  using namespace Rcpp;
+  size_t sigb_size= sigma_beta.size();
+  size_t logodds_size=logodds.size();
+  size_t tot_size=sigb_size*logodds_size;
+  
+  Rcpp::NumericVector nlzvec(tot_size);
+  Rcpp::NumericVector sigbvec(tot_size);
+  Rcpp::NumericVector lovec(tot_size);
+  
+  //  std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
+  
+  Rcpp::LogicalVector verbose(1);
+  verbose(0)=isVerbose;
+  Rcpp::LogicalVector lnz_tol(1);
+  lnz_tol(0)=islnz_tol;
+  
+  
+  for(size_t t=0; t<tot_size; t++){
+    size_t i=t%logodds_size;
+    size_t j=t/logodds_size;
+    sigbvec(t)=sigma_beta(j);
+    lovec(t)=logodds(i);
+    nlzvec(t)=rss_varbvsr_squarem_iter(SiRiS,
+           sigma_beta(j),
+           logodds(i),
+           betahat,
+           se,
+           talpha0,
+           tmu0,
+           tSiRiSr0,
+           tolerance,
+           itermax,
+           lnz_tol);
+  }
+  
+  return(Rcpp::DataFrame::create(_["logodds"]=lovec,
+                                 _["sigb"]=sigbvec,
+                                 _["lnZ"]=nlzvec));
+}
 
 
 

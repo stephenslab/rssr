@@ -15,7 +15,7 @@
 #include "rssr/kl.h"
 
 #include "rssr/rssr_grid.h"
-#include "rssr/rssr_array.h"
+
 
 #include "rssr/sparse_matrix.h"
 

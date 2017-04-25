@@ -110,5 +110,4 @@ Rcpp::DataFrame grid_rss_varbvsr_serial(
     bool islnz_tol);
 
 
-
 #endif
