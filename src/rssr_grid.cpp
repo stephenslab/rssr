@@ -792,7 +792,7 @@ Rcpp::DataFrame grid_rss_varbvsr(
     int itermax,
     bool isVerbose,
     bool islnz_tol){
-  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
+//  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
   
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
@@ -921,7 +921,8 @@ Rcpp::DataFrame grid_rss_varbvsr(
     int itermax,
     bool isVerbose,
     bool islnz_tol){
-  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
+  
+//  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
   
   using namespace Rcpp;
   size_t sigb_size= sigma_beta.size();
