@@ -4,6 +4,7 @@
 #include<math.h>
 #include <xmmintrin.h>
 #include <pmmintrin.h>
+#include "mkl.h"
 
 
 #include <RcppEigen.h>
