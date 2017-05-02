@@ -8,5 +8,5 @@
 CXX_STD = CXX11
 
 #PKG_CFLAGS += -daal
-PKG_CPPFLAGS+= -I../inst/include/ -DEIGEN_USE_MKL_ALL
+PKG_CPPFLAGS+= -I../inst/include/ -DEIGEN_USE_MKL_ALL -inline-forceinline 
 PKG_LIBS+= $(shell ${R_HOME}/bin/Rscript -e "RcppParallel::RcppParallelLibs()")

@@ -92,9 +92,20 @@ grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, tal
     .Call('rssr_grid_search_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
+grid_search_rss_varbvsr_pve <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol, showprogress) {
+    .Call('rssr_grid_search_rss_varbvsr_pve', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol, showprogress)
+}
+
 grid_search_rss_varbvsr_serial <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
     .Call('rssr_grid_search_rss_varbvsr_serial', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
+
+#' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
+#' @template rssr
+#' @param talpha0 a length p vector specifying the initial value of alpha
+#' @param tmu0 a length p vector specifying the initial value of mu
+#' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
+NULL
 
 #' Run RSS with the variational bayes algorithm accelerated with SQUAREM, only returning the lower bound
 #' @template rssr
