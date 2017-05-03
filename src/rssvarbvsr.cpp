@@ -69,10 +69,10 @@ void rss_varbvsr_update(const double betahat,
   //   Rcpp::stop("alpha is not finite");
   // }
   // Update SiRiSr = inv(S)*R*inv(S)*r
-  double r_new = alpha * mu-r;
-  cblas_daxpy(p,r_new,SiRiS_snp.data(),1,SiRiSr.data(),1);
+   double r_new = alpha * mu-r;
+  // cblas_daxpy(p,r_new,SiRiS_snp.data(),1,SiRiSr.data(),1);
   //  cblas_daxpy(p,(r_new-r),SiRiS_snp.data(),1,SiRiSr.data(),1);
-  //  SiRiSr+=(SiRiS_snp*(r_new-r));
+    SiRiSr+=(SiRiS_snp*(r_new-r));
 }
 
 
@@ -119,7 +119,7 @@ void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
                       arrayxd_internal SiRiSr,
                       bool reverse){
   
-  mkl_set_num_threads_local(1);
+  // mkl_set_num_threads_local(1);
   size_t p=betahat.size();
   // Get the number of SNPs (p) and coordinate ascent updates (m).
   

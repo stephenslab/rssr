@@ -36,21 +36,6 @@ Rcpp::DataFrame grid_search_rss_varbvsr_sp(
     Rcpp::LogicalVector lnz_tol);
 
 
-Rcpp::List grid_rss_varbvsr_pve(
-    const c_Matrix_internal SiRiS,
-    const c_arrayxd_internal sigma_beta,
-    const c_arrayxd_internal logodds,
-    const c_arrayxd_internal  betahat,
-    const c_arrayxd_internal  se,
-    const c_arrayxd_internal talpha0,
-    const c_arrayxd_internal tmu0,
-    const c_arrayxd_internal tSiRiSr0,
-    double tolerance,
-    int itermax,
-    bool isVerbose,
-    bool islnz_tol,
-    bool progress);
-
 Rcpp::DataFrame grid_rss_varbvsr(
     const c_Matrix_internal  SiRiS,
     const c_arrayxd_internal sigma_beta,
