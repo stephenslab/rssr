@@ -5,7 +5,7 @@
 
 using namespace Rcpp;
 
-
+ 
 void rss_varbvsr_update(const double betahat,
                         const double se_square,
                         const double sigma_beta_square,
