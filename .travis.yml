@@ -1,13 +1,7 @@
 language: r
-dist: trusty
-sudo: required
+cache: packages
 notifications:
   email:
     false
 warnings_are_errors: false
-addons:
-  apt:
-    packages:
-      - libhdf5-dev
-      - liboctave-dev
       
