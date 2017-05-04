@@ -38,6 +38,9 @@ squarem_update <- function(SiRiS,
 
 
 
+
+
+
 #' RSS
 #' Main function for running RSS in serial (with SQUAREM updates)
 #' @param datafiles a vector of HDF5 files with one file per chromosome.(See details for constraints on the layout of these files)

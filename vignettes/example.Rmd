@@ -69,7 +69,7 @@ SiRiSr_start <- c(SiRiS_f %*% (alpha_start * mu_start))
 Here we fix the values of two hyper-parameters: `sigma_beta=1` and `logodds=-4.6`.
 
 ```{r}
-r_results <- rssr::rss_varbvsr_naive(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start,itermax=100,verbose = F,lnz_tol = F, tolerance=1e-4)
+r_results <- rssr::rss_varbvsr_naive_sp(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start,itermax=100,verbose = F,lnz_tol = F, tolerance=1e-4)
 
 # extract certain quantities for further comparisons
 r_iter <- r_results$iter
@@ -128,7 +128,7 @@ Because `rss_varbvsr_naive` and `rss_varbvs.m` are written based on the **same**
 
 If you do not run the `Matlab` script above to generate results from `rss_varbvsr.m`, please download the our result file [`example2_vb_results.mat`](https://guchicao.box.com/v/example2) to an directory (e.g. `/tmp`).
 
-```{r}
+```{r,eval=F}
 matfile_name <- system.file("example2_vb_results.mat",package="rssr")
 m_results <- R.matlab::readMat(matfile_name)
 
@@ -148,7 +148,7 @@ m_mu <- c(m_results$mu)
 
 First, we can see that both implementations yield the same number of iterations (`iter`), the same maximum relative difference between the parameters at the last two iterations (`maxerr`), and the same variational lower bound at the last iteration (`lnZ`).  
 
-```{r, echo=FALSE}
+```{r,eval=F, echo=FALSE}
 tab.mat <- matrix(data=0, nrow=3, ncol=2)
 tab.mat[, 1] <- c(r_iter, log10(r_maxerr), r_lnZ)
 tab.mat[, 2] <- c(m_iter, log10(m_maxerr), m_lnZ)
@@ -162,7 +162,7 @@ knitr::kable(tab.mat)
 
 In addition, the variational parameter estimates (`alpha` and `mu`) are identical.
 
-```{r, echo=FALSE, fig.width=8, fig.height=4}
+```{r,eval=F, echo=FALSE, fig.width=8, fig.height=4}
 par(mfrow=c(1,2))
 
 plot(r_mu, m_mu, pch=20, xlab="rss_varbvsr_naive", ylab="rss_varbvsr.m", main="mu")

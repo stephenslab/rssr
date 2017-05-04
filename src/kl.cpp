@@ -46,6 +46,10 @@ double rel_err(double p0,double p1){
   return fabs(p0-p1)/(fabs(p0)+fabs(p1)+double_lim::epsilon());
 }
 
+Eigen::ArrayXd rel_err(c_arrayxd_internal p0,c_arrayxd_internal p1){
+  return ((p0-p1).cwiseAbs())/(p0.cwiseAbs()+p1.cwiseAbs()+double_lim::epsilon());
+}
+
 
 
 double find_maxerr(const c_arrayxd_internal alpha,
@@ -106,9 +110,37 @@ double calculate_lnZ(const c_vectorxd_internal q,
                      double sigb){
   
 
+  // if(!q.allFinite()){
+  //   Rcpp::stop("q is not finite");
+  // }
+  // if(!r.allFinite()){
+  //   Rcpp::stop("r is not finite");
+  // }
+  // if(!SiRiSr.allFinite()){
+  //   Rcpp::stop("SiRiSr is not finite");
+  // }
+  // if(!alpha.allFinite()){
+  //   Rcpp::stop("alpha is not finite");
+  // }
+  // if(!mu.allFinite()){
+  //   Rcpp::stop("mu is not finite");
+  // }
+  // if(!s.allFinite()){
+  //   Rcpp::stop("s is not finite");
+  // }
+  
   double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());
+  // if(!std::isfinite(lnz0)){
+  //   Rcpp::stop("lnZ0 is not finite");
+  // }
   double lnz1 = lnz0-0.5*(1/sesquare.array()).matrix().dot(betavar(alpha.array(),mu.array(),s.array()).matrix());
+  // if(!std::isfinite(lnz0)){
+  //   Rcpp::stop("lnZ1 is not finite");
+  // }
   double lnz2 = lnz1+intklbeta_rssbvsr(alpha.array(),mu.array(),s.array(),sigb*sigb);
+  // if(!std::isfinite(lnz0)){
+  //   Rcpp::stop("lnZ2 is not finite");
+  // }
   return(lnz2);
 }
 
