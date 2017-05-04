@@ -2,10 +2,11 @@
 #define RCPP_rssr_H_GEN_
 
 #include<math.h>
-#include <xmmintrin.h>
-#include <pmmintrin.h>
+// #include <xmmintrin.h>
+// #include <pmmintrin.h>
+#ifdef EIGEN_USE_MKL_ALL
 #include "mkl.h"
-
+#endif
 
 #include <RcppEigen.h>
 

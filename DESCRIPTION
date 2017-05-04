@@ -7,9 +7,9 @@ Author: Nicholas Knoblauch, Xiang Zhu, Peter Carbonetto, Matthew Stephens
 Maintainer: Nicholas Knoblauch <nwknoblauch@gmail.com>
 Description: Implements the method Regression with Summary Statistics.
 License: What license is it under?
-Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),RcppParallel,RcppProgress
+Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),RcppParallel,RcppProgress,purrr
 LinkingTo: Rcpp,RcppEigen,RcppParallel,RcppProgress
 RoxygenNote: 6.0.1
-Suggests: testthat,RcppOctave,R.matlab,knitr,rmarkdown
+Suggests: testthat,knitr,rmarkdown
 SystemRequirements: GNU make
 VignetteBuilder: knitr

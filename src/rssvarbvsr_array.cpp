@@ -182,10 +182,13 @@ Rcpp::DataFrame rss_varbvsr_squarem_array(const c_Matrix_internal SiRiS,
   Eigen::ArrayXd sesquare =se*se;
   Eigen::ArrayXd  q= betahat/sesquare;
   Eigen::ArrayXXd s(p,tot_size);
+  Eigen::ArrayXd ssrat(p,tot_size);
+  Eigen::ArrayXd sigma_beta_square=sigma_beta.square();
 //  Rcout<<"Initializing sigma_square and initial lnZ values"<<std::endl;
   for(size_t i=0; i<tot_size; i++){
-    s.col(i)=(sesquare*(sigma_beta(i)*sigma_beta(i)))/(sesquare+(sigma_beta(i)*sigma_beta(i)));
+    s.col(i)=(sesquare*(sigma_beta_square(i)))/(sesquare+(sigma_beta_square(i)));
     lnZ(i)=calculate_lnZ(q,alpha.col(i)*mu.col(i),SiRiSr.col(i),logodds(i),sesquare,alpha.col(i),mu.col(i),s.col(i),sigma_beta(i));
+    ssrat.col(i)=(s.col(i)/sigma_beta_square(i)).log();
   }
   
   RowArray mtp(tot_size);
@@ -268,7 +271,7 @@ Rcpp::DataFrame rss_varbvsr_squarem_array(const c_Matrix_internal SiRiS,
           alpha.col(c) = alpha0.col(c)-2*tmtp*alpha_r.col(c)+(tmtp*tmtp)*alpha_v.col(c);
           mu.col(c) = mu0.col(c)-2*tmtp*mu_r.col(c)+(tmtp*tmtp)*mu_v.col(c);
           SiRiSr.col(c) = SiRiS*(alpha.col(c)*mu.col(c)).matrix();
-          rss_varbvsr_iter(SiRiS,sigma_beta(c),logodds(c),betahat,se,alpha.col(c),mu.col(c),SiRiSr.col(c),reverse);
+          rss_varbvsr_iter(SiRiS,sigma_beta_square(c),s.col(c),logodds(c),betahat,sesquare,ssrat.col(c),alpha.col(c),mu.col(c),SiRiSr.col(c),reverse);
           lnZ(c)=calculate_lnZ(q,alpha.col(c)*mu.col(c),SiRiSr.col(c),logodds(c),sesquare,alpha.col(c),mu.col(c),s.col(c),sigma_beta(c));
           num_bt=num_bt+1;
         }

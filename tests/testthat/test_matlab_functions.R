@@ -1,15 +1,6 @@
 context("MATLAB_scripts")
-library(RcppOctave)
 #library(rssr)
 library(Matrix)
-library(testthat)
-#Find the location of the .m files 
-mfile <- system.file("m_files/run_install.m",package="rssr")
-mdir <- system.file("m_files",package="rssr")
-
-#change to the directory with the .m files in Octave
-.CallOctave('cd',mdir)
-o_source("run_install.m")
 
 #Load the simulated data
 data("betahat")
@@ -36,16 +27,24 @@ SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
 
 
 
-#Call with Octave and RSSR
+
+
+
+
+
+
 
 
 
 test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
+
+
   I <- 1:p
   rI <- p:1
   sigb <- 1
   logodds <- -3
-  res <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,I)
+  data("matlab_varbvsr_update_1")
+  res <- matlab_varbvsr_update_1
   mres <- wrap_rss_varbvsr_iter_sp(SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,F)
   expect_equal(c(res$alpha1),c(mres$alpha1),tolerance=1e-8)
   expect_equal(c(res$mu1),c(mres$mu1),tolerance=1e-8)
@@ -57,7 +56,8 @@ test_that("Single RSS update is the same when computed backwards",{
   rI <- p:1
   sigb <- 1
   logodds <- -3
-  rres <- .CallOctave('wrap_rss_varbvsr_update',SiRiS_f,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,rI)
+  data("matlab_varbvsr_update_2")
+  rres <- matlab_varbvsr_update_2
   rmres <- wrap_rss_varbvsr_iter_sp(SiRiS,sigb,logodds,betahat,se,alpha_test,mu_test,SiRiSr,T)
   expect_equal(c(rres$alpha1),c(rmres$alpha1),tolerance=1e-8)
   expect_equal(c(rres$mu1),c(rmres$mu1),tolerance=1e-8)
@@ -65,28 +65,26 @@ test_that("Single RSS update is the same when computed backwards",{
 
 
 
-test_that("gamma integral is calcualted correctly",{
-          logodds <- -3
-          expect_equal(intgamma(logodds,alpha_test),
-                       .CallOctave('intgamma',logodds,alpha_test))})
-
-test_that("integral of variational lower bound is computed correctly",{
-  sigb <- 1
-  s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
-  expect_equal(intklbeta_rssbvsr(alpha_test,mu_test,s_test,sigb),
-               .CallOctave('intklbeta_rssbvsr',t(t(alpha_test)),t(t(mu_test)),s_test,sigb))
-          })
-
-test_that("betavar works the same",{
-  sigb <- 1
-  s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
-  expect_equal(betavar(alpha_test,mu_test,s_test),
-               c(.CallOctave('betavar',alpha_test,mu_test,s_test)))
-  })
+# test_that("gamma integral is calcualted correctly",{
+#   logodds <- -3
+#           expect_equal(intgamma(logodds,alpha_test),matlab_intgamma)})
+# 
+# test_that("integral of variational lower bound is computed correctly",{
+#   sigb <- 1
+#   s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
+#   expect_equal(intklbeta_rssbvsr(alpha_test,mu_test,s_test,sigb),matlab_intklbeta)})
+#              
+# 
+# test_that("betavar works the same",{
+#   sigb <- 1
+#   s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
+#   expect_equal(betavar(alpha_test,mu_test,s_test),c(matlab_betavar))})
+# 
 
 
 test_that("SiRiS is generated equivalently",{
-  t_SiRiS = .CallOctave('gen_SiRiS',as.matrix(R_shrink),se)
+  data("matlab_SiRiS")
+t_SiRiS <- matlab_SiRiS
   m_SiRiS <- as.matrix(SiRSi(R_shrink,1/se))
   attr(m_SiRiS,"dimnames") <- NULL
   expect_equivalent(t_SiRiS,m_SiRiS)
@@ -99,8 +97,8 @@ test_that("SiRiS is generated equivalently",{
 
 test_that("Naive implementations are identical",{
   sigb <- 1
-  
-  naive_results <- .CallOctave('wrap_rss_varbvsr_naive',t(t(betahat)),t(t(se)),SiRiS_f,sigb,-4.6,t(alpha_test),t(mu_test))
+  data("matlab_varbvsr_naive_1")
+  naive_results <- matlab_varbvsr_naive_1
   my_naive <- rss_varbvsr_naive_sp(SiRiS = SiRiS,sigma_beta = sigb,logodds = -4.6,betahat = betahat,se = se,talpha0 =  alpha_test,tmu0 =  mu_test,tSiRiSr0 = SiRiSr,tolerance = 1e-4,itermax = 100,verbose = T,lnz_tol = F)
   expect_equivalent(naive_results$lnZ,my_naive$lnZ)
   expect_equivalent(c(naive_results$mu),c(my_naive$mu))
@@ -114,7 +112,8 @@ test_that("Naive implementations are identical",{
 test_that("SQUAREM updates are identical",{
   sigb <- 1  
   logodds <- -3
-  mat_results <- .CallOctave('wrap_rss_varbvsr_squarem',t(t(betahat)),t(t(se)),SiRiS_f,sigb,logodds,t(alpha_test),t(mu_test),1e-4)
+  data("matlab_varbvsr_squarem_1")
+  mat_results <- matlab_varbvsr_squarem_1
   my_results <- rss_varbvsr_squarem_sp(SiRiS = SiRiS,
                                        sigma_beta=sigb,
                                        logodds=logodds,
@@ -141,8 +140,10 @@ test_that("grid optimization over logodds works as expected",{
   sigb <- 1
   log10oddsvec <- seq(-6,-1,0.5)
   logoddsvec <- log10oddsvec*log(10)
-  pm <- .CallOctave('grid_rss_varbvsr_logodds',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
-  mr <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =1,logodds=logoddsvec,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
+  data("matlab_grid_logodds")
+  pm <- matlab_grid_logodds
+  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% cross_d()
+  mr <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =paramdf$sigb,logodds=paramdf$logodds,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
   pi_mean <- marg_pi(log10odds = log10oddsvec,c(mr$lnZ))  
   expect_equal(c(pi_mean),pm$pi_mean)
 })
@@ -151,16 +152,20 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
   log10oddsvec <- seq(-3.1,-2.1,length.out = 5)
   logoddsvec <- log10oddsvec*log(10)
   sigb <- seq(0.8,1.2,length.out = 5)
-  pm <- .CallOctave('grid_rssr_varbvsr',t(t(betahat)),t(t(se)),SiRiS_f,sigb,log10oddsvec,t(alpha_test),t(mu_test))
+  
+  
+  data("matlab_grid_logodds_sigb")
+  pm <- matlab_grid_logodds_sigb
+  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% cross_d()
   mr_grid <- grid_search_rss_varbvsr_sp(talpha0=alpha_test,
                                         tmu0=mu_test,betahat=betahat,
                                         se=se,
                                         SiRiS=SiRiS,
-                                        sigma_beta =sigb,
-                                        logodds=logoddsvec,
+                                        sigma_beta =paramdf$sigb,
+                                        logodds=paramdf$logodds,
                                         verbose=F,
                                         tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
-  expect_equal(c(mr_grid$lnZ),c(pm))}
+  expect_equal(c(mr_grid$lnZ),c(t(pm)))}
 )
 
 
