@@ -1,5 +1,5 @@
 context("numerical stability")
-
+library(Matrix)
 
 Rlsigmoid <- function(x){
   -(log(1+exp(-x)))
