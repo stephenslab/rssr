@@ -11,7 +11,7 @@ The first step in installation is to ensure that the `devtools` library is insta
 
 ``` r
 install.packages('devtools')
-devtools::install_github("stephenslab/rssr",ref="v0.1.1-alpha",build_vignettes = TRUE)
+devtools::install_github("stephenslab/rssr",ref="v0.2.0-alpha",build_vignettes = TRUE)
 ```
 
 Usage
