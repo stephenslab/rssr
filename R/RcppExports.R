@@ -37,6 +37,10 @@ calculate_lnZ <- function(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb) {
     .Call('rssr_exp_calculate_lnZ', PACKAGE = 'rssr', q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb)
 }
 
+wrap_squarem_adjust_prep <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol) {
+    .Call('rssr_wrap_squarem_adjust_prep', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol)
+}
+
 rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
     .Call('rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }

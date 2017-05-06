@@ -13,13 +13,13 @@
 
 
 
-template <typename T> void squarem_backtrack(arrayxd_internal alpha,
+template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
                                              const c_arrayxd_internal alpha0,
                                              const c_arrayxd_internal alpha1,
-                                             arrayxd_internal mu,
+                                             arrayxd_internal &mu,
                                              const c_arrayxd_internal mu0,
                                              const c_arrayxd_internal mu1,
-                                             arrayxd_internal SiRiSr,
+                                             arrayxd_internal &SiRiSr,
                                              T SiRiS,
                                              const double sigma_beta,
                                              const double logodds,
@@ -129,11 +129,12 @@ template <typename T> void squarem_adjust(arrayxd_internal alpha,
                                           double & mtp){
   
   
-  mtp= -sqrt(((alpha1-alpha0).square()).sum()+((mu1-mu0).square()).sum())/sqrt(((alpha-2*alpha1+alpha0).square()).sum()+((mu-2*mu1+mu0).square()).sum());
+  mtp= -std::sqrt(((alpha1-alpha0).square()).sum()+((mu1-mu0).square()).sum())/std::sqrt(((alpha-2*alpha1+alpha0).square()).sum()+((mu-2*mu1+mu0).square()).sum());
   
   if(mtp >=-1){
     
   }else{
+    // Rcpp::Rcout<<"squarem adjust"<<std::endl;
     alpha=alpha0-2*mtp*(alpha1-alpha0)+(mtp*mtp)*(alpha-2*alpha1+alpha0);
     mu=mu0-2*mtp*(mu1-mu0)+(mtp*mtp)*(mu-2*mu1+mu0);
     SiRiSr=SiRiS*(alpha*mu).matrix();
@@ -254,15 +255,145 @@ Eigen::ArrayXd initialize_ssrat(const c_arrayxd_internal s, const double sigma_b
 //   return(ret);
 // }
 
+//[[Rcpp::export]]
+Rcpp::List wrap_squarem_adjust_prep(const Matrix_external SiRiS,
+                                    const double sigma_beta,
+                                    const double logodds,
+                                    const arrayxd_external  betahat,
+                                    const arrayxd_external se,
+                                    arrayxd_external talpha,
+                                    arrayxd_external tmu,
+                                    arrayxd_external tSiRiSr,
+                                    const double tolerance,
+                                    const int itermax,
+                                    Rcpp::LogicalVector lnz_tol){
+  
+  Eigen::ArrayXd alpha=talpha;
+  Eigen::ArrayXd mu=tmu;
+  Eigen::ArrayXd SiRiSr=tSiRiSr;
+  
+  Eigen::ArrayXd alpha2=talpha;
+  Eigen::ArrayXd mu2=tmu;
+  Eigen::ArrayXd SiRiSr2=tSiRiSr;
+  
+  double max_err=1;
+  //This function implements RSS with variational bayes and the SQUAREM algorithm.
+  int iter=0;
+  bool lnztol=lnz_tol[0];
+  const size_t p = betahat.size();
+  
+  // Eigen::ArrayXd alpha=talpha0;
+  // Eigen::ArrayXd mu=tmu0;
+  // Eigen::ArrayXd SiRiSr=tSiRiSr0;
+  double lnZ= 0;
+  //  double lnZ=log(0);
+  
+  
+  Eigen::ArrayXd alpha0 = alpha;
+  Eigen::ArrayXd mu0 =mu;
+  Eigen::ArrayXd  SiRiSr0 = SiRiSr;
+  // Eigen::ArrayXd alpha0=alpha;
+  // Eigen::ArrayXd mu0=mu;
+  // Eigen::ArrayXd SiRiSr0=SiRiSr;
+  
+  
+  ArrayXd alpha1=alpha;
+  ArrayXd mu1=mu;
+  ArrayXd SiRiSr1=SiRiSr;
+  
+  
+  ArrayXd r=alpha*mu;
+  
+  
+  double sigma_beta_square=sigma_beta*sigma_beta;
+  Eigen::ArrayXd sesquare =se*se;
+  Eigen::ArrayXd  q= betahat/sesquare;
+  ArrayXd s=initialize_s(sesquare,sigma_beta_square);
+  ArrayXd ssrat=initialize_ssrat(s,sigma_beta_square);
+  // Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
+  // Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
+  
+  
+  if(r.hasNaN()){
+    Rcpp::Rcerr<<"In iteration iter 0(0)"<<std::endl;
+    Rcpp::stop("alpha*mu is not finite!");
+  }
+  
+  lnZ=calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
+  
+  double mtp=0;
+  
+  max_err=1;
+  double lnZ0=lnZ;
+  
+  
+  
+  lnZ0=lnZ;
+  alpha0=alpha;
+  mu0=mu; 
+  
+  bool reverse = iter%2!=0;
+  rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
+  
+  alpha1=alpha;
+  mu1=mu;
+  SiRiSr1=SiRiSr;
+  
+  rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
 
-template<typename T, typename A, typename P> P rss_varbvsr_squarem_iter(const T SiRiS,
-                                                     const P sigma_beta,
-                                                     const P logodds,
+  
+  alpha2=alpha;
+  mu2=mu;
+  SiRiSr2=SiRiSr;
+  squarem_adjust(alpha,alpha0,alpha1,mu,mu0,mu1,tSiRiSr,SiRiS,mtp);
+  
+  mtp= -std::sqrt(((alpha1-alpha0).square()).sum()+((mu1-mu0).square()).sum())/std::sqrt(((alpha-2*alpha1+alpha0).square()).sum()+((mu-2*mu1+mu0).square()).sum());
+  
+
+    
+
+    Rcpp::Rcout<<"squarem adjust"<<std::endl;
+    alpha=alpha0-2*mtp*(alpha1-alpha0)+(mtp*mtp)*(alpha-2*alpha1+alpha0);
+    mu=mu0-2*mtp*(mu1-mu0)+(mtp*mtp)*(mu-2*mu1+mu0);
+    SiRiSr=SiRiS*(alpha*mu).matrix();
+  
+  
+  
+  return(Rcpp::List::create(Rcpp::Named("alpha0")=alpha0,
+                            Rcpp::Named("alpha1")=alpha1,
+                            Rcpp::Named("alpha2")=alpha2,
+                            Rcpp::Named("alpha")=alpha,
+                            
+                            Rcpp::Named("mu0")=mu0,
+                            Rcpp::Named("mu1")=mu1,
+                            Rcpp::Named("mu2")=mu2,
+                            Rcpp::Named("mu")=mu,
+                            Rcpp::Named("SiRiSr")=tSiRiSr,
+                            Rcpp::Named("mtp")=mtp));
+}
+
+// 
+// Rcpp::List wrap_squarem_adjust(const Matrix_external SiRiS,
+//                                     const double sigma_beta,
+//                                     const double logodds,
+//                                     const arrayxd_external  betahat,
+//                                     const arrayxd_external se,
+//                                     arrayxd_external talpha,
+//                                     arrayxd_external tmu,
+//                                     arrayxd_external tSiRiSr,
+//                                     const double tolerance,
+//                                     const int itermax,
+//                                     Rcpp::LogicalVector lnz_tol){
+
+
+template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
+                                                     const double sigma_beta,
+                                                     const double logodds,
                                                      const c_arrayxd_internal  betahat,
                                                      const c_arrayxd_internal se,
-                                                     A alpha,
-                                                     A mu,
-                                                     A SiRiSr,
+                                                     arrayxd_internal alpha,
+                                                     arrayxd_internal mu,
+                                                     arrayxd_internal SiRiSr,
                                                      const double tolerance,
                                                      const int itermax,
                                                      Rcpp::LogicalVector lnz_tol,int &iter, double &max_err){
@@ -277,31 +408,31 @@ template<typename T, typename A, typename P> P rss_varbvsr_squarem_iter(const T 
   // Eigen::ArrayXd alpha=talpha0;
   // Eigen::ArrayXd mu=tmu0;
   // Eigen::ArrayXd SiRiSr=tSiRiSr0;
-  P lnZ= initialize_value(0,logodds);
-//  double lnZ=log(0);
+  double lnZ= initialize_value(0,logodds);
+  //  double lnZ=log(0);
   
   
-  A alpha0 = initialize_array(alpha,logodds);
-  A mu0 = initialize_array(mu,logodds);
-  A SiRiSr0 = initialize_array(SiRiSr,logodds);
+  Eigen::ArrayXd alpha0 = alpha;
+  Eigen::ArrayXd mu0 =mu;
+  Eigen::ArrayXd  SiRiSr0 = SiRiSr;
   // Eigen::ArrayXd alpha0=alpha;
   // Eigen::ArrayXd mu0=mu;
   // Eigen::ArrayXd SiRiSr0=SiRiSr;
   
   
-  A alpha1=alpha;
-  A mu1=mu;
-  A SiRiSr1=SiRiSr;
+  ArrayXd alpha1=alpha;
+  ArrayXd mu1=mu;
+  ArrayXd SiRiSr1=SiRiSr;
   
   
-  A r=alpha*mu;
+  ArrayXd r=alpha*mu;
   
-
-  P sigma_beta_square=sigma_beta*sigma_beta;
+  
+  double sigma_beta_square=sigma_beta*sigma_beta;
   Eigen::ArrayXd sesquare =se*se;
   Eigen::ArrayXd  q= betahat/sesquare;
-  A s=initialize_s(sesquare,sigma_beta_square);
-  A ssrat=initialize_ssrat(s,sigma_beta_square);
+  ArrayXd s=initialize_s(sesquare,sigma_beta_square);
+  ArrayXd ssrat=initialize_ssrat(s,sigma_beta_square);
   // Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
   // Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
   
@@ -313,29 +444,27 @@ template<typename T, typename A, typename P> P rss_varbvsr_squarem_iter(const T 
   
   lnZ=calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
   
-  P mtp=initialize_value(0,sigma_beta_square);  
+  double mtp=0;
   
   max_err=1;
-  P lnZ0=lnZ;
-
-
+  double lnZ0=lnZ;
+  
+  
   while(max_err>tolerance){
     lnZ0=lnZ;
     alpha0=alpha;
-    
     mu0=mu; 
+    
     bool reverse = iter%2!=0;
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
-
     
     alpha1=alpha;
     mu1=mu;
     SiRiSr1=SiRiSr;
+    
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
     
-    squarem_adjust<T>(alpha,alpha0,alpha1,
-                   mu,mu0,mu1,
-                   SiRiSr,SiRiS,mtp);
+    squarem_adjust<T>(alpha,alpha0,alpha1,mu,mu0,mu1,SiRiSr,SiRiS,mtp);
     
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
 //    r=alpha*mu;

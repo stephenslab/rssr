@@ -29,6 +29,34 @@ SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
 
 
 
+test_that("SQUAREM step size adjustment works",{
+  
+  sigb <- 1
+  logodds <- -3
+  
+  data("matlab_update")
+  mat_results <- matlab_update
+  t_adjust <-  wrap_squarem_adjust_prep(SiRiS = SiRiS_f,
+                                        sigma_beta=sigb,
+                                        logodds=logodds,
+                                        betahat = betahat,
+                                        se = se,
+                                        talpha = alpha_test,
+                                        tmu = mu_test,
+                                        tSiRiSr = SiRiSr,
+                                        tolerance = 1e-4,
+                                        itermax=0,
+                                        lnz_tol=F)
+  
+  expect_equal(t_adjust$mtp,mat_results$mtp)
+  expect_equal(t_adjust$alpha0,c(mat_results$alpha0))
+  expect_equal(t_adjust$alpha1,c(mat_results$alpha1))
+  expect_equal(t_adjust$alpha2,c(mat_results$alpha2))
+  expect_equal(t_adjust$alpha,c(mat_results$alpha))
+  expect_equal(t_adjust$mu,c(mat_results$mu))
+  expect_equal(t_adjust$mu0,c(mat_results$mu0))
+  expect_equal(t_adjust$mu,c(mat_results$mu))
+})
 
 
 
@@ -109,11 +137,31 @@ test_that("Naive implementations are identical",{
 
 
 
+
+
 test_that("SQUAREM updates are identical",{
   sigb <- 1  
   logodds <- -3
   data("matlab_varbvsr_squarem_1")
-  mat_results <- matlab_varbvsr_squarem_1
+  mat_results_2 <- matlab_varbvsr_squarem_1
+  # mat_results_1up <- matlab_varbvsr_squarem_1_up
+  my_results_2 <- rss_varbvsr_squarem_sp(SiRiS = SiRiS,
+                                         sigma_beta=sigb,
+                                         logodds=logodds,
+                                         betahat = betahat,
+                                         se = se,
+                                         talpha0 = alpha_test,
+                                         tmu0 = mu_test,
+                                         tSiRiSr0 = SiRiSr,
+                                         tolerance = 1e-4,
+                                         itermax=100,
+                                         verbose=T,
+                                         lnz_tol=F)
+  expect_equal(my_results_2$alpha,c(mat_results_2$alpha))
+  expect_equal(my_results_2$mu,c(mat_results_2$mu))
+
+  
+  
   my_results <- rss_varbvsr_squarem_sp(SiRiS = SiRiS,
                                        sigma_beta=sigb,
                                        logodds=logodds,
@@ -126,12 +174,13 @@ test_that("SQUAREM updates are identical",{
                                        itermax=900,
                                        verbose=T,
                                        lnz_tol=F)
+
   
-  expect_equivalent(my_results$lnZ,mat_results$lnZ)
-  expect_equivalent(my_results$mu,c(mat_results$mu))
-  expect_equivalent(my_results$alpha,c(mat_results$alpha))
-  expect_equivalent(my_results$iter,mat_results$info$iter)
-  expect_equivalent(my_results$max_err,mat_results$info$maxerr)
+  expect_equivalent(my_results$lnZ,mat_results_2$lnZ)
+  expect_equivalent(my_results$mu,c(mat_results_2$mu))
+  expect_equivalent(my_results$alpha,c(mat_results_2$alpha))
+  expect_equivalent(my_results$iter,mat_results_2$info$iter)
+  expect_equivalent(my_results$max_err,mat_results_2$info$maxerr)
 })
 
 

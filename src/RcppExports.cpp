@@ -124,6 +124,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// wrap_squarem_adjust_prep
+Rcpp::List wrap_squarem_adjust_prep(const Matrix_external SiRiS, const double sigma_beta, const double logodds, const arrayxd_external betahat, const arrayxd_external se, arrayxd_external talpha, arrayxd_external tmu, arrayxd_external tSiRiSr, const double tolerance, const int itermax, Rcpp::LogicalVector lnz_tol);
+RcppExport SEXP rssr_wrap_squarem_adjust_prep(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talphaSEXP, SEXP tmuSEXP, SEXP tSiRiSrSEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP lnz_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Matrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
+    Rcpp::traits::input_parameter< arrayxd_external >::type talpha(talphaSEXP);
+    Rcpp::traits::input_parameter< arrayxd_external >::type tmu(tmuSEXP);
+    Rcpp::traits::input_parameter< arrayxd_external >::type tSiRiSr(tSiRiSrSEXP);
+    Rcpp::traits::input_parameter< const double >::type tolerance(toleranceSEXP);
+    Rcpp::traits::input_parameter< const int >::type itermax(itermaxSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type lnz_tol(lnz_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(wrap_squarem_adjust_prep(SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rss_varbvsr_naive
 Rcpp::List rss_varbvsr_naive(const Matrix_external SiRiS, const double sigma_beta, const double logodds, const arrayxd_external betahat, const arrayxd_external se, const arrayxd_external talpha0, const arrayxd_external tmu0, const arrayxd_external tSiRiSr0, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
 RcppExport SEXP rssr_rss_varbvsr_naive(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
