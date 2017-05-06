@@ -98,7 +98,6 @@ double exp_update_logodds(const arrayxd_external alpha){
 
 
 
-
 double calculate_lnZ(const c_vectorxd_internal q,
                      const c_vectorxd_internal r,
                      const c_vectorxd_internal SiRiSr,
@@ -109,25 +108,6 @@ double calculate_lnZ(const c_vectorxd_internal q,
                      const c_vectorxd_internal s,
                      double sigb){
   
-
-  // if(!q.allFinite()){
-  //   Rcpp::stop("q is not finite");
-  // }
-  // if(!r.allFinite()){
-  //   Rcpp::stop("r is not finite");
-  // }
-  // if(!SiRiSr.allFinite()){
-  //   Rcpp::stop("SiRiSr is not finite");
-  // }
-  // if(!alpha.allFinite()){
-  //   Rcpp::stop("alpha is not finite");
-  // }
-  // if(!mu.allFinite()){
-  //   Rcpp::stop("mu is not finite");
-  // }
-  // if(!s.allFinite()){
-  //   Rcpp::stop("s is not finite");
-  // }
   
   double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());
   // if(!std::isfinite(lnz0)){
@@ -143,6 +123,42 @@ double calculate_lnZ(const c_vectorxd_internal q,
   // }
   return(lnz2);
 }
+// 
+// Eigen::ArrayXd calculate_lnZ(const c_vectorxd_internal q,
+//                              const c_Matrix_internal r,
+//                              const c_Matrix_internal SiRiSr,
+//                              const c_arrayxd_internal logodds,
+//                              const c_vectorxd_internal sesquare,
+//                              const c_Matrix_internal alpha,
+//                              const c_Matrix_internal mu,
+//                              const c_Matrix_internal s,
+//                              const c_arrayxd_internal  sigb){
+//   
+//   
+//   size_t tot_size = sigb.size();
+//   Eigen::ArrayXd lnZ(tot_size);
+//   for(size_t i=0; i<tot_size;i++){
+//     double lnz0 = q.col(i).dot(r.col(i))-0.5*r.col(i).dot(SiRiSr.col(i))+intgamma(logodds(i),alpha.col(i).array());
+//     double lnz1 = lnz0-0.5*(1/sesquare.array()).matrix().dot(betavar(alpha.col(i).array(),mu.col(i).array(),s.col(i).array()).matrix());
+//     double lnz2 = lnz1+intklbeta_rssbvsr(alpha.col(i).array(),mu.col(i).array(),s.col(i).array(),sigb(i)*sigb(i));
+//     lnZ(i)=lnz2;
+//   }
+//   // if(!std::isfinite(lnz0)){
+//   //   Rcpp::stop("lnZ0 is not finite");
+//   // }
+// 
+//   // if(!std::isfinite(lnz0)){
+//   //   Rcpp::stop("lnZ1 is not finite");
+//   // }
+// 
+//   // if(!std::isfinite(lnz0)){
+//   //   Rcpp::stop("lnZ2 is not finite");
+//   // }
+//   return(lnZ);
+// }
+
+
+
 
 //[[Rcpp::export(name="calculate_lnZ")]]
 double exp_calculate_lnZ(const vectorxd_external q,

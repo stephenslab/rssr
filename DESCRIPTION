@@ -1,13 +1,13 @@
 Package: rssr
 Type: Package
 Title: Regression With Summary Statistics
-Version: 0.1-0
-Date: 2017-01-27
+Version: 0.2.0
+Date: 2017-05-06
 Author: Nicholas Knoblauch, Xiang Zhu, Peter Carbonetto, Matthew Stephens
 Maintainer: Nicholas Knoblauch <nwknoblauch@gmail.com>
 Description: Implements the method Regression with Summary Statistics.
-License: What license is it under?
-Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.2.9.0),RcppParallel,RcppProgress,purrr
+License: MIT
+Imports: Rcpp (>= 0.12.8), RcppEigen (>= 0.3.3.3.0),RcppParallel,RcppProgress,purrr
 LinkingTo: Rcpp,RcppEigen,RcppParallel,RcppProgress
 RoxygenNote: 6.0.1
 Suggests: testthat,knitr,rmarkdown
