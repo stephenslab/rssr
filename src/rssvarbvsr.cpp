@@ -262,6 +262,38 @@ Rcpp::List wrap_rss_varbvsr_iter(const Matrix_external SiRiS,
                             Rcpp::Named("SiRiSr")=tSiRiSr);
 }
 
+//[[Rcpp::export]]
+Eigen::ArrayXd wrap_rss_varbvsr_iter_squarem(const arrayxd_external alpha_mu,
+                                         const Matrix_external SiRiS,
+                                         const double sigma_beta,
+                                         const double logodds,
+                                         const arrayxd_external betahat,
+                                         const arrayxd_external se){
+  
+  
+  size_t p=betahat.size();
+  // const arrayxd_external alpha,
+  // const arrayxd_external mu,
+  // const arrayxd_external SiRiSr,
+  using namespace Eigen;  
+  
+  Eigen::ArrayXd talpha=alpha_mu.head(p);
+  Eigen::ArrayXd tmu=alpha_mu.tail(p);
+  Eigen::ArrayXd tSiRiSr=SiRiS*(talpha*tmu).matrix();
+  Eigen::ArrayXd ret_alpha_mu(alpha_mu.size());
+  double sigma_beta_square=sigma_beta*sigma_beta;
+  Eigen::ArrayXd sesquare=se.square();
+  Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
+  Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
+  rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,talpha,tmu,tSiRiSr,true);
+  rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,talpha,tmu,tSiRiSr,false);
+  ret_alpha_mu<<talpha,tmu;
+  return(ret_alpha_mu);
+}
+
+
+
+
 
 
 //[[Rcpp::export]]

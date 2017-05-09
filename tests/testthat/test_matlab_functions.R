@@ -59,6 +59,20 @@ test_that("SQUAREM step size adjustment works",{
 })
 
 
+# 
+# test_that("turboEM step size adjustment works",{
+#   
+#   logodds <- -3
+#   sigb <- 1
+#   
+#   sem <- squarem(c(alpha_test,mu_test),wrap_rss_varbvsr_iter_squarem,SiRiS=SiRiS_f,sigma_beta=sigb,logodds=logodds,betahat=betahat,se=se)
+#   tem <- turboem(c(alpha_test,mu_test),wrap_rss_varbvsr_iter_squarem,SiRiS=SiRiS_f,sigma_beta=sigb,logodds=logodds,betahat=betahat,se=se)
+#   turboSim()
+#   turboEM::
+#   
+#   
+# })
+
 
 
 
