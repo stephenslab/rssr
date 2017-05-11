@@ -133,18 +133,18 @@ double calculate_mtp(const c_arrayxd_internal alpha_r,const c_arrayxd_internal a
 template <typename T> void squarem_adjust(arrayxd_internal alpha,
                                           const c_arrayxd_internal alpha0,
                                           const c_arrayxd_internal alpha1,
+                                          const c_arrayxd_internal alpha_r,
+                                          const c_arrayxd_internal alpha_v,
                                           arrayxd_internal mu,
                                           const c_arrayxd_internal mu0,
                                           const c_arrayxd_internal mu1,
+                                          const c_arrayxd_internal mu_r,
+                                          const c_arrayxd_internal mu_v,
                                           arrayxd_internal SiRiSr,
                                           T SiRiS,
                                           double &mtp){
   
-  ArrayXd alpha_r=(alpha1-alpha0);
-  ArrayXd alpha_v=(alpha-alpha1)-alpha_r;
-  
-  ArrayXd mu_r=(mu1-mu0);
-  ArrayXd mu_v=(mu-mu1)-mu_r;
+
   
   mtp=calculate_mtp(alpha_r,alpha_v,mu_r,mu_v);
   // Rcpp::Rcout<<"mtp::"<<mtp<<std::endl;
@@ -388,11 +388,16 @@ Rcpp::List wrap_squarem_adjust_prep(const Matrix_external SiRiS,
   
   rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
 
-  
+
   alpha2=alpha;
   mu2=mu;
   SiRiSr2=SiRiSr;
-  squarem_adjust(alpha,alpha0,alpha1,mu,mu0,mu1,tSiRiSr,SiRiS,mtp);
+  ArrayXd alpha_r=(alpha1-alpha0);
+  ArrayXd alpha_v=(alpha-alpha1)-alpha_r;
+  
+  ArrayXd mu_r=(mu1-mu0);
+  ArrayXd mu_v=(mu-mu1)-mu_r;
+  squarem_adjust(alpha,alpha0,alpha1,alpha_r,alpha_v,mu,mu0,mu1,mu_r,mu_v,tSiRiSr,SiRiS,mtp);
   
   mtp= -std::sqrt(((alpha1-alpha0).square()).sum()+((mu1-mu0).square()).sum())/std::sqrt(((alpha-2*alpha1+alpha0).square()).sum()+((mu-2*mu1+mu0).square()).sum());
   
@@ -540,7 +545,11 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
   // Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
   // Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
   
+  ArrayXd alpha_r=(alpha1-alpha0);
+  ArrayXd alpha_v=(alpha-alpha1)-alpha_r;
   
+  ArrayXd mu_r=(mu1-mu0);
+  ArrayXd mu_v=(mu-mu1)-mu_r;
   if(r.hasNaN()){
     Rcpp::Rcerr<<"In iteration iter 0(0)"<<std::endl;
     Rcpp::stop("alpha*mu is not finite!");
@@ -560,10 +569,10 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     mu0=mu; 
     
     bool reverse = iter%2!=0;
-    if((alpha*mu).hasNaN()){
-      Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter(0) : "<<iter<<std::endl;
-      //      Rcpp::stop("alpha*mu is not finite!");
-    }//else{
+    // if((alpha*mu).hasNaN()){
+    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter(0) : "<<iter<<std::endl;
+    //   //      Rcpp::stop("alpha*mu is not finite!");
+    // }//else{
     //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(0) : "<<iter<<std::endl;
     // }
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
@@ -572,36 +581,42 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     mu1=mu;
     SiRiSr1=SiRiSr;
     
-    if((alpha*mu).hasNaN()){
-      Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter(1) : "<<iter<<std::endl;
-      //      Rcpp::stop("alpha*mu is not finite!");
-    }//else{
+    // if((alpha*mu).hasNaN()){
+    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter(1) : "<<iter<<std::endl;
+    //   //      Rcpp::stop("alpha*mu is not finite!");
+    // }//else{
     //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(1) : "<<iter<<std::endl;
     // }
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
     
     
     
-    if((alpha*mu).hasNaN()){
-      Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (2.1): "<<iter<<std::endl;
-      //      Rcpp::stop("alpha*mu is not finite!");
-    }//else{
-    //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(2.1) : "<<iter<<std::endl;
+    // if((alpha*mu).hasNaN()){
+    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (2.1): "<<iter<<std::endl;
+    //   //      Rcpp::stop("alpha*mu is not finite!");
+    // }//else{
+    // //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(2.1) : "<<iter<<std::endl;
     // }
-    squarem_adjust<T>(alpha,alpha0,alpha1,mu,mu0,mu1,SiRiSr,SiRiS,mtp);
-    if((alpha*mu).hasNaN()){
-      Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (2.2): "<<iter<<std::endl;
-      //      Rcpp::stop("alpha*mu is not finite!");
-    }//else{
+    
+    alpha_r=(alpha1-alpha0);
+    alpha_v=(alpha-alpha1)-alpha_r;
+    
+    mu_r=(mu1-mu0);
+    mu_v=(mu-mu1)-mu_r;
+    squarem_adjust<T>(alpha,alpha0,alpha1,alpha_r,alpha_v,mu,mu0,mu1,mu_r,mu_v,SiRiSr,SiRiS,mtp);
+    // if((alpha*mu).hasNaN()){
+    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (2.2): "<<iter<<std::endl;
+    //   //      Rcpp::stop("alpha*mu is not finite!");
+    // }//else{
     //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(2.2) : "<<iter<<std::endl;
     // }
     
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
     //    r=alpha*mu;
-    if((alpha*mu).hasNaN()){
-      Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (3): "<<iter<<std::endl;
-      //      Rcpp::stop("alpha*mu is not finite!");
-     }//else{
+    // if((alpha*mu).hasNaN()){
+    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (3): "<<iter<<std::endl;
+    //   //      Rcpp::stop("alpha*mu is not finite!");
+    //  }//else{
     //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(3) : "<<iter<<std::endl;
     // }
     
