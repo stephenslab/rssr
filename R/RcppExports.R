@@ -33,8 +33,8 @@ update_logodds <- function(alpha) {
     .Call('rssr_exp_update_logodds', PACKAGE = 'rssr', alpha)
 }
 
-calculate_lnZ <- function(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb) {
-    .Call('rssr_exp_calculate_lnZ', PACKAGE = 'rssr', q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb)
+calculate_lnZ <- function(alpha_mu, SiRiS, sigma_beta, logodds, betahat, se) {
+    .Call('rssr_wrap_calculate_lnZ', PACKAGE = 'rssr', alpha_mu, SiRiS, sigma_beta, logodds, betahat, se)
 }
 
 wrap_squarem_adjust_prep <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol) {

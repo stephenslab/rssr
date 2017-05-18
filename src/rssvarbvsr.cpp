@@ -18,7 +18,7 @@ void rss_varbvsr_update(const double betahat,
                         double &alpha,
                         double &mu) {
 
-  
+
   const size_t p=SiRiS_snp.size();
 
   
@@ -29,7 +29,7 @@ void rss_varbvsr_update(const double betahat,
   
   double r_new = alpha * mu-r;
   SiRiSr+=SiRiS_snp*r_new;
-  
+
 }
 
 
@@ -48,7 +48,7 @@ void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
                       arrayxd_internal mu,
                       arrayxd_internal SiRiSr,
                       bool reverse){
-  
+
   // mkl_set_num_threads_local(1);
   size_t p=betahat.size();
   // Get the number of SNPs (p) and coordinate ascent updates (m).
@@ -76,18 +76,19 @@ void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
 
     
     // Perform the mean-field variational update.
-    rss_varbvsr_update(betahat.coeff(i),
-                       se_square.coeff(i),
+    rss_varbvsr_update(betahat.coeffRef(i),
+                       se_square.coeffRef(i),
                        sigma_beta_square, 
                        SiRiS.col(i),
-                       sigma_square.coeff(i),
+                       sigma_square.coeffRef(i),
                        SiRiSr,
-                       SiRiSr.coeff(i),
-                       ssrat.coeff(i),
+                       SiRiSr.coeffRef(i),
+                       ssrat.coeffRef(i),
                        logodds,
                        alpha.coeffRef(i),
                        mu.coeffRef(i));
   }
+
 }
 
 
@@ -264,11 +265,11 @@ Rcpp::List wrap_rss_varbvsr_iter(const Matrix_external SiRiS,
 
 //[[Rcpp::export]]
 Eigen::ArrayXd wrap_rss_varbvsr_iter_squarem(const arrayxd_external alpha_mu,
-                                         const Matrix_external SiRiS,
-                                         const double sigma_beta,
-                                         const double logodds,
-                                         const arrayxd_external betahat,
-                                         const arrayxd_external se){
+                                             const Matrix_external SiRiS,
+                                             const double sigma_beta,
+                                             const double logodds,
+                                             const arrayxd_external betahat,
+                                             const arrayxd_external se){
   
   
   size_t p=betahat.size();
@@ -285,8 +286,9 @@ Eigen::ArrayXd wrap_rss_varbvsr_iter_squarem(const arrayxd_external alpha_mu,
   Eigen::ArrayXd sesquare=se.square();
   Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
   Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
-  rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,talpha,tmu,tSiRiSr,true);
+  
   rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,talpha,tmu,tSiRiSr,false);
+  rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,talpha,tmu,tSiRiSr,true);
   ret_alpha_mu<<talpha,tmu;
   return(ret_alpha_mu);
 }

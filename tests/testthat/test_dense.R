@@ -51,21 +51,76 @@ test_that("SQUAREM updates are identical",{
                                           verbose=F,
                                           lnz_tol=F)
   my_results_d <- rss_varbvsr_squarem(SiRiS = SiRiS_f,
-                                          sigma_beta=sigb,
-                                          logodds=logodds,
-                                          betahat = betahat,
-                                          se = se,
-                                          talpha0 = alpha_test,
-                                          tmu0 = mu_test,
-                                          tSiRiSr0 = SiRiSr,
-                                          tolerance = 1e-4,
-                                          itermax=900,
-                                          verbose=F,
-                                          lnz_tol=F)
+                                      sigma_beta=sigb,
+                                      logodds=logodds,
+                                      betahat = betahat,
+                                      se = se,
+                                      talpha0 = alpha_test,
+                                      tmu0 = mu_test,
+                                      tSiRiSr0 = SiRiSr,
+                                      tolerance = 1e-4,
+                                      itermax=900,
+                                      verbose=F,
+                                      lnz_tol=F)
   
   
   expect_equivalent(my_results_d,my_results_sp)
 })
+
+# 
+# test_that("SQUAREM updates are identical (to R SQUAREM implementation)",{
+#   sigb <- 1  
+#   logodds <- -3
+#   alpha_mu <- c(alpha_test,mu_test)
+#   Rsem <- SQUAREM::squarem(par = alpha_mu,fixptfn = wrap_rss_varbvsr_iter_squarem,objfn=calculate_lnZ,
+#                            SiRiS=SiRiS_f,sigma_beta=sigb,logodds=logodds,betahat=betahat,se=se)
+#   mpconstr <- function(par){
+#     p <- length(par)/2
+#     alpha <- par[1:p]
+#     mu <- par[-c(1:p)]
+#     if(any(alpha>1))
+#       return(F)
+#     if(any(alpha<0))
+#       return(F)
+#     return(T)
+#   }
+#   alpha_mat <- matrix(0,100,p)
+#   mu_mat <- alpha_mat
+#   for(i in 1:100){
+#     alpha_mat[i,] <- ralpha(p)
+#     mu_mat[i,] <- rmu(p)
+#   }
+#   alpha_mu <- cbind(alpha_mat,mu_mat)
+#   nrsem <- turboSim(parmat = alpha_mu,fixptfn = wrap_rss_varbvsr_iter_squarem,objfn=calculate_lnZ,method=c("em", "squarem", "pem", "decme", "qn"),method.names=c("em", "squarem", "pem", "decme", "qn"),
+#                     SiRiS=SiRiS_f,sigma_beta=sigb,logodds=logodds,betahat=betahat,se=se,pconstr=mpconstr)
+#   my_results_d <- rss_varbvsr_squarem(SiRiS = SiRiS_f,
+#                                       sigma_beta=sigb,
+#                                       logodds=logodds,
+#                                       betahat = betahat,
+#                                       se = se,
+#                                       talpha0 = alpha_test,
+#                                       tmu0 = mu_test,
+#                                       tSiRiSr0 = SiRiSr,
+#                                       tolerance = 1e-4,
+#                                       itermax=900,
+#                                       verbose=F,
+#                                       lnz_tol=F)
+#   
+#   Ralpha <- c(Rsem$par[1:p])
+#   Rmu <- c(Rsem$par[-(1:p)])
+#     
+#   expect_equal(my_results_d$alpha,Ralpha,tolerance=1e-6)
+#   expect_equal(my_results_d$mu,Rmu,tolerance=1e-7)
+#   expect_equal(my_results_d$lnZ,Rsem$value.objfn)
+#   
+# })
+
+
+
+
+
+
+
 
 
 test_that("grid optimization over logodds works as expected",{

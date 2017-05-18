@@ -13,6 +13,7 @@ data("R_shrink")
 #Convert the rowvector to a column vector
 mu_test <- t(t(mu_test))
 alpha_test <- t(t(alpha_test))
+Sample_Size <- 1458
 # R_panel <-as.matrix(R_panel)
 
 #Generate SiRiS as both dense and sparse matrices 
@@ -228,6 +229,7 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
                                         logodds=paramdf$logodds,
                                         verbose=F,
                                         tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=F)
+  mr_grid$pve <- mr_grid$pve/Sample_Size
   expect_equal(c(mr_grid$lnZ),c(t(pm)))}
 )
 

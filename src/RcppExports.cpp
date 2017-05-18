@@ -105,22 +105,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// exp_calculate_lnZ
-double exp_calculate_lnZ(const vectorxd_external q, const vectorxd_external r, const vectorxd_external SiRiSr, double logodds, const vectorxd_external sesquare, const vectorxd_external alpha, const vectorxd_external mu, const vectorxd_external s, double sigb);
-RcppExport SEXP rssr_exp_calculate_lnZ(SEXP qSEXP, SEXP rSEXP, SEXP SiRiSrSEXP, SEXP logoddsSEXP, SEXP sesquareSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP sSEXP, SEXP sigbSEXP) {
+// wrap_calculate_lnZ
+double wrap_calculate_lnZ(const arrayxd_external alpha_mu, const Matrix_external SiRiS, const double sigma_beta, const double logodds, const arrayxd_external betahat, const arrayxd_external se);
+RcppExport SEXP rssr_wrap_calculate_lnZ(SEXP alpha_muSEXP, SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const vectorxd_external >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type r(rSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type SiRiSr(SiRiSrSEXP);
-    Rcpp::traits::input_parameter< double >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type sesquare(sesquareSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type s(sSEXP);
-    Rcpp::traits::input_parameter< double >::type sigb(sigbSEXP);
-    rcpp_result_gen = Rcpp::wrap(exp_calculate_lnZ(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb));
+    Rcpp::traits::input_parameter< const arrayxd_external >::type alpha_mu(alpha_muSEXP);
+    Rcpp::traits::input_parameter< const Matrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
+    rcpp_result_gen = Rcpp::wrap(wrap_calculate_lnZ(alpha_mu, SiRiS, sigma_beta, logodds, betahat, se));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -123,56 +123,53 @@ double calculate_lnZ(const c_vectorxd_internal q,
   // }
   return(lnz2);
 }
+
+
+
+
+
+// double exp_calculate_lnZ(const vectorxd_external q,
+//                      const vectorxd_external r,
+//                      const vectorxd_external SiRiSr,
+//                      double logodds,
+//                      const vectorxd_external sesquare,
+//                      const vectorxd_external alpha,
+//                      const vectorxd_external mu,
+//                      const vectorxd_external s,
+//                      double sigb){
 // 
-// Eigen::ArrayXd calculate_lnZ(const c_vectorxd_internal q,
-//                              const c_Matrix_internal r,
-//                              const c_Matrix_internal SiRiSr,
-//                              const c_arrayxd_internal logodds,
-//                              const c_vectorxd_internal sesquare,
-//                              const c_Matrix_internal alpha,
-//                              const c_Matrix_internal mu,
-//                              const c_Matrix_internal s,
-//                              const c_arrayxd_internal  sigb){
-//   
-//   
-//   size_t tot_size = sigb.size();
-//   Eigen::ArrayXd lnZ(tot_size);
-//   for(size_t i=0; i<tot_size;i++){
-//     double lnz0 = q.col(i).dot(r.col(i))-0.5*r.col(i).dot(SiRiSr.col(i))+intgamma(logodds(i),alpha.col(i).array());
-//     double lnz1 = lnz0-0.5*(1/sesquare.array()).matrix().dot(betavar(alpha.col(i).array(),mu.col(i).array(),s.col(i).array()).matrix());
-//     double lnz2 = lnz1+intklbeta_rssbvsr(alpha.col(i).array(),mu.col(i).array(),s.col(i).array(),sigb(i)*sigb(i));
-//     lnZ(i)=lnz2;
-//   }
-//   // if(!std::isfinite(lnz0)){
-//   //   Rcpp::stop("lnZ0 is not finite");
-//   // }
 // 
-//   // if(!std::isfinite(lnz0)){
-//   //   Rcpp::stop("lnZ1 is not finite");
-//   // }
-// 
-//   // if(!std::isfinite(lnz0)){
-//   //   Rcpp::stop("lnZ2 is not finite");
-//   // }
-//   return(lnZ);
+//   return(calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigb));
 // }
 
 
 
-
 //[[Rcpp::export(name="calculate_lnZ")]]
-double exp_calculate_lnZ(const vectorxd_external q,
-                     const vectorxd_external r,
-                     const vectorxd_external SiRiSr,
-                     double logodds,
-                     const vectorxd_external sesquare,
-                     const vectorxd_external alpha,
-                     const vectorxd_external mu,
-                     const vectorxd_external s,
-                     double sigb){
-
-
-  return(calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigb));
+double wrap_calculate_lnZ(const arrayxd_external alpha_mu,
+                                             const Matrix_external SiRiS,
+                                             const double sigma_beta,
+                                             const double logodds,
+                                             const arrayxd_external betahat,
+                                             const arrayxd_external se){
+  
+  
+  size_t p=betahat.size();
+  // const arrayxd_external alpha,
+  // const arrayxd_external mu,
+  // const arrayxd_external SiRiSr,
+  using namespace Eigen;  
+  
+  Eigen::ArrayXd talpha=alpha_mu.head(p);
+  Eigen::ArrayXd tmu=alpha_mu.tail(p);
+  Eigen::ArrayXd tSiRiSr=SiRiS*(talpha*tmu).matrix();
+//  Eigen::ArrayXd ret_alpha_mu(alpha_mu.size());
+  double sigma_beta_square=sigma_beta*sigma_beta;
+  Eigen::ArrayXd sesquare=se.square();
+  Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
+  Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
+  Eigen::ArrayXd  q= betahat/sesquare;
+  return(calculate_lnZ(q,talpha*tmu,tSiRiSr,logodds,sesquare,talpha,tmu,s,sigma_beta));
+  
 }
 
 
