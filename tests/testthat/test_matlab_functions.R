@@ -1,5 +1,5 @@
 context("MATLAB_scripts")
-#library(rssr)
+# library(rssr)
 library(Matrix)
 
 #Load the simulated data
@@ -10,7 +10,7 @@ se <- c(se)
 data("alpha_test")
 data("mu_test")
 data("R_shrink")
-evd <- eigen(R_shrink)
+# evd <- eigen(R_shrink)
 #Convert the rowvector to a column vector
 mu_test <- t(t(mu_test))
 alpha_test <- t(t(alpha_test))
@@ -61,24 +61,6 @@ test_that("SQUAREM step size adjustment works",{
 })
 
 
-# 
-# test_that("turboEM step size adjustment works",{
-#   
-#   logodds <- -3
-#   sigb <- 1
-#   
-#   sem <- squarem(c(alpha_test,mu_test),wrap_rss_varbvsr_iter_squarem,SiRiS=SiRiS_f,sigma_beta=sigb,logodds=logodds,betahat=betahat,se=se)
-#   tem <- turboem(c(alpha_test,mu_test),wrap_rss_varbvsr_iter_squarem,SiRiS=SiRiS_f,sigma_beta=sigb,logodds=logodds,betahat=betahat,se=se)
-#   turboSim()
-#   turboEM::
-#   
-#   
-# })
-
-
-
-
-
 
 test_that("Single RSS update of alpha,mu and SiRiSr are approximately equal",{
 
@@ -106,24 +88,6 @@ test_that("Single RSS update is the same when computed backwards",{
   expect_equal(c(rres$alpha1),c(rmres$alpha1),tolerance=1e-8)
   expect_equal(c(rres$mu1),c(rmres$mu1),tolerance=1e-8)
   expect_equal(c(rres$SiRiSr),c(rmres$SiRiSr),tolerance=1e-8)})
-
-
-
-# test_that("gamma integral is calcualted correctly",{
-#   logodds <- -3
-#           expect_equal(intgamma(logodds,alpha_test),matlab_intgamma)})
-# 
-# test_that("integral of variational lower bound is computed correctly",{
-#   sigb <- 1
-#   s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
-#   expect_equal(intklbeta_rssbvsr(alpha_test,mu_test,s_test,sigb),matlab_intklbeta)})
-#              
-# 
-# test_that("betavar works the same",{
-#   sigb <- 1
-#   s_test=t(t(se*se*(sigb*sigb)/(se*se+sigb)))
-#   expect_equal(betavar(alpha_test,mu_test,s_test),c(matlab_betavar))})
-# 
 
 
 test_that("SiRiS is generated equivalently",{
@@ -207,10 +171,13 @@ test_that("grid optimization over logodds works as expected",{
   logoddsvec <- log10oddsvec*log(10)
   data("matlab_grid_logodds")
   pm <- matlab_grid_logodds
-  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% cross_d()
+  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% purrr::cross_d()
   mr <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =paramdf$sigb,logodds=paramdf$logodds,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
-  pi_mean <- marg_pi(log10odds = log10oddsvec,c(mr$lnZ))  
-  expect_equal(c(pi_mean),pm$pi_mean)
+
+  mr_w <- normalizeLogWeights(mr$lnZ)
+  pi <- exp(mr$logodds)/(1+exp(mr$logodds))
+  R_pi_mean <- sum(pi*mr_w)
+  expect_equal(R_pi_mean,pm$pi_mean)
 })
 
 test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
@@ -221,7 +188,7 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
   
   data("matlab_grid_logodds_sigb")
   pm <- matlab_grid_logodds_sigb
-  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% cross_d()
+  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% purrr::cross_d()
   mr_grid <- grid_search_rss_varbvsr_sp(talpha0=alpha_test,
                                         tmu0=mu_test,betahat=betahat,
                                         se=se,
