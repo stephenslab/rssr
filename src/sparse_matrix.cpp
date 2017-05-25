@@ -8,11 +8,18 @@ Eigen::SparseMatrix<double> SiRSi(const Eigen::MappedSparseMatrix<double> &R, co
   return(m);
 }
 
- 
+
+
 // [[Rcpp::export]]
-Eigen::MatrixXd SiRSi_d(const Matrix_external R, const Eigen::VectorXd Si) {
-  return(Si.asDiagonal() *R*Si.asDiagonal());
+Eigen::MatrixXd SiRSi_a(const Matrix_external R, const Eigen::VectorXd Si) {
+  return((R.array().colwise()*Si.array()).rowwise()*Si.transpose().array());
 }
+
+ 
+ // [[Rcpp::export]]
+ Eigen::MatrixXd SiRSi_d(const Matrix_external R, const Eigen::VectorXd Si) {
+   return(Si.asDiagonal() *R*Si.asDiagonal());
+ }
 
 // [[Rcpp::export]]
 Eigen::SparseMatrix<double> genSymm(const Eigen::SparseMatrix<double> &R){

@@ -759,7 +759,7 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
   verbose(0)=isVerbose;
   Rcpp::LogicalVector lnz_tol(1);
   lnz_tol(0)=islnz_tol;
-  static affinity_partitioner ap;
+  // static affinity_partitioner ap;
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r)  {
                  for(size_t t=r.begin(); t!=r.end(); t++){
@@ -788,7 +788,7 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
                    errvec[t]=max_err;
                    npivec[t]=copy_alpha.mean();
                    pvevec[t]=copy_SiRiSr.matrix().transpose()*(copy_alpha*copy_mu).matrix();
-                 }},ap);
+                 }});
   
   //  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
   return(Rcpp::DataFrame::create(_["logodds"]=logodds,
@@ -799,6 +799,137 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
                                  _["pve"]=pvevec,
                                  _["lnZ"]=nlzvec));
 }
+
+
+
+
+Rcpp::DataFrame grid_rss_varbvsr_multitrait(
+    const c_Matrix_internal R,
+    const c_arrayxd_internal sigma_beta,
+    const c_arrayxd_internal logodds,
+    const c_Matrix_internal  betahat,
+    const c_Matrix_internal  se,
+    const c_arrayxd_internal talpha0,
+    const c_arrayxd_internal tmu0,
+    double tolerance,
+    int itermax,
+    bool isVerbose,
+    const c_arrayxi_internal fgeneid,
+    bool islnz_tol){
+
+  using namespace Rcpp;
+  size_t ngenes=betahat.cols();
+  size_t sigb_size= sigma_beta.size();
+  size_t logodds_size=logodds.size();
+  
+  if(ngenes!=se.cols()){
+    Rcpp::stop("se and betahat must have same dimensions!");
+  }
+  
+  size_t tot_size=sigb_size;
+  if(tot_size!=logodds_size){
+    Rcpp::stop("Length of sigma_beta must equal length of logodds");
+  }
+  
+  size_t ntot_size=tot_size*ngenes;
+  Eigen::ArrayXd npivec(ngenes*tot_size);
+  Eigen::ArrayXd nlzvec(ngenes*tot_size);
+  Eigen::ArrayXd errvec(ngenes*tot_size);
+  Eigen::ArrayXi itervec(ngenes*tot_size);
+  Eigen::ArrayXd pvevec(ngenes*tot_size);
+  Eigen::ArrayXi fgeneidmat(ngenes*tot_size);
+  
+  Eigen::ArrayXd sigbvec(ngenes*tot_size);
+  Eigen::ArrayXd logoddsvec(ngenes*tot_size);
+
+  
+  
+  Rcpp::LogicalVector verbose(1);
+  verbose(0)=isVerbose;
+  Rcpp::LogicalVector lnz_tol(1);
+  lnz_tol(0)=islnz_tol;
+  // static affinity_partitioner ap;
+  parallel_for(blocked_range<size_t>(0,ngenes),
+               [&](const blocked_range<size_t>& r)  {
+                 for( size_t g=r.begin(); g!=r.end(); g++){
+                   // parallel_for(blocked_range<size_t>(0,tot_size),
+                   // for(size_t g=0;g<ngenes;g++){
+                   
+                   Eigen::VectorXd si = 1/se.col(g).array();
+                   Eigen::MatrixXd siris = si.asDiagonal()*R*si.asDiagonal();
+                   Eigen::ArrayXd sirisr = siris*(talpha0*tmu0).matrix();                    
+                   // for(size_t t=0;t<tot_size;t++){
+                   for(size_t t=0; t<tot_size; t++){
+                     // std::cout<<"t:"<<t<<std::endl;
+                     //   std::cout<<"g:"<<g<<std::endl;
+                     size_t i=t;
+                     size_t j=t;
+                     size_t mat_ind=(ngenes)*(g)+t;
+                     
+                     // Rcpp::Rcout<<"mat_ind:"<<mat_ind<<std::endl;
+                     
+                     Eigen::ArrayXd copy_alpha(talpha0);
+                     Eigen::ArrayXd copy_mu(tmu0);
+                     Eigen::ArrayXd copy_SiRiSr(sirisr);
+                     //                   lovec(t)=logodds(i);
+                     int iter=0;
+                     double max_err=1;
+                     double retvec=rss_varbvsr_squarem_iter(siris,
+                                                            sigma_beta(j),
+                                                            logodds(i),
+                                                            betahat.col(g),
+                                                            se.col(g),
+                                                            copy_alpha,
+                                                            copy_mu,
+                                                            copy_SiRiSr,
+                                                            tolerance,
+                                                            itermax,
+                                                            lnz_tol,iter,max_err);
+                     sigbvec(mat_ind)=sigma_beta(j);
+                     logoddsvec(mat_ind)=logodds(i);
+                     fgeneidmat(mat_ind)=fgeneid(g);
+                     nlzvec(mat_ind)=retvec;
+                     itervec(mat_ind)=iter;
+                     errvec(mat_ind)=max_err;
+                     npivec(mat_ind)=copy_alpha.mean();
+                     pvevec(mat_ind)=copy_SiRiSr.matrix().transpose()*(copy_alpha*copy_mu).matrix();
+                   }
+                 }
+               });
+  
+  
+  // Map<ArrayXd> nnpivec(npivec.data(),npivec.size());
+  // Map<ArrayXd> nnlzvec(nlzvec.data(),nlzvec.size());
+  // Map<ArrayXd> nerrvec(errvec.data(),errvec.size());
+  // Map<ArrayXd> nitervec(itervec.data(),itervec.size());
+  // Map<ArrayXd> npvevec(pvevec.data(),pvevec.size());
+  // Map<ArrayXd> nsigbev(sigbvec.data(),sigbvec.size());
+  // Map<ArrayXd> nlogoddsvec(logoddsvec.data(),logoddsvec.size());
+  // Map<ArrayXi> nfgeneid(fgeneidmat.data(),fgeneidmat.size());
+  
+  //  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
+  return(Rcpp::DataFrame::create(_["logodds"]=logoddsvec,
+                                 _["sigb"]=sigbvec,
+                                 _["rel_err"]=errvec,
+                                 _["iterations"]=itervec,
+                                 _["alpha_mean"]=npivec,
+                                 _["pve"]=pvevec,
+                                 _["lnZ"]=nlzvec,
+                                 _["fgeneid"]=fgeneidmat));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1116,6 +1247,35 @@ Rcpp::DataFrame grid_search_rss_varbvsr(
   return grid_rss_varbvsr<c_Matrix_internal>(SiRiS,sigma_beta,logodds,betahat,
                                              se,talpha0,tmu0,tSiRiSr0,tolerance,
                                              itermax,isVerbose,islnz_tol);
+} 
+
+
+
+//[[Rcpp::export]]
+Rcpp::DataFrame grid_search_rss_varbvsr_multitrait(
+    const  Matrix_external R,
+    const arrayxd_external sigma_beta,
+    const arrayxd_external logodds,
+    const Matrix_external  betahat,
+    const Matrix_external  se,
+    const arrayxd_external talpha0,
+    const arrayxd_external tmu0,
+    const arrayxi_external fgeneid,
+    double tolerance,
+    int itermax,
+    Rcpp::LogicalVector verbose,
+    Rcpp::LogicalVector lnz_tol){
+  //  std::cout<<"Starting grid_search_rss_varbvsr"<<std::endl;
+  bool isVerbose = verbose(0);
+  bool islnz_tol = lnz_tol(0);
+  
+  if(sigma_beta.minCoeff()<=0){
+    Rcpp::stop("sigma_beta must be strictly positive");
+  }
+  
+  return grid_rss_varbvsr_multitrait(R,sigma_beta,logodds,betahat,
+                                             se,talpha0,tmu0,tolerance,
+                                             itermax,isVerbose,fgeneid,islnz_tol);
 } 
 
 

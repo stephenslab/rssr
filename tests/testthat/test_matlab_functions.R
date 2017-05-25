@@ -10,6 +10,7 @@ se <- c(se)
 data("alpha_test")
 data("mu_test")
 data("R_shrink")
+evd <- eigen(R_shrink)
 #Convert the rowvector to a column vector
 mu_test <- t(t(mu_test))
 alpha_test <- t(t(alpha_test))

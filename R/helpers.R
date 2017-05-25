@@ -23,27 +23,6 @@ normalizeLogWeights <- function (lnZ,na.rm=T) {
   return(w/sum(w,na.rm = na.rm))
 }
 
-marg_pi<- function(log10odds=NULL,lnz=NULL){
-  log10odds <- log10odds[!is.na(lnz)]
-  lnz <- lnz[!is.na(lnz)]
-  lw=normalizeLogWeights(lnz)
-  pi=1/(1+10^(-log10odds))
-  return(lw%*%pi)
-}
-
-
-
-marg_param <- function(lnZ,param){
-  param <- param[!is.na(lnZ)]
-  lnZ <- lnZ[!is.na(lnZ)]
-  normw <- normalizeLogWeights(lnZ)
-  mean_param <- c(normw%*%param)
-  return(c(mean_param))
-}
- 
-
-
-
 
 ralpha <- function(p){
   alpha <- runif(p)
@@ -71,14 +50,6 @@ prep_list <- function(x,default,chunk=NULL,chunk_max=NULL){
   return(default)
 }
     
-
-
-
-
-# gen_test_data <- function(){
-#   data("betahat")
-#   data("se")
-# }
 
 libpath <- function() {
   cat(sprintf(
