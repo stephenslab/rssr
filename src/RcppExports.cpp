@@ -105,22 +105,40 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// exp_calculate_lnZ
-double exp_calculate_lnZ(const vectorxd_external q, const vectorxd_external r, const vectorxd_external SiRiSr, double logodds, const vectorxd_external sesquare, const vectorxd_external alpha, const vectorxd_external mu, const vectorxd_external s, double sigb);
-RcppExport SEXP rssr_exp_calculate_lnZ(SEXP qSEXP, SEXP rSEXP, SEXP SiRiSrSEXP, SEXP logoddsSEXP, SEXP sesquareSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP sSEXP, SEXP sigbSEXP) {
+// wrap_calculate_lnZ
+double wrap_calculate_lnZ(const arrayxd_external alpha_mu, const Matrix_external SiRiS, const double sigma_beta, const double logodds, const arrayxd_external betahat, const arrayxd_external se);
+RcppExport SEXP rssr_wrap_calculate_lnZ(SEXP alpha_muSEXP, SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const vectorxd_external >::type q(qSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type r(rSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type SiRiSr(SiRiSrSEXP);
-    Rcpp::traits::input_parameter< double >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type sesquare(sesquareSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const vectorxd_external >::type s(sSEXP);
-    Rcpp::traits::input_parameter< double >::type sigb(sigbSEXP);
-    rcpp_result_gen = Rcpp::wrap(exp_calculate_lnZ(q, r, SiRiSr, logodds, sesquare, alpha, mu, s, sigb));
+    Rcpp::traits::input_parameter< const arrayxd_external >::type alpha_mu(alpha_muSEXP);
+    Rcpp::traits::input_parameter< const Matrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
+    rcpp_result_gen = Rcpp::wrap(wrap_calculate_lnZ(alpha_mu, SiRiS, sigma_beta, logodds, betahat, se));
+    return rcpp_result_gen;
+END_RCPP
+}
+// wrap_squarem_adjust_prep
+Rcpp::List wrap_squarem_adjust_prep(const Matrix_external SiRiS, const double sigma_beta, const double logodds, const arrayxd_external betahat, const arrayxd_external se, arrayxd_external talpha, arrayxd_external tmu, arrayxd_external tSiRiSr, const double tolerance, const int itermax, Rcpp::LogicalVector lnz_tol);
+RcppExport SEXP rssr_wrap_squarem_adjust_prep(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talphaSEXP, SEXP tmuSEXP, SEXP tSiRiSrSEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP lnz_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Matrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
+    Rcpp::traits::input_parameter< arrayxd_external >::type talpha(talphaSEXP);
+    Rcpp::traits::input_parameter< arrayxd_external >::type tmu(tmuSEXP);
+    Rcpp::traits::input_parameter< arrayxd_external >::type tSiRiSr(tSiRiSrSEXP);
+    Rcpp::traits::input_parameter< const double >::type tolerance(toleranceSEXP);
+    Rcpp::traits::input_parameter< const int >::type itermax(itermaxSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type lnz_tol(lnz_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(wrap_squarem_adjust_prep(SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -256,28 +274,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// wrap_rss_varbvsr_iter_array
-Rcpp::List wrap_rss_varbvsr_iter_array(const Matrix_external SiRiS, const arrayxd_external sigma_beta, const arrayxd_external logodds, const arrayxd_external betahat, const arrayxd_external se, const arrayxd_external alpha, const arrayxd_external mu, const arrayxd_external SiRiSr, Rcpp::LogicalVector reverse);
-RcppExport SEXP rssr_wrap_rss_varbvsr_iter_array(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP alphaSEXP, SEXP muSEXP, SEXP SiRiSrSEXP, SEXP reverseSEXP) {
+// grid_search_rss_varbvsr_multitrait
+Rcpp::DataFrame grid_search_rss_varbvsr_multitrait(const Matrix_external R, const arrayxd_external sigma_beta, const arrayxd_external logodds, const Matrix_external betahat, const Matrix_external se, const arrayxd_external talpha0, const arrayxd_external tmu0, const arrayxi_external fgeneid, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
+RcppExport SEXP rssr_grid_search_rss_varbvsr_multitrait(SEXP RSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP fgeneidSEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Matrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const Matrix_external >::type R(RSEXP);
     Rcpp::traits::input_parameter< const arrayxd_external >::type sigma_beta(sigma_betaSEXP);
     Rcpp::traits::input_parameter< const arrayxd_external >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
-    Rcpp::traits::input_parameter< const arrayxd_external >::type alpha(alphaSEXP);
-    Rcpp::traits::input_parameter< const arrayxd_external >::type mu(muSEXP);
-    Rcpp::traits::input_parameter< const arrayxd_external >::type SiRiSr(SiRiSrSEXP);
-    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type reverse(reverseSEXP);
-    rcpp_result_gen = Rcpp::wrap(wrap_rss_varbvsr_iter_array(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse));
+    Rcpp::traits::input_parameter< const Matrix_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const Matrix_external >::type se(seSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type talpha0(talpha0SEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type tmu0(tmu0SEXP);
+    Rcpp::traits::input_parameter< const arrayxi_external >::type fgeneid(fgeneidSEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type lnz_tol(lnz_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(grid_search_rss_varbvsr_multitrait(R, sigma_beta, logodds, betahat, se, talpha0, tmu0, fgeneid, tolerance, itermax, verbose, lnz_tol));
     return rcpp_result_gen;
 END_RCPP
 }
-// rss_varbvsr_naive_array
-Rcpp::List rss_varbvsr_naive_array(const Matrix_external SiRiS, const arrayxd_external sigma_beta, const arrayxd_external logodds, const arrayxd_external betahat, const arrayxd_external se, const arrayxd_external talpha0, const arrayxd_external tmu0, const arrayxd_external tSiRiSr0, double tolerance, int itermax, bool verbose, bool lnz_tol);
-RcppExport SEXP rssr_rss_varbvsr_naive_array(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
+// grid_search_rss_varbvsr_naive
+Rcpp::DataFrame grid_search_rss_varbvsr_naive(const Matrix_external SiRiS, const arrayxd_external sigma_beta, const arrayxd_external logodds, const arrayxd_external betahat, const arrayxd_external se, const arrayxd_external talpha0, const arrayxd_external tmu0, const arrayxd_external tSiRiSr0, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
+RcppExport SEXP rssr_grid_search_rss_varbvsr_naive(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -291,9 +312,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arrayxd_external >::type tSiRiSr0(tSiRiSr0SEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
     Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    Rcpp::traits::input_parameter< bool >::type lnz_tol(lnz_tolSEXP);
-    rcpp_result_gen = Rcpp::wrap(rss_varbvsr_naive_array(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol));
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type lnz_tol(lnz_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(grid_search_rss_varbvsr_naive(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol));
+    return rcpp_result_gen;
+END_RCPP
+}
+// grid_search_rss_varbvsr_naive_sp
+Rcpp::DataFrame grid_search_rss_varbvsr_naive_sp(const sparseMatrix_external SiRiS, const arrayxd_external sigma_beta, const arrayxd_external logodds, const arrayxd_external betahat, const arrayxd_external se, const arrayxd_external talpha0, const arrayxd_external tmu0, const arrayxd_external tSiRiSr0, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
+RcppExport SEXP rssr_grid_search_rss_varbvsr_naive_sp(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const sparseMatrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type talpha0(talpha0SEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type tmu0(tmu0SEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type tSiRiSr0(tSiRiSr0SEXP);
+    Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
+    Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type verbose(verboseSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type lnz_tol(lnz_tolSEXP);
+    rcpp_result_gen = Rcpp::wrap(grid_search_rss_varbvsr_naive_sp(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -313,6 +356,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arrayxd_external >::type SiRiSr(SiRiSrSEXP);
     Rcpp::traits::input_parameter< bool >::type reverse(reverseSEXP);
     rcpp_result_gen = Rcpp::wrap(wrap_rss_varbvsr_iter(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse));
+    return rcpp_result_gen;
+END_RCPP
+}
+// wrap_rss_varbvsr_iter_squarem
+Eigen::ArrayXd wrap_rss_varbvsr_iter_squarem(const arrayxd_external alpha_mu, const Matrix_external SiRiS, const double sigma_beta, const double logodds, const arrayxd_external betahat, const arrayxd_external se);
+RcppExport SEXP rssr_wrap_rss_varbvsr_iter_squarem(SEXP alpha_muSEXP, SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arrayxd_external >::type alpha_mu(alpha_muSEXP);
+    Rcpp::traits::input_parameter< const Matrix_external >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const double >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const double >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const arrayxd_external >::type se(seSEXP);
+    rcpp_result_gen = Rcpp::wrap(wrap_rss_varbvsr_iter_squarem(alpha_mu, SiRiS, sigma_beta, logodds, betahat, se));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -344,6 +403,18 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const Eigen::MappedSparseMatrix<double>& >::type R(RSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd >::type Si(SiSEXP);
     rcpp_result_gen = Rcpp::wrap(SiRSi(R, Si));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SiRSi_a
+Eigen::MatrixXd SiRSi_a(const Matrix_external R, const Eigen::VectorXd Si);
+RcppExport SEXP rssr_SiRSi_a(SEXP RSEXP, SEXP SiSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Matrix_external >::type R(RSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type Si(SiSEXP);
+    rcpp_result_gen = Rcpp::wrap(SiRSi_a(R, Si));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -41,6 +41,18 @@ void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
                       arrayxd_internal SiRiSr,
                       bool reverse);
 
+// void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
+//                       const c_arrayxd_internal sigma_beta_square,
+//                       const c_arrayxxd_internal sigma_square,
+//                       const c_arrayxd_internal logodds,
+//                       const c_arrayxd_internal betahat,
+//                       const c_arrayxd_internal se_square,
+//                       const c_arrayxxd_internal ssrat,
+//                       arrayxxd_internal alpha,
+//                       arrayxxd_internal mu,
+//                       arrayxxd_internal SiRiSr,
+//                       bool reverse);
+
 
 
 #endif

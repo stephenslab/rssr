@@ -29,6 +29,17 @@ double calculate_lnZ(const c_vectorxd_internal q,
                      const c_vectorxd_internal mu,
                      const c_vectorxd_internal s,
                      const double sigb);
+
+
+// Eigen::ArrayXd calculate_lnZ(const c_vectorxd_internal q,
+//                              const c_Matrix_internal r,
+//                              const c_Matrix_internal SiRiSr,
+//                              const c_arrayxd_internal logodds,
+//                              const c_vectorxd_internal sesquare,
+//                              const c_Matrix_internal alpha,
+//                              const c_Matrix_internal mu,
+//                              const c_Matrix_internal s,
+//                              const c_arrayxd_internal  sigb);
 double update_logodds(const c_arrayxd_internal alpha);
 
 #endif

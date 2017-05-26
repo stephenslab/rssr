@@ -98,7 +98,6 @@ double exp_update_logodds(const arrayxd_external alpha){
 
 
 
-
 double calculate_lnZ(const c_vectorxd_internal q,
                      const c_vectorxd_internal r,
                      const c_vectorxd_internal SiRiSr,
@@ -109,25 +108,6 @@ double calculate_lnZ(const c_vectorxd_internal q,
                      const c_vectorxd_internal s,
                      double sigb){
   
-
-  // if(!q.allFinite()){
-  //   Rcpp::stop("q is not finite");
-  // }
-  // if(!r.allFinite()){
-  //   Rcpp::stop("r is not finite");
-  // }
-  // if(!SiRiSr.allFinite()){
-  //   Rcpp::stop("SiRiSr is not finite");
-  // }
-  // if(!alpha.allFinite()){
-  //   Rcpp::stop("alpha is not finite");
-  // }
-  // if(!mu.allFinite()){
-  //   Rcpp::stop("mu is not finite");
-  // }
-  // if(!s.allFinite()){
-  //   Rcpp::stop("s is not finite");
-  // }
   
   double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());
   // if(!std::isfinite(lnz0)){
@@ -144,19 +124,52 @@ double calculate_lnZ(const c_vectorxd_internal q,
   return(lnz2);
 }
 
+
+
+
+
+// double exp_calculate_lnZ(const vectorxd_external q,
+//                      const vectorxd_external r,
+//                      const vectorxd_external SiRiSr,
+//                      double logodds,
+//                      const vectorxd_external sesquare,
+//                      const vectorxd_external alpha,
+//                      const vectorxd_external mu,
+//                      const vectorxd_external s,
+//                      double sigb){
+// 
+// 
+//   return(calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigb));
+// }
+
+
+
 //[[Rcpp::export(name="calculate_lnZ")]]
-double exp_calculate_lnZ(const vectorxd_external q,
-                     const vectorxd_external r,
-                     const vectorxd_external SiRiSr,
-                     double logodds,
-                     const vectorxd_external sesquare,
-                     const vectorxd_external alpha,
-                     const vectorxd_external mu,
-                     const vectorxd_external s,
-                     double sigb){
-
-
-  return(calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigb));
+double wrap_calculate_lnZ(const arrayxd_external alpha_mu,
+                                             const Matrix_external SiRiS,
+                                             const double sigma_beta,
+                                             const double logodds,
+                                             const arrayxd_external betahat,
+                                             const arrayxd_external se){
+  
+  
+  size_t p=betahat.size();
+  // const arrayxd_external alpha,
+  // const arrayxd_external mu,
+  // const arrayxd_external SiRiSr,
+  using namespace Eigen;  
+  
+  Eigen::ArrayXd talpha=alpha_mu.head(p);
+  Eigen::ArrayXd tmu=alpha_mu.tail(p);
+  Eigen::ArrayXd tSiRiSr=SiRiS*(talpha*tmu).matrix();
+//  Eigen::ArrayXd ret_alpha_mu(alpha_mu.size());
+  double sigma_beta_square=sigma_beta*sigma_beta;
+  Eigen::ArrayXd sesquare=se.square();
+  Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
+  Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
+  Eigen::ArrayXd  q= betahat/sesquare;
+  return(calculate_lnZ(q,talpha*tmu,tSiRiSr,logodds,sesquare,talpha,tmu,s,sigma_beta));
+  
 }
 
 

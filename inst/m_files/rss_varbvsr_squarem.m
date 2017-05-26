@@ -149,7 +149,8 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
         mu3     = mu2;
         SiRiSr3 = SiRiSr;
       % scenario 2: no need to modify the step length (line 7 of Table 1)  
-      else 						% i.e. mtp < -1
+      else 	
+        fprintf('Squarem_adjust!:       %d   \n',iter);% i.e. mtp < -1
         alpha3  = alpha0 - 2*mtp*alpha_r + (mtp^2)*alpha_v;
         mu3     = mu0 - 2*mtp*mu_r + (mtp^2)*mu_v;
         SiRiSr3 = full(SiRiS * (alpha3 .* mu3));
@@ -171,7 +172,7 @@ function [lnZ, alpha, mu, s, info] = rss_varbvsr_squarem(betahat, se, SiRiS, sig
     if modify_step && (mtp < -1) && (lnZ < lnZ0)
       num_bt = 0;
       while (lnZ < lnZ0) && (num_bt < 10)
-   %           %fprintf('Backtrack!:       %d   \n',num_bt);
+ 
 
         mtp 		    = 0.5*(mtp-1); % back-tracking
     	alpha3              = alpha0 - 2*mtp*alpha_r + (mtp^2)*alpha_v;

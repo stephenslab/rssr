@@ -1,4 +1,11 @@
 language: r
+os:
+  - linux
+  - osx
+r:
+  - oldrel
+  - release
+  - devel
 cache: packages
 notifications:
   email:
