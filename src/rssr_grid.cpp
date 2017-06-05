@@ -284,72 +284,12 @@ Rcpp::List wrap_squarem_adjust_prep(const Matrix_external SiRiS,
 
 
 
-// // 
-// Rcpp::List wrap_squarem_backtrack(const arrayxd_external alpha,
-//                                   const arrayxd_external alpha0,
-//                                   const arrayxd_external alpha1,
-//                                   const arrayxd_external mu,
-//                                   const arrayxd_external mu0,
-//                                   const arrayxd_external mu1,
-//                                   const arrayxd_external SiRiSr,
-//                                   const Matrix_external SiRiS,
-//                                   const double sigma_beta,
-//                                   const double logodds,
-//                                   double mtp,
-//                                   const arrayxd_external betahat,
-//                                   const arrayxd_external se){
-//   
-//   
-//   ArrayXd talpha=alpha;
-//   ArrayXd tmu=mu;
-//   ArrayXd tSiRiSr=SiRiSr;
-//   double sigma_beta_square=sigma_beta*sigma_beta;
-//   ArrayXd sesquare=se.square();
-//   ArrayXd s=initialize_s(sesquare,sigma_beta_square);
-//   ArrayXd ssrat=initialize_ssrat(s,sigma_beta_square);
-// 
-//   Eigen::ArrayXd  q= betahat/sesquare;
-//   
-//   double lnZ=  calculate_lnZ(q,talpha*tmu,SiRiSr,logodds,sesquare,talpha,tmu,s,sigma_beta);
-//   
-//   // if((mtp<(-1)) && (lnZ < lnZ0)){
-//   //   size_t num_bt=0;
-//   //   while((lnZ<lnZ0) &&(num_bt < 10)){
-//   //     mtp = 0.5*(mtp-1);
-//   //     alpha = alpha0-2*mtp*alpha_r+(mtp*mtp)*alpha_v;
-//   //     mu = mu0-2*mtp*mu_r+(mtp*mtp)*mu_v;
-//   //     SiRiSr = SiRiS*(alpha*mu).matrix();
-//   //     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
-//   //     r=alpha*mu;
-//   //     lnZ=calculate_lnZ(q,r,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);          
-//   //     num_bt=num_bt+1;
-//   //   }
-//   // }
-//   
-//   squarem_backtrack(talpha,alpha0,alpha1,
-//                        tmu,mu0,mu1,
-//                        tSiRiSr,SiRiS,
-//                        sigma_beta,logodds,
-//                        s,betahat,
-//                        sesquare,ssrat,
-//                        mtp,lnZ, lnZ0, reverse);
-// 
-//   
-// }
-                               
 
-// 
-// Rcpp::List wrap_squarem_adjust(const Matrix_external SiRiS,
-//                                     const double sigma_beta,
-//                                     const double logodds,
-//                                     const arrayxd_external  betahat,
-//                                     const arrayxd_external se,
-//                                     arrayxd_external talpha,
-//                                     arrayxd_external tmu,
-//                                     arrayxd_external tSiRiSr,
-//                                     const double tolerance,
-//                                     const int itermax,
-//                                     Rcpp::LogicalVector lnz_tol){
+
+
+
+
+
 
 
 template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
