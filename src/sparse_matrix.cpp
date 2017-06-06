@@ -8,7 +8,11 @@ Eigen::SparseMatrix<double> SiRSi(const Eigen::MappedSparseMatrix<double> &R, co
   return(m);
 }
 
-
+//[[Rcpp::export]]
+Eigen::MatrixXd SiRSi_c(const Matrix_external R, const Eigen::ArrayXd se, const Eigen::ArrayXd betahat,const double n){
+  Eigen::ArrayXd svec=(se.square()+betahat.square()/n).sqrt().inverse();
+  return(svec.matrix().asDiagonal()*R*svec.matrix().asDiagonal());
+}
 
 // [[Rcpp::export]]
 Eigen::MatrixXd SiRSi_a(const Matrix_external R, const Eigen::VectorXd Si) {

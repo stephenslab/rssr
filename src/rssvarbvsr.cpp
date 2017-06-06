@@ -6,91 +6,91 @@
 using namespace Rcpp;
 
  
-void rss_varbvsr_update(const double betahat,
-                        const double se_square,
-                        const double sigma_beta_square,
-                        const c_arrayxd_internal SiRiS_snp,
-                        const double sigma_square,
-                        arrayxd_internal SiRiSr,
-                        const double SiRiSr_snp,
-                        const double ssrat,
-                        const double logodds,
-                        double &alpha,
-                        double &mu) {
+ void rss_varbvsr_update(const double betahat,
+                         const double se_square,
+                         const double sigma_beta_square,
+                         const c_arrayxd_internal SiRiS_snp,
+                         const double sigma_square,
+                         arrayxd_internal SiRiSr,
+                         const double SiRiSr_snp,
+                         const double ssrat,
+                         const double logodds,
+                         double &alpha,
+                         double &mu) {
+   
+   
+   const size_t p=SiRiS_snp.size();
+   
+   
+   double r = alpha * mu;
+   
+   mu = sigma_square * (betahat / se_square + r/se_square - SiRiSr_snp);
+   alpha = sigmoid(logodds + 0.5 * (ssrat + mu*mu/sigma_square));
+   
+   double r_new = alpha * mu-r;
+   SiRiSr+=SiRiS_snp*r_new;
+   
+ }
+ 
+ 
 
 
-  const size_t p=SiRiS_snp.size();
 
-  
-  double r = alpha * mu;
-  
-  mu = sigma_square * (betahat / se_square + r/se_square - SiRiSr_snp);
-  alpha = sigmoid(logodds + 0.5 * (ssrat + mu*mu/sigma_square));
-  
-  double r_new = alpha * mu-r;
-  SiRiSr+=SiRiS_snp*r_new;
-
-}
-
-
-
-
-
-
-void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
-                      const double sigma_beta_square,
-                      const c_arrayxd_internal sigma_square,
-                      const double logodds,
-                      const c_arrayxd_internal betahat,
-                      const c_arrayxd_internal se_square,
-                      const c_arrayxd_internal ssrat,
-                      arrayxd_internal alpha,
-                      arrayxd_internal mu,
-                      arrayxd_internal SiRiSr,
-                      bool reverse){
-
-  // mkl_set_num_threads_local(1);
-  size_t p=betahat.size();
-  // Get the number of SNPs (p) and coordinate ascent updates (m).
-  
-  // Initialize outputs.
-  
-  // Store a single column of matrix inv(S)*R*inv(S).
-
-  
-  // Run coordinate ascent updates.
-  // Repeat for each coordinate ascent update.
-
-  size_t i=0;
-  for (size_t j = 0; j < p; j++) {
-    if(reverse){
-      i=p-1-j;
-    }else{
-      i=j;
-    }
-    
-    // Copy the kth column of matrix inv(S)*R*inv(S).
-    // copySparseColumn(SiRiS_snp, k, SiRiS.elems, Ir, Jc, p);
-    
-    // Copy the kth element of vector inv(S)*R*inv(S)*r.
-
-    
-    // Perform the mean-field variational update.
-    rss_varbvsr_update(betahat.coeffRef(i),
-                       se_square.coeffRef(i),
-                       sigma_beta_square, 
-                       SiRiS.col(i),
-                       sigma_square.coeffRef(i),
-                       SiRiSr,
-                       SiRiSr.coeffRef(i),
-                       ssrat.coeffRef(i),
-                       logodds,
-                       alpha.coeffRef(i),
-                       mu.coeffRef(i));
-  }
-
-}
-
+ 
+ void rss_varbvsr_iter(const c_Matrix_internal SiRiS,
+                       const double sigma_beta_square,
+                       const c_arrayxd_internal sigma_square,
+                       const double logodds,
+                       const c_arrayxd_internal betahat,
+                       const c_arrayxd_internal se_square,
+                       const c_arrayxd_internal ssrat,
+                       arrayxd_internal alpha,
+                       arrayxd_internal mu,
+                       arrayxd_internal SiRiSr,
+                       bool reverse){
+   
+   // mkl_set_num_threads_local(1);
+   size_t p=betahat.size();
+   // Get the number of SNPs (p) and coordinate ascent updates (m).
+   
+   // Initialize outputs.
+   
+   // Store a single column of matrix inv(S)*R*inv(S).
+   
+   
+   // Run coordinate ascent updates.
+   // Repeat for each coordinate ascent update.
+   
+   size_t i=0;
+   for (size_t j = 0; j < p; j++) {
+     if(reverse){
+       i=p-1-j;
+     }else{
+       i=j;
+     }
+     
+     // Copy the kth column of matrix inv(S)*R*inv(S).
+     // copySparseColumn(SiRiS_snp, k, SiRiS.elems, Ir, Jc, p);
+     
+     // Copy the kth element of vector inv(S)*R*inv(S)*r.
+     
+     
+     // Perform the mean-field variational update.
+     rss_varbvsr_update(betahat.coeffRef(i),
+                        se_square.coeffRef(i),
+                        sigma_beta_square, 
+                        SiRiS.col(i),
+                        sigma_square.coeffRef(i),
+                        SiRiSr,
+                        SiRiSr.coeffRef(i),
+                        ssrat.coeffRef(i),
+                        logodds,
+                        alpha.coeffRef(i),
+                        mu.coeffRef(i));
+   }
+   
+ }
+ 
 
 
 

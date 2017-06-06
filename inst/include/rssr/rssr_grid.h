@@ -6,6 +6,21 @@
 
 
 
+double initialize_value(const double val, const double param);
+
+double calculate_mtp(const c_arrayxd_internal alpha,const c_arrayxd_internal alpha1,const c_arrayxd_internal alpha0, const c_arrayxd_internal mu,const c_arrayxd_internal mu1, const c_arrayxd_internal mu0);
+
+double calculate_mtp(const c_arrayxd_internal alpha_r,const c_arrayxd_internal alpha_v,const c_arrayxd_internal mu_r, const c_arrayxd_internal mu_v);
+
+Eigen::ArrayXd initialize_array(const c_arrayxd_internal init, const double param);
+
+void calc_max_err(const double lnZ,const double lnZ0,const c_arrayxd_internal alpha, const c_arrayxd_internal alpha0,const c_arrayxd_internal mu,const c_arrayxd_internal mu0,  double &max_err,const bool lnztol);
+
+Eigen::ArrayXd initialize_s(const c_arrayxd_internal sesquare, const double sigma_beta_square);
+
+
+
+Eigen::ArrayXd initialize_ssrat(const c_arrayxd_internal s, const double sigma_beta_square);
 
 Rcpp::DataFrame grid_rss_varbvsr(
     const c_sparseMatrix_internal  SiRiS,
