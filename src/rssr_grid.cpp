@@ -394,14 +394,6 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
 
     
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
-
-    //    r=alpha*mu;
-    // if((alpha*mu).hasNaN()){
-    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (3): "<<iter<<std::endl;
-    //   //      Rcpp::stop("alpha*mu is not finite!");
-    //  }//else{
-    //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(3) : "<<iter<<std::endl;
-    // }
     
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
 
