@@ -206,60 +206,7 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
 
 
 
-# 
-# test_that("Normal approximation works",{
-#   
-#   
-#   sigb <- seq(0.01,1.2,length.out = 70)
-#   
-#   
-#   data("matlab_grid_logodds_sigb")
-#   pm <- matlab_grid_logodds_sigb
-#   paramdf <- list(sigb=sigb)
-#   
-#   betamat <- matrix(0,length(alpha_test),length(sigb))
-#   titerl <- list()
-#   pvevec <- numeric(length(sigb))
-#   lnzpve <- numeric(length(sigb))
-#   for(i in 1:length(sigb)){
-#     titer <- rss_varbvsr_squarem_norm(talpha0=alpha_test,
-#                                       tmu0=mu_test,betahat=betahat,
-#                                       se=se,
-#                                       SiRiS=SiRiS_f,
-#                                       sigma_beta =sigb[i],
-#                                       verbose=F,
-#                                       tSiRiSr0=SiRiSr,itermax=1000,tolerance=1e-4,lnz_tol=F)
-#     titerl[[i]] <- titer
-#     lnzpve[i] <- titer$lnZ
-#     pvevec[i] <- t(titer$SiRiSr)%*%(titer$mu)
-#     betamat[,i] <- titerl[[i]][["mu"]]
-#   }
-#   
-# 
-#   all_betas <- data_frame(sigb=sigb[c(col(betamat))],beta=c(betamat),snp=c(row(betamat)),betahat=betahat[c(row(betamat))],
-#                           tot_pve=pvevec[c(col(betamat))],
-#                           tot_lnZ=lnzpve[c(col(betamat))])
-#   rmse <- function(x,y){
-#     sqrt(mean((x-y)^2))
-#   }
-# 
-#   b_diff <- group_by(all_betas,sigb) %>% summarise(rmse=rmse(beta,betahat),cor=cor(beta,betahat),
-#                                                    diff=mean(beta-betahat),pve=unique(tot_pve),lnZ=unique(tot_lnZ)) %>% ungroup()
-#   ggplot(b_diff,aes(x=sigb,y=pve))+geom_point()
-#   ggplot(b_diff,aes(x=sigb,y=lnZ))+geom_point()+geom_vline(xintercept=mean(se))
-# 
-#   dx <- qqplot(x=betamat[,1],y=betahat)
-#   
-#   ggplot(all_betas,aes(sample=beta,group=sigb,col=sigb))+stat_qq(distribution=qnorm)
-#   
-#   ggplot(b_diff,aes(x=sigb,y=rmse))+geom_point()+geom_vline(xintercept=sd(betahat))
-#   ggplot(b_diff,aes(x=sigb,y=cor))+geom_point()+geom_vline(xintercept=sd(betahat))
-#   ggplot(b_diff,aes(x=sigb,y=diff))+geom_point()+geom_vline(xintercept=mean(se))
-#   
-#   ggplot(all_betas,aes(x=sigb,y=abs(betahat-beta),col=betahat))+geom_point()
-#   ggplot(mr_grid,aes(x=sigb,y=lnZ))+geom_point()  
-#   ggplot(mr_grid,aes(x=sigb,y=pve))+geom_point()  
-# })
+
 
 
 
