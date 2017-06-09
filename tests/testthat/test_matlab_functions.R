@@ -1,7 +1,7 @@
 context("MATLAB_scripts")
 # library(rssr)
 library(Matrix)
-
+library(rssr)
 #Load the simulated data
 data("betahat")
 betahat <- c(betahat)
@@ -188,6 +188,7 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
   
   data("matlab_grid_logodds_sigb")
   pm <- matlab_grid_logodds_sigb
+  
   paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% purrr::cross_d()
   mr_grid <- grid_search_rss_varbvsr_sp(talpha0=alpha_test,
                                         tmu0=mu_test,betahat=betahat,
@@ -200,6 +201,109 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
   mr_grid$pve <- mr_grid$pve/Sample_Size
   expect_equal(c(mr_grid$lnZ),c(t(pm)))}
 )
+
+
+
+
+
+test_that("2d parallel grid optimization over sigb and logodds works as in old version",{
+  library(dplyr)
+  log10oddsvec <- seq(-3.1,-2.1,length.out = 10)
+  logoddsvec <- log10oddsvec*log(10)
+  sigb <- seq(0.8,1.2,length.out = 10)
+  
+  
+  # data("matlab_grid_logodds_sigb")
+  # pm <- matlab_grid_logodds_sigb
+  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% purrr::cross_d()
+  SiRiSf <- as.matrix(SiRiS)
+  SiRiS_f <- SiRSi_d(as.matrix(R_shrink),1/se)
+  SiRiSr <- c(SiRiS_f%*%(alpha_test*mu_test))
+  alpha_test <- c(alpha_test)
+  mu_test <- c(mu_test)
+  mr_grid_d <- grid_search_rss_varbvsr_alt(talpha0=alpha_test,
+                                           tmu0=mu_test,
+                                           betahat=betahat,
+                                           se=se,
+                                           SiRiS=SiRiS_f,
+                                           sigma_beta =paramdf$sigb,
+                                           logodds=paramdf$logodds,
+                                           tSiRiSr0=SiRiSr,
+                                           itermax=100L,
+                                           tolerance=1e-4,
+                                           lnz_tol=F,
+                                           n=1L)
+  
+  mr_grid_o <- grid_search_rss_varbvsr(talpha0=alpha_test,
+                                       tmu0=mu_test,
+                                       betahat=betahat,
+                                       se=se,
+                                       SiRiS=SiRiS_f,
+                                       sigma_beta =paramdf$sigb,
+                                       logodds=paramdf$logodds,
+                                       tSiRiSr0=SiRiSr,
+                                       itermax=100L,
+                                       tolerance=1e-4,
+                                       lnz_tol=F,verbose = F)
+  testthat::expect_equal(mr_grid_d,mr_grid_o)
+  
+  
+  fmbl <- list()  
+  pb <- progress::progress_bar$new(total=50)
+  for(i in 1:50){
+    
+    fmbl[[i]] <- data.frame(microbenchmark::microbenchmark(new_tbb=grid_search_rss_varbvsr_alt(talpha0=alpha_test,
+                                                                                               tmu0=mu_test,
+                                                                                               betahat=betahat,
+                                                                                               se=se,
+                                                                                               SiRiS=SiRiS_f,
+                                                                                               sigma_beta =paramdf$sigb,
+                                                                                               logodds=paramdf$logodds,
+                                                                                               tSiRiSr0=SiRiSr,
+                                                                                               itermax=100L,
+                                                                                               tolerance=1e-4,
+                                                                                               lnz_tol=F,
+                                                                                               n=1L,grainsize = i))) %>% mutate(grainsize=i)
+    pb$tick()
+  }
+  ores <- microbenchmark(old_tbb=grid_search_rss_varbvsr(talpha0=alpha_test,
+                                                                    tmu0=mu_test,
+                                                                    betahat=betahat,
+                                                                    se=se,
+                                                                    SiRiS=SiRiS_f,
+                                                                    sigma_beta =paramdf$sigb,
+                                                                    logodds=paramdf$logodds,
+                                                                    tSiRiSr0=SiRiSr,
+                                                                    itermax=100L,
+                                                                    tolerance=1e-4,
+                                                                    lnz_tol=F,verbose = F),
+                                    new_tbb=grid_search_rss_varbvsr_alt(talpha0=alpha_test,
+                                                                        tmu0=mu_test,
+                                                                        betahat=betahat,
+                                                                        se=se,
+                                                                        SiRiS=SiRiS_f,
+                                                                        sigma_beta =paramdf$sigb,
+                                                                        logodds=paramdf$logodds,
+                                                                        tSiRiSr0=SiRiSr,
+                                                                        itermax=100L,
+                                                                        tolerance=1e-4,
+                                                                        lnz_tol=F,
+                                                                        n=1L,grainsize = 1))
+
+  afmb <- bind_rows(fmbl)
+  head()
+  ggplot(afmb,aes(x=grainsize,y=time,group=grainsize))+geom_boxplot()
+  
+  expect_equal(mr_grid_d,mr_grid_o)
+  
+  
+  
+}
+)
+
+
+
+
 
 
 
