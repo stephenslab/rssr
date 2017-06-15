@@ -204,6 +204,64 @@ test_that("2d grid optimization over sigb and logodds works as in MATLAB",{
 
 
 
+test_that("2d grid optimization over sigb and logodds works as alternative implementation",{
+  library(dplyr)
+  library(purrr)
+  log10oddsvec <- seq(-3.1,-2.1,length.out = 10)
+  logoddsvec <- log10oddsvec*log(10)
+  sigb <- seq(0.8,1.2,length.out = 10)
+  
+  
+  
+  
+  paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% purrr::cross_d()
+  
+  
+  old_res <- microbenchmark(old=grid_search_rss_varbvsr(talpha0=alpha_test,
+                                                        tmu0=mu_test,betahat=betahat,
+                                                        se=se,
+                                                        SiRiS=SiRiS_f,
+                                                        sigma_beta =paramdf$sigb,
+                                                        logodds=paramdf$logodds,
+                                                        verbose=F,
+                                                        tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=T),
+                            new=grid_search_rss_varbvsr_alt(talpha0=alpha_test,
+                                                            tmu0=mu_test,betahat=betahat,
+                                                            se=se,
+                                                            SiRiS=SiRiS_f,
+                                                            sigma_beta =paramdf$sigb,
+                                                            logodds=paramdf$logodds,
+                                                            tSiRiSr0=SiRiSr,
+                                                            n=1,
+                                                            itermax=100,tolerance=1e-4,lnz_tol=T))
+  mr_grid <- grid_search_rss_varbvsr(talpha0=alpha_test,
+                                     tmu0=mu_test,betahat=betahat,
+                                     se=se,
+                                     SiRiS=SiRiS_f,
+                                     sigma_beta =paramdf$sigb,
+                                     logodds=paramdf$logodds,
+                                     verbose=F,
+                                     tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=T) %>% dplyr::select(-pve)
+  mr_grid_a <- grid_search_rss_varbvsr_alt(talpha0=alpha_test,
+                                           tmu0=mu_test,betahat=betahat,
+                                           se=se,
+                                           SiRiS=SiRiS_f,
+                                           sigma_beta =paramdf$sigb,
+                                           logodds=paramdf$logodds,
+                                           tSiRiSr0=SiRiSr,
+                                           n=1,
+                                           itermax=100,tolerance=1e-4,lnz_tol=T) %>% dplyr::select(-mu_mean,-pve)
+  
+  
+  
+  
+  expect_equal(mr_grid,mr_grid_a,tolerance=1e-3)
+  }
+
+)
+
+
+
 
 
 

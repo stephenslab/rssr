@@ -26,6 +26,18 @@ typedef Eigen::MappedSparseMatrix<double> sparseMatrix_external;
 typedef Eigen::Map<Eigen::MatrixXd > Matrix_external;
 typedef Eigen::Map<Eigen::VectorXd> vectorxd_external;
 
+typedef Eigen::Map<Eigen::ArrayXd> mdarray;
+typedef Eigen::Map<Eigen::VectorXd> mdvec;
+typedef Eigen::Map<const Eigen::VectorXd> c_mdvec;
+typedef Eigen::Map<const Eigen::ArrayXd> c_mdarray;
+
+typedef Eigen::Map<Eigen::ArrayXi> miarray;
+typedef Eigen::Map<Eigen::ArrayXXd> m2darray;
+
+
+typedef Eigen::Map<Eigen::MatrixXd> mmat;
+typedef Eigen::Map<const Eigen::MatrixXd> c_mmat;
+
 
 
 #endif

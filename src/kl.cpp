@@ -30,6 +30,7 @@ double exp_intklbeta_rssbvsr(const arrayxd_external alpha,const arrayxd_external
 
 
 
+
 // This is equivalent to sum(alpha*log(pi)+(1-alpha)*log(1-pi))
 double intgamma(double logodds, const c_arrayxd_internal alpha){
   Eigen::ArrayXd tres = ((alpha-1)*logodds+logsigmoid(logodds));
@@ -100,16 +101,47 @@ double exp_update_logodds(const arrayxd_external alpha){
   
 
 
+// double calculate_lnZ(const double* qp,
+// 		     const double* SiRiSrp,
+// 		     const double logodds,
+// 		     const double* sesquarep,
+// 		     const double* alphap,
+// 		     const double* mup,
+// 		     const double* sp,
+// 		     const double sigb,const size_t p){
+  
+  
+//   mdvec q(qp,p);
+//   mdvec alpha(alphap,p);
+//   mdvec mu(alphap,p);
+//   double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());
+//   // if(!std::isfinite(lnz0)){
+//   //   Rcpp::stop("lnZ0 is not finite");
+//   // }
+//   double lnz1 = lnz0-0.5*(1/sesquare.array()).matrix().dot(betavar(alpha.array(),mu.array(),s.array()).matrix());
+//   // if(!std::isfinite(lnz0)){
+//   //   Rcpp::stop("lnZ1 is not finite");
+//   // }
+//   double lnz2 = lnz1+intklbeta_rssbvsr(alpha.array(),mu.array(),s.array(),sigb*sigb);
+  
+  
+//   // if(!std::isfinite(lnz0)){
+//   //   Rcpp::stop("lnZ2 is not finite");
+//   // }
+//   return(lnz2);
+// }
+
+
 
   double calculate_lnZ(const c_vectorxd_internal q,
                        const c_vectorxd_internal r,
                        const c_vectorxd_internal SiRiSr,
-                       double logodds,
+                       const double logodds,
                        const c_vectorxd_internal sesquare,
                        const c_vectorxd_internal alpha,
                        const c_vectorxd_internal mu,
                        const c_vectorxd_internal s,
-                       double sigb){
+                       const double sigb){
     
     
     double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());

@@ -3,9 +3,6 @@
 #include <cstdio>
 #include <cmath>
 #include <RcppParallel.h>
-
-#include <progress.hpp>
-// [[Rcpp::depends(RcppProgress)]]
 //[[Rcpp::depends(RcppParallel)]]
 
 
@@ -27,7 +24,7 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
                                              const c_arrayxd_internal betahat,
                                              const c_arrayxd_internal sesquare,
                                              const c_arrayxd_internal ssrat,
-                                             double &mtp, double &lnZ, double &lnZ0,double &lnZ00,const bool reverse)
+                                             double &mtp, double &lnZ, double &lnZ0,double &lnZ00, bool &doDie)
 {
   
   
@@ -53,17 +50,19 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
       // r=alpha*mu;
       lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);          
       num_bt=num_bt+1;
-      // Rcpp::Rcerr<<"num_bt:"<<num_bt<<" step_size:"<<mtp<<"lnZ:"<<lnZ<<" lnZ0:"<<lnZ0<<std::endl;
-    }
-    // if(num_bt>=10){
-    //   Rcpp::Rcerr<<"backtrack failed"<<std::endl;
-    // }
-    if(num_bt==max_backtrack){
-      alpha=alpha0;
-      mu=mu0;
-      SiRiSr = (SiRiS*(alpha*mu).matrix()).array();
-      lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
-      lnZ0=lnZ00;
+      if(num_bt==max_backtrack){
+        alpha=alpha0;
+        mu=mu0;
+        SiRiSr = (SiRiS*(alpha*mu).matrix()).array();
+        lnZ0=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
+        rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,false);
+        rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,true);
+        lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
+        if(lnZ<lnZ0){
+          doDie=true;
+        }
+        mtp=-1;
+      }
       // Rcpp::Rcerr<<"Final!: num_bt:"<<num_bt<<" step_size:"<<mtp<<"lnZ:"<<lnZ<<" lnZ0:"<<lnZ0<<std::endl;
     }
   }
@@ -72,12 +71,12 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
 
 
 double calculate_mtp(const c_arrayxd_internal alpha,const c_arrayxd_internal alpha1,const c_arrayxd_internal alpha0, const c_arrayxd_internal mu,const c_arrayxd_internal mu1, const c_arrayxd_internal mu0){
-  return(  -std::sqrt(((alpha1-alpha0).square()).sum()+((mu1-mu0).square()).sum())/std::sqrt(((alpha-2*alpha1+alpha0).square()).sum()+((mu-2*mu1+mu0).square()).sum()));
+  return(  -std::sqrt(((alpha1-alpha0).square()).sum()+((mu1-mu0).square()).sum())/std::sqrt(((alpha-2*alpha1+alpha0).square()).sum()+((mu-2*mu1+mu0).square()).sum())+double_lim::epsilon());
 }
 
 double calculate_mtp(const c_arrayxd_internal alpha_r,const c_arrayxd_internal alpha_v,const c_arrayxd_internal mu_r, const c_arrayxd_internal mu_v){
   
-  return(  -std::sqrt(((alpha_r).square()).sum()+((mu_r).square()).sum())/std::sqrt(((alpha_v).square()).sum()+((mu_v).square()).sum()));
+  return(  -std::sqrt(((alpha_r).square()).sum()+((mu_r).square()).sum())/std::sqrt(((alpha_v).square()).sum()+((mu_v).square()).sum())+double_lim::epsilon());
 }
 
 template <typename T> void squarem_adjust(arrayxd_internal alpha,
@@ -261,7 +260,7 @@ Rcpp::List wrap_squarem_adjust_prep(const Matrix_external SiRiS,
 
     
 
-    Rcpp::Rcout<<"squarem adjust"<<std::endl;
+    // Rcpp::Rcout<<"squarem adjust"<<std::endl;
     alpha=alpha0-2*mtp*(alpha1-alpha0)+(mtp*mtp)*(alpha-2*alpha1+alpha0);
     mu=mu0-2*mtp*(mu1-mu0)+(mtp*mtp)*(mu-2*mu1+mu0);
     SiRiSr=SiRiS*(alpha*mu).matrix();
@@ -389,36 +388,27 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,logodds,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
     
-    //    r=alpha*mu;
-    // if((alpha*mu).hasNaN()){
-    //   Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (3): "<<iter<<std::endl;
-    //   //      Rcpp::stop("alpha*mu is not finite!");
-    //  }//else{
-    //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(3) : "<<iter<<std::endl;
-    // }
+
     
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,logodds,sesquare,alpha,mu,s,sigma_beta);
-    
+    bool doDie=false;
     squarem_backtrack<T>(alpha,alpha0,alpha1,
                          mu,mu0,mu1,
                          SiRiSr,SiRiS,
                          sigma_beta,logodds,
                          s,betahat,
                          sesquare,ssrat,
-                         mtp,lnZ, lnZ0,lnZ00, reverse);
-    if((alpha*mu).hasNaN()){
-      Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (4): "<<iter<<std::endl;
-      //      Rcpp::stop("alpha*mu is not finite!");
-    }//else{
-    //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(4) : "<<iter<<std::endl;
-    // }
+                         mtp,lnZ, lnZ0,lnZ00, doDie);
+    if(doDie){
+      iter=itermax+1;
+    }
     
     calc_max_err(lnZ,lnZ0, alpha, alpha0, mu, mu0,max_err,lnztol);
     
     if(iter>itermax){
-      printf("Maximum iteration number reached: %+0.2d \n",(int)iter);
-      
-      printf("The log variational lower bound of the last step increased by(at most) %+0.2e\n",max_err);
+//     printf("Maximum iteration number reached: %+0.2d \n",(int)iter);
+// 
+//     printf("The log variational lower bound of the last step increased by(at most) %+0.2e\n",max_err);
       break;
     }
     iter=iter+1;
@@ -455,7 +445,7 @@ template<typename T> double rss_varbvsr_naive_iter(const T SiRiS,
   // Eigen::ArrayXd alpha=talpha0;
   // Eigen::ArrayXd mu=tmu0;
   // Eigen::ArrayXd SiRiSr=tSiRiSr0;
-  double lnZ=log(0);
+  double lnZ=1;
   
   
   Eigen::ArrayXd talpha=alpha;
@@ -499,36 +489,36 @@ template<typename T> double rss_varbvsr_naive_iter(const T SiRiS,
   
   
   
-  //[[Rcpp::export]]
-  Rcpp::List rss_varbvsr_naive (const Matrix_external SiRiS,
-                                const double sigma_beta,
-                                const double logodds,
-                                const arrayxd_external betahat,
-                                const arrayxd_external se,
-                                const arrayxd_external talpha0,
-                                const arrayxd_external tmu0,
-                                const arrayxd_external tSiRiSr0,
-                                double tolerance,
-                                int itermax,
-                                Rcpp::LogicalVector verbose,
-                                Rcpp::LogicalVector lnz_tol){
-    
-    Eigen::ArrayXd alpha=talpha0;
-    Eigen::ArrayXd mu=tmu0;
-    Eigen::ArrayXd SiRiSr=tSiRiSr0;
-    int iter=0;
-    double max_err=1;
-    
-    double lnZ=rss_varbvsr_naive_iter<c_Matrix_internal>(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,tolerance,itermax,lnz_tol,iter,max_err);
-    
-    return Rcpp::List::create(Rcpp::Named("alpha")=alpha,
-                              Rcpp::Named("mu")=mu,
-                              Rcpp::Named("SiRiSr")=SiRiSr,
-                              Rcpp::Named("max_err")=max_err,
-                              Rcpp::Named("lnZ")=lnZ,
-                              Rcpp::Named("iter")=iter);
-    
-  }
+//[[Rcpp::export]]
+Rcpp::List rss_varbvsr_naive (const Matrix_external SiRiS,
+                              const double sigma_beta,
+                              const double logodds,
+                              const arrayxd_external betahat,
+                              const arrayxd_external se,
+                              const arrayxd_external talpha0,
+                              const arrayxd_external tmu0,
+                              const arrayxd_external tSiRiSr0,
+                              double tolerance,
+                              int itermax,
+                              Rcpp::LogicalVector verbose,
+                              Rcpp::LogicalVector lnz_tol){
+  
+  Eigen::ArrayXd alpha=talpha0;
+  Eigen::ArrayXd mu=tmu0;
+  Eigen::ArrayXd SiRiSr=tSiRiSr0;
+  int iter=0;
+  double max_err=1;
+  
+  double lnZ=rss_varbvsr_naive_iter<c_Matrix_internal>(SiRiS,sigma_beta,logodds,betahat,se,alpha,mu,SiRiSr,tolerance,itermax,lnz_tol,iter,max_err);
+  
+  return Rcpp::List::create(Rcpp::Named("alpha")=alpha,
+                            Rcpp::Named("mu")=mu,
+                            Rcpp::Named("SiRiSr")=SiRiSr,
+                            Rcpp::Named("max_err")=max_err,
+                            Rcpp::Named("lnZ")=lnZ,
+                            Rcpp::Named("iter")=iter);
+  
+}
 
 
 //[[Rcpp::export]]
@@ -658,11 +648,11 @@ using namespace tbb;
 
 
 template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
-    const T SiRiS,
-    const c_arrayxd_internal sigma_beta,
-    const c_arrayxd_internal logodds,
-    const c_arrayxd_internal  betahat,
-    const c_arrayxd_internal  se,
+    const T tSiRiS,
+    const c_arrayxd_internal tsigma_beta,
+    const c_arrayxd_internal tlogodds,
+    const c_arrayxd_internal  tbetahat,
+    const c_arrayxd_internal  tse,
     const c_arrayxd_internal talpha0,
     const c_arrayxd_internal tmu0,
     const c_arrayxd_internal tSiRiSr0,
@@ -674,6 +664,17 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
   //  std::cout<<"Starting grid_rss_varbvsr (tbb)"<<std::endl;
   
   using namespace Rcpp;
+  using namespace Eigen;
+  
+  ArrayXd sigma_beta=tsigma_beta;
+  ArrayXd logodds=tlogodds;
+  ArrayXd betahat=tbetahat;
+  ArrayXd se=tse;
+  MatrixXd SiRiS=tSiRiS;
+
+  
+  
+  
   size_t sigb_size= sigma_beta.size();
   size_t logodds_size=logodds.size();
   
@@ -682,27 +683,42 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
     Rcpp::stop("Length of sigma_beta must equal length of logodds");
   }
   
+
+
+  
   Eigen::ArrayXd npivec(tot_size);
   Eigen::ArrayXd nlzvec(tot_size);
   Eigen::ArrayXd errvec(tot_size);
   Eigen::ArrayXi itervec(tot_size);
   Eigen::ArrayXd pvevec(tot_size);
-  
+  size_t p=betahat.size();
   
   Rcpp::LogicalVector verbose(1);
   verbose(0)=isVerbose;
   Rcpp::LogicalVector lnz_tol(1);
   lnz_tol(0)=islnz_tol;
   // static affinity_partitioner ap;
+  Eigen::ArrayXXd  all_alphas(p,tot_size);
+  Eigen::ArrayXXd  all_mus(p,tot_size);
+  Eigen::ArrayXXd  all_SiRiSr(p,tot_size);
+  
+  for(size_t i=0; i<tot_size; i++){
+    all_alphas.col(i)=talpha0;
+    all_mus.col(i)=tmu0;
+    all_SiRiSr.col(i)=tSiRiSr0;
+
+  }
+  
+  
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r)  {
                  for(size_t t=r.begin(); t!=r.end(); t++){
                    size_t i=t;
                    size_t j=t;
                    //                   sigbvec(t)=sigma_beta(j);
-                   Eigen::ArrayXd copy_alpha(talpha0);
-                   Eigen::ArrayXd copy_mu(tmu0);
-                   Eigen::ArrayXd copy_SiRiSr(tSiRiSr0);
+                   // Eigen::ArrayXd copy_alpha(talpha0);
+                   // Eigen::ArrayXd copy_mu(tmu0);
+                   // Eigen::ArrayXd copy_SiRiSr(tSiRiSr0);
                    //                   lovec(t)=logodds(i);
                    int iter=0;
                    double max_err=1;
@@ -711,17 +727,17 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
                                                           logodds(i),
                                                           betahat,
                                                           se,
-                                                          copy_alpha,
-                                                          copy_mu,
-                                                          copy_SiRiSr,
+                                                          all_alphas.col(t),
+                                                          all_mus.col(t),
+                                                          all_SiRiSr.col(t),
                                                           tolerance,
                                                           itermax,
                                                           lnz_tol,iter,max_err);
                    nlzvec[t]=retvec;
                    itervec[t]=iter;
                    errvec[t]=max_err;
-                   npivec[t]=copy_alpha.mean();
-                   pvevec[t]=copy_SiRiSr.matrix().transpose()*(copy_alpha*copy_mu).matrix();
+                   npivec[t]=all_alphas.col(t).mean();
+                   pvevec[t]=all_SiRiSr.col(t).matrix().transpose()*(all_alphas.col(t)*all_alphas.col(t)).matrix();
                  }});
   
   //  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
@@ -733,7 +749,6 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
                                  _["pve"]=pvevec,
                                  _["lnZ"]=nlzvec));
 }
-
 
 
 
@@ -750,7 +765,7 @@ Rcpp::DataFrame grid_rss_varbvsr_multitrait(
     bool isVerbose,
     const c_arrayxi_internal fgeneid,
     bool islnz_tol){
-
+  
   using namespace Rcpp;
   size_t ngenes=betahat.cols();
   size_t sigb_size= sigma_beta.size();
@@ -775,7 +790,7 @@ Rcpp::DataFrame grid_rss_varbvsr_multitrait(
   
   Eigen::ArrayXd sigbvec(ngenes*tot_size);
   Eigen::ArrayXd logoddsvec(ngenes*tot_size);
-
+  
   
   
   Rcpp::LogicalVector verbose(1);
@@ -832,15 +847,6 @@ Rcpp::DataFrame grid_rss_varbvsr_multitrait(
                });
   
   
-  // Map<ArrayXd> nnpivec(npivec.data(),npivec.size());
-  // Map<ArrayXd> nnlzvec(nlzvec.data(),nlzvec.size());
-  // Map<ArrayXd> nerrvec(errvec.data(),errvec.size());
-  // Map<ArrayXd> nitervec(itervec.data(),itervec.size());
-  // Map<ArrayXd> npvevec(pvevec.data(),pvevec.size());
-  // Map<ArrayXd> nsigbev(sigbvec.data(),sigbvec.size());
-  // Map<ArrayXd> nlogoddsvec(logoddsvec.data(),logoddsvec.size());
-  // Map<ArrayXi> nfgeneid(fgeneidmat.data(),fgeneidmat.size());
-  
   //  Rcpp::Rcout<<"mean lnZ is: "<<mean(nlzvec)<<std::endl;
   return(Rcpp::DataFrame::create(_["logodds"]=logoddsvec,
                                  _["sigb"]=sigbvec,
@@ -851,6 +857,7 @@ Rcpp::DataFrame grid_rss_varbvsr_multitrait(
                                  _["lnZ"]=nlzvec,
                                  _["fgeneid"]=fgeneidmat));
 }
+
 
 
 
@@ -895,9 +902,9 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
   
   Eigen::ArrayXd npivec(tot_size);
   Eigen::ArrayXd pvevec(tot_size);
-  Rcpp::NumericVector nlzvec(tot_size);
-  Rcpp::NumericVector sigbvec(tot_size);
-  Rcpp::NumericVector lovec(tot_size);
+Eigen::ArrayXd nlzvec(tot_size);
+Eigen::ArrayXd sigbvec(tot_size);
+Eigen::ArrayXd lovec(tot_size);
   Eigen::ArrayXd errvec(tot_size);
   Eigen::ArrayXi itervec(tot_size);
   //   std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;
@@ -1066,9 +1073,9 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr_naive(
   
   Eigen::ArrayXd npivec(tot_size);
   Eigen::ArrayXd pvevec(tot_size);
-  Rcpp::NumericVector nlzvec(tot_size);
-  Rcpp::NumericVector sigbvec(tot_size);
-  Rcpp::NumericVector lovec(tot_size);
+  Eigen::ArrayXd nlzvec(tot_size);
+  Eigen::ArrayXd sigbvec(tot_size);
+  Eigen::ArrayXd lovec(tot_size);
   Eigen::ArrayXd errvec(tot_size);
   Eigen::ArrayXi itervec(tot_size);
   //   std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;

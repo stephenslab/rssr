@@ -178,7 +178,7 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
                                              const c_arrayxd_internal betahat,
                                              const c_arrayxd_internal sesquare,
                                              const c_arrayxd_internal ssrat,
-                                             double &mtp, double &lnZ, double &lnZ0,double &lnZ00,const bool reverse)
+                                             double &mtp, double &lnZ, double &lnZ0,double &lnZ00,bool& doDie)
 {
   
   
@@ -203,20 +203,25 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
       rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,true);
       // r=alpha*mu;
       lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);          
+
+      
       num_bt=num_bt+1;
+      if(num_bt==max_backtrack){
+
+        mu=mu0;
+        SiRiSr = (SiRiS*(alpha*mu).matrix()).array();
+
+        lnZ0=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+        rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,false);
+        rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,true);
+        lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+        if(lnZ<lnZ0){
+          doDie=true;
+        }
+        mtp=-1;
       // Rcpp::Rcerr<<"num_bt:"<<num_bt<<" step_size:"<<mtp<<"lnZ:"<<lnZ<<" lnZ0:"<<lnZ0<<std::endl;
     }
-    // if(num_bt>=10){
-    //   Rcpp::Rcerr<<"backtrack failed"<<std::endl;
-    // }
-    if(num_bt==max_backtrack){
-//      alpha=alpha0;
-      mu=mu0;
-      SiRiSr = (SiRiS*(alpha*mu).matrix()).array();
-      lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
-      lnZ0=lnZ00;
-      // Rcpp::Rcerr<<"Final!: num_bt:"<<num_bt<<" step_size:"<<mtp<<"lnZ:"<<lnZ<<" lnZ0:"<<lnZ0<<std::endl;
-    }
+  }
   }
   
 }
@@ -343,14 +348,15 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     // }
     
     lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
-    
+    bool doDie=false;
     squarem_backtrack<T>(alpha,alpha0,alpha1,
                          mu,mu0,mu1,
                          SiRiSr,SiRiS,
                          sigma_beta,
                          s,betahat,
                          sesquare,ssrat,
-                         mtp,lnZ, lnZ0,lnZ00, reverse);
+                         mtp,lnZ, lnZ0,lnZ00, doDie);
+
     if((alpha*mu).hasNaN()){
       Rcpp::Rcerr<<"alpha*mu is not finite In iteration iter (4): "<<iter<<std::endl;
       //      Rcpp::stop("alpha*mu is not finite!");
@@ -359,12 +365,14 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     // }
     
     calc_max_err(lnZ,lnZ0, alpha, alpha0, mu, mu0,max_err,lnztol);
-    
+    if(doDie){
+      iter=itermax+1;
+    }
     
     if(iter>itermax){
-      printf("Maximum iteration number reached: %+0.2d \n",(int)iter);
-      
-      printf("The log variational lower bound of the last step increased by(at most) %+0.2e\n",max_err);
+//      printf("Maximum iteration number reached: %+0.2d \n",(int)iter);
+
+//      printf("The log variational lower bound of the last step increased by(at most) %+0.2e\n",max_err);
       break;
     }
     iter=iter+1;
@@ -473,14 +481,16 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
   Eigen::ArrayXd errvec(tot_size);
   Eigen::ArrayXi itervec(tot_size);
   Eigen::ArrayXd pvevec(tot_size);
+//  pvevec.setZeros();
   Rcpp::NumericVector nlzvec(tot_size);
   
   Rcpp::LogicalVector verbose(1);
   verbose(0)=isVerbose;
   Rcpp::LogicalVector lnz_tol(1);
   lnz_tol(0)=islnz_tol;
-  
+
   // static affinity_partitioner ap;
+
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r)  {
                  for(size_t t=r.begin(); t!=r.end(); t++){
