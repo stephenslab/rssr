@@ -706,7 +706,6 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
     all_alphas.col(i)=talpha0;
     all_mus.col(i)=tmu0;
     all_SiRiSr.col(i)=tSiRiSr0;
-
   }
   
   
@@ -902,9 +901,9 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
   
   Eigen::ArrayXd npivec(tot_size);
   Eigen::ArrayXd pvevec(tot_size);
-Eigen::ArrayXd nlzvec(tot_size);
-Eigen::ArrayXd sigbvec(tot_size);
-Eigen::ArrayXd lovec(tot_size);
+  Eigen::ArrayXd nlzvec(tot_size);
+  Eigen::ArrayXd sigbvec(tot_size);
+  Eigen::ArrayXd lovec(tot_size);
   Eigen::ArrayXd errvec(tot_size);
   Eigen::ArrayXi itervec(tot_size);
   //   std::cout<<"Starting grid_rss_varbvsr (serial)"<<std::endl;

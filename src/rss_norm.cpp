@@ -18,30 +18,7 @@ using namespace tbb;
 
 //Try with intgamma=0?
 
-double calculate_lnZ(const c_vectorxd_internal q,
-                     const c_vectorxd_internal r,
-                     const c_vectorxd_internal SiRiSr,
-                     const c_vectorxd_internal sesquare,
-                     const c_vectorxd_internal alpha,
-                     const c_vectorxd_internal mu,
-                     const c_vectorxd_internal s,
-                     double sigb){
-  
-  
-  double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr);
-  // if(!std::isfinite(lnz0)){
-  //   Rcpp::stop("lnZ0 is not finite");
-  // }
-  double lnz1 = lnz0-0.5*(1/sesquare.array()).matrix().dot(betavar(alpha.array(),mu.array(),s.array()).matrix());
-  // if(!std::isfinite(lnz0)){
-  //   Rcpp::stop("lnZ1 is not finite");
-  // }
-  double lnz2 = lnz1+intklbeta_rssbvsr(alpha.array(),mu.array(),s.array(),sigb*sigb);
-  // if(!std::isfinite(lnz0)){
-  //   Rcpp::stop("lnZ2 is not finite");
-  // }
-  return(lnz2);
-}
+
 
 
 void rss_varbvsr_update(const double betahat,
@@ -202,7 +179,7 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
       rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,false);
       rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,true);
       // r=alpha*mu;
-      lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);          
+      lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);          
 
       
       num_bt=num_bt+1;
@@ -211,10 +188,10 @@ template <typename T> void squarem_backtrack(arrayxd_internal &alpha,
         mu=mu0;
         SiRiSr = (SiRiS*(alpha*mu).matrix()).array();
 
-        lnZ0=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+        lnZ0=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);
         rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,false);
         rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,true);
-        lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+        lnZ=calculate_lnZ(betahat/sesquare,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);
         if(lnZ<lnZ0){
           doDie=true;
         }
@@ -297,7 +274,7 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     Rcpp::stop("alpha*mu is not finite!");
   }
   
-  lnZ=calculate_lnZ(q,r,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+  lnZ=calculate_lnZ(q,r,SiRiSr,sesquare,mu,s,sigma_beta);
   
   
   double mtp=-1;
@@ -347,7 +324,7 @@ template<typename T> double rss_varbvsr_squarem_iter(const T SiRiS,
     //   Rcpp::Rcerr<<"alpha*mu IS finite In iteration iter(3) : "<<iter<<std::endl;
     // }
     
-    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);
     bool doDie=false;
     squarem_backtrack<T>(alpha,alpha0,alpha1,
                          mu,mu0,mu1,
@@ -421,7 +398,7 @@ template<typename T> double rss_varbvsr_naive_iter(const T SiRiS,
   Eigen::ArrayXd  s= (sesquare*(sigma_beta*sigma_beta))/(sesquare+(sigma_beta*sigma_beta));
   Eigen::ArrayXd ssrat((s/sigma_beta_square).log());
   
-  lnZ=calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+  lnZ=calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);
   
   
   max_err=1;
@@ -436,7 +413,7 @@ template<typename T> double rss_varbvsr_naive_iter(const T SiRiS,
     lnZ0=lnZ;
     bool reverse = iter%2!=0;
     rss_varbvsr_iter(SiRiS,sigma_beta_square,s,betahat,sesquare,ssrat,alpha,mu,SiRiSr,reverse);
-    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+    lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);
     rel_li=rel_err(lnZ,lnZ0);
     if(lnztol){
       max_err=rel_li;
@@ -446,7 +423,7 @@ template<typename T> double rss_varbvsr_naive_iter(const T SiRiS,
     
     iter=iter+1;
   }
-  lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,alpha,mu,s,sigma_beta);
+  lnZ=  calculate_lnZ(q,alpha*mu,SiRiSr,sesquare,mu,s,sigma_beta);
   return(lnZ);
 }
 
@@ -489,7 +466,7 @@ template<typename T> Rcpp::DataFrame grid_rss_varbvsr(
   Rcpp::LogicalVector lnz_tol(1);
   lnz_tol(0)=islnz_tol;
 
-  // static affinity_partitioner ap;
+  // static affinity_partitioner ap;Sna
 
   parallel_for(blocked_range<size_t>(0,tot_size),
                [&](const blocked_range<size_t>& r)  {

@@ -11,15 +11,14 @@
 #include <RcppEigen.h>
 
 #include "rssr/rssr_types.h"
+
 #include "rssr/rssvarbvsr.h"
 #include "rssr/sigmoid.hpp"
 #include "rssr/assert.h"
 #include "rssr/kl.h"
 
 #include "rssr/rssr_grid.h"
-
-
 #include "rssr/sparse_matrix.h"
-
+#include "rssr/rssr_classes.h"
 
 #endif // RCPP_rssr_H_GEN_

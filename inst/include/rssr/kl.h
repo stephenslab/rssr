@@ -30,7 +30,13 @@ double calculate_lnZ(const c_vectorxd_internal q,
                      const c_vectorxd_internal s,
                      const double sigb);
 
-
+double calculate_lnZ(const c_vectorxd_internal q,
+                     const c_vectorxd_internal r,
+                     const c_vectorxd_internal SiRiSr,
+                     const c_vectorxd_internal sesquare,
+                     const c_vectorxd_internal mu,
+                     const c_vectorxd_internal s,
+                     double sigb);
 // Eigen::ArrayXd calculate_lnZ(const c_vectorxd_internal q,
 //                              const c_Matrix_internal r,
 //                              const c_Matrix_internal SiRiSr,

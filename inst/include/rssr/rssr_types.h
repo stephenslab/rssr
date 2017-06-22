@@ -1,7 +1,9 @@
 #ifndef RSSR_TYPES_H
 #define RSSR_TYPES_H
-
 #include <RcppEigen.h>
+#include <RcppParallel.h>
+
+//[[Rcpp::depends(RcppParallel)]]
 
 typedef Eigen::Array<double, Eigen::Dynamic, 1> ColumnArray;
 typedef Eigen::Array<double, 1,Eigen::Dynamic > RowArray;
@@ -37,6 +39,15 @@ typedef Eigen::Map<Eigen::ArrayXXd> m2darray;
 
 typedef Eigen::Map<Eigen::MatrixXd> mmat;
 typedef Eigen::Map<const Eigen::MatrixXd> c_mmat;
+
+typedef std::vector<double,tbb::cache_aligned_allocator<double> >tbbdvec;
+typedef std::vector<int,tbb::cache_aligned_allocator<int> >tbbivec;
+
+typedef tbb::enumerable_thread_specific<tbbdvec> fitdtype;
+typedef tbb::enumerable_thread_specific<tbbivec> fititype;
+
+typedef tbb::flattened2d<fitdtype> flatdtype;
+typedef tbb::flattened2d<fititype> flatitype;
 
 
 
