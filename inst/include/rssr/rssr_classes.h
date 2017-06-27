@@ -27,46 +27,34 @@ using namespace tbb;
 
 
 class Fit_wrap{
-public:  
+ public:  
   const size_t p;
   const size_t gridsize;
-  double *fit_p;
-  double *fit0_p;
-  const bool tls;
-  double *fit1_p;
+  const bool keepold;
+  const double const *ofit_p;
 
-  fitdtype fitl;
-  fitdtype fitl0;
-  fitdtype fitl1;
+  fitdtype fit_t;
+  fitdtype fit1_t;
+  fitdtype fit0_t;
 
-  Fit_wrap(double* fit_,double* fit0_,double* fit1_,const size_t p_, const size_t gridsize_);
-  Fit_wrap(double* fit_,const size_t p_, const size_t gridsize_);
-  Fit_wrap(double* fit_,double* fit0_, double* fit1_,const size_t p_);
-  Fit_wrap(double* fit_,const size_t p_);
+  tl2darray fit_m;
+  tl2darray fit0_m;
+  tl2darray fit1_m;
+  
+  Fit_wrap(const double* fit_,const double* fit0_,const double* fit1_,const size_t p_, const size_t gridsize_);
+  Fit_wrap(const double* fit_,const size_t p_,const size_t gridsize);
   void tlresize(const size_t rsize);
-
-
-};
-
-
-class Siris{
-public:
-  const size_t p;
-  double* siris_p;
-  Siris(double* siris_,const size_t p_);
-  Siris(Eigen::MatrixXd &siris_);
 };
 
 class Data_wrap{
-public:
+ public:
   const size_t p;
   const double *const betahat_p;
   const double *const se_p;
-  double* const sesquare_p;
-  double* const q_p;
-
-  
-  Data_wrap(const double* betahat_,const double* se_,double* sesquare_,double* q_, const size_t p_);
+  const double *const siris_p;
+  const double* const sesquare_p;
+  const double* const q_p;
+  Data_wrap(const double* betahat_,const double* se_,const double* sesquare_,const double* q_,const double* siris_, const size_t p_);
 												   
 };
 
@@ -74,15 +62,12 @@ public:
 
 
 class Param_wrap{
-public:
+ public:
   const size_t gridsize;
   const size_t p;
-  double *logodds_p;
-  double *sigb_p;
-  const bool tls;
-  double *sigma_beta_square_p;
-  double *s_p;
-  double *ssrat_p;
+  const double *const ologodds_p;
+  const double *const osigma_beta_p;
+  const double *const osigma_beta_square_p;
 
   fitdtype logodds_t;
   fitdtype sigma_beta_t;
@@ -90,22 +75,25 @@ public:
   fitdtype s_t;
   fitdtype ssrat_t;
 
-  Param_wrap(double* logodds_,double* sigb_,double* sigma_beta_square_,double* s_,double* ssrat_, const Data_wrap &obj,const size_t gridsize_);
-  Param_wrap(double* sigb_,double* sigma_beta_square_,double* s_,double* ssrat_, const Data_wrap &obj,const size_t gridsize_);
-  Param_wrap(double* logodds_,double* sigb_, const size_t gridsize_,const size_t p_);
-  Param_wrap(double* sigb_,const size_t gridsize_,const size_t p_);
+  tldarray logodds_m;
+  tldarray sigma_beta_m;
+  tldarray sigma_beta_square_m;
+  tl2darray s_m;
+  tl2darray ssrat_m;
+
+  
+  Param_wrap(const double* logodds_,const double* sigb_,const double *sigma_beta_square_, const size_t gridsize_,const size_t p_);
+  Param_wrap(const double* sigb_,const double* sigma_beta_square,const size_t gridsize_,const size_t p_);
   void tlresize(const blocked_range<size_t> &r,const Data_wrap &obj);
 };
 
 
 class Fit_res{
-public:
+ public:
   const size_t gridsize;
   const size_t p;
-  const bool tls;
+
   double *lnZ_p;
-  double *lnZ0_p;
-  double *lnZ00_p;
   double *alpha_mean_p;
   double *mu_mean_p;
   double *pvevec_p;
@@ -113,9 +101,6 @@ public:
   
   int    *iternum_p;
   int    *final_btnum_p;
-  
-  double *rvec_p;
-  double *mtp_p;
 
 
 
@@ -132,18 +117,31 @@ public:
   fitdtype mtp_t;
 
   
+  tldarray lnZ_m;
+  tldarray lnZ0_m;
+  tldarray lnZ00_m;
+  tldarray alpha_mean_m;
+  tldarray mu_mean_m;
+  tldarray pvevec_m;
+  tliarray iternum_m;
+  tldarray final_max_err_m;
+  tliarray final_btnum_m;
+  tldarray rvec_m;
+  tldarray mtp_m;
+
+
+  
+
+  
   Fit_res(double* lnZ_,
-	  double* lnZ0_,
-	  double* lnZ00_,
 	  double* alpha_mean_,
 	  double* pvevec_,
 	  int* iternum_,
 	  double* mu_mean_,
 	  double* final_max_err_,
-	  double* rvec_,
-	  double* mtp_,
 	  int* final_btnum_,const size_t p_,const size_t gridsize_);
   Fit_res(const size_t p_,const size_t gridsize_);
+  void write_res(const blocked_range<size_t> & r);
   void tlresize (const size_t rsize);
 
 
@@ -152,58 +150,63 @@ public:
 
 
 class rssr_norm{
-public:
-  mutable Fit_wrap mus;
-  mutable Fit_wrap sirisrs;
-  mutable Fit_res results;
-  const bool tls;
+ public:
+  
+  mutable Fit_wrap *mus;
+  mutable Fit_wrap *sirisrs;
+  mutable Fit_res *results;
+  
   const bool use_lnztol=true;
+  const bool tls;
   const size_t p;
   const size_t n;
-  size_t gridsize;
+
 
   const int itermax;
   const double tolerance;
 
-  mutable Param_wrap paraams;
-  const Data_wrap datas;
-  const Siris siris;
+  mutable Param_wrap *paraams;
+  const Data_wrap *const datas;
+  const size_t gridsize;
 
 
+  
+  tl2darray::reference mu;
+  tl2darray::reference SiRiSr;
 
+  
+  tl2darray::reference mu0;
 
+  
+  tl2darray::reference mu1;
 
   const c_mdarray betahat;
   const c_mdarray se;
-  mdarray sesquare;
-  mdarray q;
+  const c_mdarray sesquare;
+  const c_mdarray q;
+  const c_m2darray SiRiS;
 
   
-  mutable mdarray sigma_beta;
-  mutable mdarray sigma_beta_square;
-  mutable m2darray s;
-  mutable m2darray ssrat;
-  mutable mdarray lnZ;
-  mutable mdarray lnZ0;
-  mutable mdarray lnZ00;
-  mutable mdarray alpha_mean;
-  mutable mdarray mu_mean;
-  mutable mdarray pvevec;
-  mutable miarray iternum;
-  mutable miarray final_btnum;
-  mutable mdarray final_max_err;
-  mutable mdarray rvec;
-  mutable mdarray mtp;
-  mutable m2darray SiRiSr;
-  m2darray SiRiS;
-  mutable m2darray mu;
-  mutable m2darray mu0;
-  mutable m2darray mu1;
-
   
-
-
-
+  tldarray::reference sigma_beta;
+  tldarray::reference sigma_beta_square;
+  tl2darray::reference s;
+  tl2darray::reference ssrat;
+  
+  tldarray::reference lnZ;
+  tldarray::reference lnZ0;
+  tldarray::reference lnZ00;
+  tldarray::reference alpha_mean;
+  tldarray::reference mu_mean;
+  tldarray::reference pvevec;
+  
+  tliarray::reference iternum;
+  tliarray::reference final_btnum;
+  
+  tldarray::reference final_max_err;
+  tldarray::reference rvec;
+  tldarray::reference mtp;
+  
   
   std::vector<int> forward_range;
   std::vector<int> reverse_range;
@@ -211,17 +214,16 @@ public:
   const size_t max_backtrack=12;
   
 
-  rssr_norm(const Fit_wrap &mus_,
-       const Fit_wrap &sirisrs_,
-       const Data_wrap &datas_,
-       const Param_wrap &params_,
-       const Siris &siris_,
-       const Fit_res &results_,
-       const double tolerance_, const size_t n_,
-       const size_t itermax_,
-       const std::vector<int> &forward_range_,
-       const std::vector<int> &reverse_range_
-       );
+  rssr_norm(Fit_wrap *mus_,
+	    Fit_wrap *sirisrs_,
+	    const Data_wrap *datas_,
+	    Param_wrap *params_,
+	    Fit_res *results_,
+	    const double tolerance_, const size_t n_,
+	    const size_t itermax_,
+	    const std::vector<int> &forward_range_,
+	    const std::vector<int> &reverse_range_
+	    );
   void calc_lnZ(const blocked_range<size_t> & r)const;
   void calculate_mtp(const blocked_range <size_t > &r)const;
   void rss_vb_iter(const blocked_range<size_t> r,bool reverse)const;
@@ -239,10 +241,11 @@ public:
 
 class rssr{
  public:
-  mutable Fit_wrap alphas;
-  mutable Fit_wrap mus;
-  mutable Fit_wrap sirisrs;
-  mutable Fit_res results;
+  
+  mutable Fit_wrap *alphas;
+  mutable Fit_wrap *mus;
+  mutable Fit_wrap *sirisrs;
+  mutable Fit_res *results;
   
   const bool use_lnztol=true;
   const bool tls;
@@ -253,59 +256,58 @@ class rssr{
   const int itermax;
   const double tolerance;
 
-  mutable Param_wrap paraams;
-  const Data_wrap datas;
-  const Siris siris;
+  mutable Param_wrap *paraams;
+  const Data_wrap *const datas;
   size_t gridsize;
 
-  mutable m2darray alpha;
-  mutable m2darray mu;
-  mutable m2darray SiRiSr;
+  tl2darray::reference alpha;
+  tl2darray::reference mu;
+  tl2darray::reference SiRiSr;
 
-  mutable m2darray alpha0;
-  mutable m2darray mu0;
+  tl2darray::reference alpha0;
+  tl2darray::reference mu0;
 
-  mutable m2darray alpha1;
-  mutable m2darray mu1;
+  tl2darray::reference alpha1;
+  tl2darray::reference mu1;
 
   const c_mdarray betahat;
   const c_mdarray se;
-  const mdarray sesquare;
-  const mdarray q;
-  mutable mdarray logodds;
-  mutable mdarray sigma_beta;
-  mutable mdarray sigma_beta_square;
-  mutable m2darray s;
-  mutable m2darray ssrat;
+  const c_mdarray sesquare;
+  const c_mdarray q;
+  const c_m2darray SiRiS;
 
-  m2darray SiRiS;
   
-  mutable mdarray lnZ;
-  mutable mdarray lnZ0;
-  mutable mdarray lnZ00;
-  mutable mdarray alpha_mean;
-  mutable mdarray mu_mean;
-  mutable mdarray pvevec;
+  tldarray::reference logodds;
+  tldarray::reference sigma_beta;
+  tldarray::reference sigma_beta_square;
+  tl2darray::reference s;
+  tl2darray::reference ssrat;
+
+  tldarray::reference lnZ;
+  tldarray::reference lnZ0;
+  tldarray::reference lnZ00;
+  tldarray::reference alpha_mean;
+  tldarray::reference mu_mean;
+  tldarray::reference pvevec;
   
-  mutable miarray iternum;
-  mutable miarray final_btnum;
+  tliarray::reference iternum;
+  tliarray::reference final_btnum;
   
-  mutable mdarray final_max_err;
-  mutable mdarray rvec;
-  mutable mdarray mtp;
+  tldarray::reference final_max_err;
+  tldarray::reference rvec;
+  tldarray::reference mtp;
 
  
   std::vector<int> forward_range;
   std::vector<int> reverse_range;
 
   const size_t max_backtrack=12;
-  rssr(const Fit_wrap &alphas_,
-       const Fit_wrap &mus_,
-       const Fit_wrap &sirisrs_,
-       const Data_wrap &datas_,
-       const Param_wrap &params_,
-       const Siris &siris_,
-       const Fit_res &results_,
+  rssr(Fit_wrap *alphas_,
+       Fit_wrap *mus_,
+       Fit_wrap *sirisrs_,
+       const Data_wrap *datas_,
+       Param_wrap *params_,
+       Fit_res *results_,
        const double tolerance_, const size_t n_,
        const size_t itermax_,
        const std::vector<int> &forward_range_,

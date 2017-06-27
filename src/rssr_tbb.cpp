@@ -2,9 +2,6 @@
 #include "rssr.h"
 
 
-
-
-
 Rcpp::NumericVector flatten_d(const fitdtype & obj,size_t retsize){
 
   Rcpp::NumericVector retvec(retsize);
@@ -44,7 +41,7 @@ Rcpp::IntegerVector flatten_i(const fititype & obj,size_t retsize){
   return(retvec);
 }
 
-
+/*
 //[[Rcpp::export]]
 Rcpp::DataFrame grid_search_rss_varbvsr_alt(
     const  Matrix_external SiRiS,
@@ -311,7 +308,7 @@ Rcpp::DataFrame grid_search_rss_varbvsr_alt(
 
 
 
-
+*/
 
 
 //[[Rcpp::export]]
@@ -331,6 +328,7 @@ Rcpp::DataFrame grid_search_rss_varbvsr_tls(
 
   using namespace Rcpp;
   using namespace tbb;
+  using namespace RcppParallel;
   bool islnz_tol = lnz_tol(0);
 
   size_t p=betahat.size();
@@ -339,28 +337,57 @@ Rcpp::DataFrame grid_search_rss_varbvsr_tls(
 
   Eigen::MatrixXd tSiRiS=SiRiS.eval();
   Eigen::ArrayXd tsigma_beta=sigma_beta.eval();
-  Eigen::ArrayXd tsigma_beta_square=sigma_beta.eval();
+  Eigen::ArrayXd tsigma_beta_square=(sigma_beta*sigma_beta).eval();
   Eigen::ArrayXd tlogodds=logodds.eval();
   Eigen::ArrayXd tbetahat=betahat.eval();
   Eigen::ArrayXd tse=se.eval();
-  Eigen::ArrayXd sesquare=se.eval();
-  Eigen::ArrayXd q=se.eval();
+  Eigen::ArrayXd sesquare=(se*se).eval();
+  Eigen::ArrayXd q=(tbetahat/tse).eval();
 
-  
 
   Eigen::ArrayXd alpha0=talpha0.eval();
   Eigen::ArrayXd mu0=tmu0.eval();
   Eigen::ArrayXd SiRiSr0=tSiRiSr0.eval();
 
-  Fit_wrap talpha(alpha0.data(),alpha0.data(),alpha0.data(),p);
-  Fit_wrap tmu(mu0.data(),mu0.data(),mu0.data(),p);
-  Fit_wrap tSiRiSr(SiRiSr0.data(),p);
+  Fit_wrap talpha(alpha0.data(),alpha0.data(),alpha0.data(),p,tot_size);
+  Fit_wrap tmu(mu0.data(),mu0.data(),mu0.data(),p,tot_size);
+  Fit_wrap tSiRiSr(SiRiSr0.data(),p,tot_size);
+
+
+
+  NumericVector rlogodds(tot_size);
+  NumericVector rsigma_beta(tot_size);
+  NumericVector rfinal_max_err(tot_size);
+  IntegerVector rfinal_btnum(tot_size);
+  IntegerVector riternum(tot_size);
+  NumericVector ralpha_mean(tot_size);
+  NumericVector rmu_mean(tot_size);
+  NumericVector rpvevec(tot_size);
+  NumericVector rlnZ(tot_size);
+
+  RVector<double> trlogodds(rlogodds);
+  RVector<double> trsigma_beta(rsigma_beta);
+  RVector<double> trfinal_max_err(rfinal_max_err);
+  RVector<int> trfinal_btnum(rfinal_btnum);
+  IntegerVector triternum(riternum);
+  RVector<double> tralpha_mean(ralpha_mean);
+  RVector<double> trmu_mean(rmu_mean);
+  RVector<double> trpvevec(rpvevec);
+  RVector<double> trlnZ(rlnZ);
+  
 
   
-  Siris siris(tSiRiS.data(),p);
-  Data_wrap data_wrap(tbetahat.data(),tse.data(),sesquare.data(),q.data(),p);
-  Param_wrap param(tlogodds.data(),tsigma_beta.data(),tot_size,p);
-  Fit_res fit_res(p,tot_size);
+  Data_wrap data_wrap(tbetahat.data(),tse.data(),sesquare.data(),q.data(),tSiRiS.data(),p);
+  Param_wrap param(tlogodds.data(),tsigma_beta.data(),tsigma_beta_square.data(),tot_size,p);
+  Fit_res fit_res(trlnZ.begin(),
+		  tralpha_mean.begin(),
+		  trpvevec.begin(),
+		  triternum.begin(),
+		  trmu_mean.begin(),
+		  trfinal_max_err.begin(),
+		  trfinal_btnum.begin(),
+		  p,
+		  tot_size);
   
   std::vector<int> forward_range(p);
   for(size_t i=0;i<p;i++){
@@ -371,26 +398,21 @@ Rcpp::DataFrame grid_search_rss_varbvsr_tls(
   std::reverse_copy(forward_range.begin(),forward_range.end(),reverse_range.begin());
 
   //  Rcpp::Rcout  <<"Initializing rssr_obj"<<std::endl;
-  rssr rssr_obj(talpha,tmu,tSiRiSr,data_wrap,param,siris,fit_res,tolerance,n,itermax,forward_range,reverse_range);
+  rssr rssr_obj(&talpha,&tmu,&tSiRiSr,&data_wrap,&param,&fit_res,tolerance,n,itermax,forward_range,reverse_range);
   //Rcpp::Rcout  <<"Starting parallel Algorithm!"<<std::endl;
   //rssr_obj(0,tot_size);
   //  Rcpp::Rcout<<"Starting Serial Algorithm!"<<std::endl;
   //  rssr_obj(blocked_range<size_t>(0,tot_size));
   parallel_for(blocked_range<size_t>(0,tot_size,grainsize),rssr_obj);
   //    Rcpp::Rcout<<"Finished!"<<std::endl;
-  
+  std::cout<<"Checking then Returning!"<<std::endl;
   assert(logodds.size()==sigma_beta.size() &&" logodds==sigma_beta");
   assert(final_max_err.size()==sigma_beta.size() &&" logodds==sigma_beta");
   assert(iternum.size()==sigma_beta.size() &&" logodds==sigma_beta");
   
-  NumericVector rlogodds=flatten_d(rssr_obj.paraams.logodds_t,tot_size);
-  NumericVector rsigma_beta=flatten_d(rssr_obj.paraams.sigma_beta_t,tot_size);
-  NumericVector rfinal_max_err=flatten_d(rssr_obj.results.final_max_err_t,tot_size);
-  IntegerVector riternum=flatten_i(rssr_obj.results.iternum_t,tot_size);
-  NumericVector ralpha_mean=flatten_d(rssr_obj.results.alpha_mean_t,tot_size);
-  NumericVector rmu_mean=flatten_d(rssr_obj.results.mu_mean_t,tot_size);
-  NumericVector rpvevec=flatten_d(rssr_obj.results.pvevec_t,tot_size);
-  NumericVector rlnZ=flatten_d(rssr_obj.results.lnZ_t,tot_size);
+
+
+  
 
 
   
@@ -405,7 +427,7 @@ Rcpp::DataFrame grid_search_rss_varbvsr_tls(
   assert(std::accumulate(rpvevec.begin(),rpvevec.end(),0.0)!=0 &&"rpvevec shouldn't sum to 0");
   assert(std::accumulate(rlnZ.begin(),rlnZ.end(),0.0)!=0 &&"rlnZ shouldn't sum to 0");
 
-  
+    std::cout<<"Returning!"<<std::endl;
   
     
   return(Rcpp::DataFrame::create(_["logodds"]=rlogodds,
@@ -420,7 +442,7 @@ Rcpp::DataFrame grid_search_rss_varbvsr_tls(
 
 
 
-				
+/*				
 
 //[[Rcpp::export]]
 Rcpp::DataFrame grid_search_rss_varbvsr_norm_alt(
@@ -633,3 +655,4 @@ Rcpp::DataFrame grid_search_rss_varbvsr_norm_alt(
 				 _["pve"]=rpvevec,
 				 _["lnZ"]=rlnZ));
 }
+*/

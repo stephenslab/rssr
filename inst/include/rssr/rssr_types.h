@@ -35,6 +35,7 @@ typedef Eigen::Map<const Eigen::ArrayXd> c_mdarray;
 
 typedef Eigen::Map<Eigen::ArrayXi> miarray;
 typedef Eigen::Map<Eigen::ArrayXXd> m2darray;
+typedef Eigen::Map<const Eigen::ArrayXXd> c_m2darray;
 
 
 typedef Eigen::Map<Eigen::MatrixXd> mmat;
@@ -45,6 +46,12 @@ typedef std::vector<int,tbb::cache_aligned_allocator<int> >tbbivec;
 
 typedef tbb::enumerable_thread_specific<tbbdvec> fitdtype;
 typedef tbb::enumerable_thread_specific<tbbivec> fititype;
+
+typedef tbb::enumerable_thread_specific<mdarray> tldarray;
+typedef tbb::enumerable_thread_specific<m2darray> tl2darray;
+typedef tbb::enumerable_thread_specific<miarray> tliarray;
+
+
 
 typedef tbb::flattened2d<fitdtype> flatdtype;
 typedef tbb::flattened2d<fititype> flatitype;

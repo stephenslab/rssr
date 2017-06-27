@@ -27,301 +27,171 @@ template<typename T, typename D> void zero_out(T &dyn_array, const D fillval){
 using namespace Eigen;
 
 
-Fit_wrap::Fit_wrap(double* fit_,double* fit0_,double* fit1_,const size_t p_, const size_t gridsize_): p(p_),
+Fit_wrap::Fit_wrap(const double* fit_,const double* fit0_,const double* fit1_,const size_t p_, const size_t gridsize_): p(p_),
 												      gridsize(gridsize_),
-												      tls(false),
-												      fit_p(fit_),
-												      fit0_p(fit0_),
-												      fit1_p(fit1_),
-												      fitl(tbbdvec(0)),
-												      fitl0(tbbdvec(0)),
-												      fitl1(tbbdvec(0))
-  
-  {
+												      keepold(true),
+												      ofit_p(fit_),
+												      fit_t(tbbdvec(0)),
+												      fit0_t(tbbdvec(0)),
+												      fit1_t(tbbdvec(0)),
+															fit_m(m2darray(fit_t.local().data(),p,gridsize)),
+															fit0_m(m2darray(fit0_t.local().data(),p,gridsize)),
+															fit1_m(m2darray(fit1_t.local().data(),p,gridsize)){
 #ifndef NDEBUG
-    m2darray fit(fit_p,p,gridsize);
-    m2darray fit0(fit0_p,p,gridsize);
-    m2darray fit1(fit1_p,p,gridsize);
-    rassert(fit.cols()==gridsize &&"fit should have gridsize no of columns");
-    rassert(fit0.cols()==gridsize &&"fit0 should have gridsize no of columns");
-    rassert(fit1.cols()==gridsize &&"fit1 should have gridsize no of columns");
-    rassert(isnan(fit).sum()==0 && "fit has no NaN  values");
+  mdarray fit(ofit_p,p);
+  rassert(fit.size()==p &&"fit should have size of number of SNPs (p)");
+  rassert(isnan(fit).sum()==0 && "fit has no NaN  values");
 #endif
     
   }
 
-
-Fit_wrap::Fit_wrap(double* fit_,const size_t p_, const size_t gridsize_): p(p_),
+Fit_wrap::Fit_wrap(const double* fit_,const size_t p_, const size_t gridsize_): p(p_),
 									  gridsize(gridsize_),
-									  fit_p(fit_),
-									  tls(false),
-									  fit0_p(NULL),
-									  fit1_p(NULL),
-									  fitl(tbbdvec(0)),
-									  fitl0(tbbdvec(0)),
-									  fitl1(tbbdvec(0)){
-
-  
-  
-}
-
-
-
-Fit_wrap::Fit_wrap(double* fit_,double* fit0_, double* fit1_,const size_t p_):p(p_),
-									      gridsize(1),
-									      fit_p(fit_),
-									      tls(true),
-									      fit0_p(fit0_),
-									      fit1_p(fit1_),
-									      fitl(tbbdvec(0)),
-									      fitl0(tbbdvec(0)),
-									      fitl1(tbbdvec(0)){
-
-
-  
-}
-
-Fit_wrap::Fit_wrap(double* fit_,const size_t p_): p(p_),
-						  gridsize(1),
-						  fit_p(fit_),
-						  tls(true),
-						  fit0_p(NULL),
-						  fit1_p(NULL),
-						  fitl(tbbdvec(0)),
-						  fitl0(tbbdvec(0)),
-						  fitl1(tbbdvec(0)){
-
-  
-  
+									  keepold(false),
+									  ofit_p(fit_),
+									  fit_t(tbbdvec(0)),
+									  fit0_t(tbbdvec(0)),
+									  fit1_t(tbbdvec(0)),
+										fit_m(m2darray(fit_t.local().data(),p,gridsize)),
+										fit0_m(m2darray(NULL,p,gridsize)),
+										fit1_m(m2darray(NULL,p,gridsize)){
+#ifndef NDEBUG
+  mdarray fit(ofit_p,p);
+  rassert(fit.size()==p &&"fit should have size of number of SNPs (p)");
+  rassert(isnan(fit).sum()==0 && "fit has no NaN  values");
+#endif
+    
 }
 
 
 void Fit_wrap::tlresize(const size_t rsize){
   
 
-  fitl.local().reserve(rsize*p);
-  mdarray ofit(fit_p,p);
-  m2darray nfit(fitl.local().data(),p,rsize);
+  fit_t.local().reserve(rsize*p);
+  c_mdarray ofit(ofit_p,p);
+  //  m2darray nfit(fit_t.local().data(),p,rsize);
+  new (&fit_m.local()) m2darray(fit_t.local().data(),p,rsize);
   for(int i=0; i<rsize;i++){
-    nfit.col(i)=ofit;
+    fit_m.local().col(i)=ofit;
   }
-  rassert(nfit.cols()==rsize &&"fit should have same num of cols as rsize");
-  rassert(isnan(nfit).sum()==0 && "fit has no NaN  values");
-//  fit_p=fitl.local().data();
+  rassert(fit_m.local().cols()==rsize &&"fit should have same num of cols as rsize");
+  rassert(isnan(fit_m.local()).sum()==0 && "fit has no NaN  values");
+
+  //  fit_p=fitl.local().data();
   
-  
-  if(fit0_p!=NULL){
+  if(keepold){
     //    Rcpp::Rcout<<"resizing fit0"<<std::endl;
-    mdarray ofit0(fit0_p,p);
-    fitl0.local().resize(rsize*p);
-    m2darray nfit0(fitl0.local().data(),p,rsize);
+    fit0_t.local().resize(rsize*p);
+    new (&fit0_m.local()) m2darray(fit0_t.local().data(),p,rsize);
     
-    for(int i=0; i<rsize;i++){
-      nfit0.col(i)=ofit;
-    }
-//    fit0_p=fitl0.local().data();
-    rassert(nfit0.cols()==rsize &&"fit0 should have rsize no of columns");
-    rassert(isnan(nfit0).sum()==0 && "fit0 has no NaN  values");
-  }
-  else{
-    //    // Rcpp::Rcout<<"NOT resizing fit0"<<std::endl;
-  }
-  if(fit1_p!=NULL){
-    // Rcpp::Rcout<<"resizing fit1"<<std::endl;
-    mdarray ofit1(fit1_p,p);
-    fitl1.local().resize(rsize*p);
-    m2darray nfit1(fitl1.local().data(),p,rsize);
+    fit1_t.local().resize(rsize*p);
+    new (&fit1_m.local()) m2darray(fit1_t.local().data(),p,rsize);
     
-    for(int i=0; i<rsize;i++){
-      nfit1.col(i)=ofit1;
-    }
-    rassert(nfit1.cols()==rsize &&"fit1 should have rsize no of columns");
-    rassert(isnan(nfit1).sum()==0 && "fit1 has no NaN  values");
-//    fit1_p=fitl1.local().data();
-  }
-  else{
-    // Rcpp::Rcout<<"NOT resizing fit1"<<std::endl;
+    
   }
 }
-		   
-Siris::Siris(double* siris_,const size_t p_):siris_p(siris_),p(p_){
-    
-    //rassert(SiRiS.cols()==SiRiS.rows() && "SiRiS should be square");
-    //rassert(SiRiS.cols()==p && "SiRiS should have p cols");
-    //rassert(isnan(SiRiS.array()).sum()==0 && "sesquare has no NaN  values");
-
-}
-Siris::Siris(Eigen::MatrixXd &siris_):siris_p(siris_.data()),p(siris_.cols()){
-
-  //rassert(SiRiS.cols()==SiRiS.rows() && "SiRiS should be square");
-  //rassert(SiRiS.cols()==p && "SiRiS should have p cols");
-  //rassert(isnan(SiRiS.array()).sum()==0 && "sesquare has no NaN  values");
-  
-}
-
-Data_wrap::Data_wrap(const double* betahat_,const double* se_,double* sesquare_,double* q_, const size_t p_):p(p_),
-												    betahat_p(betahat_),
-												    se_p(se_),
-												    sesquare_p(sesquare_),
-												    q_p(q_)
-  {
-
-    c_mdarray betahat(betahat_p,p);
-    c_mdarray se(se_p,p);
-    mdarray sesquare(sesquare_p,p);
-    mdarray q(q_p,p);
-    
-    for(size_t i=0;i<p;i++){
-      sesquare(i)=se(i)*se(i); 
-    }
-    for(size_t i=0;i<p;i++){
-      q_p[i]=betahat_p[i]/sesquare_p[i];
-    }
 
 
-    rassert(sesquare.cols()==1 && "sesquare should have 1 column");
-    rassert(se.rows()==sesquare.rows() && "se should be same length as sesquare");
-    rassert(se.size()==p && "se should have p elements");
-    rassert(q.size()==p && "q should have p elements");
-    rassert(betahat.size()==p && "q should have p elements");
 
-    rassert(se.minCoeff()>0 && "se has all non-negative values");
-    rassert(sesquare.minCoeff()>0 && "sesquare has all non-negative values");
-    rassert(isnan(sesquare).sum()==0 && "sesquare has no NaN  values");
-    rassert(isnan(q).sum()==0 && "q has no NaN  values");
-    rassert(isnan(betahat).sum()==0 && "betahat has no NaN  values");
+
+Data_wrap::Data_wrap(const double* betahat_,const double* se_,const double* sesquare_,const double* q_,const double *siris_, const size_t p_):p(p_),
+																	      betahat_p(betahat_),
+																	      se_p(se_),
+																	      siris_p(siris_),
+																	      sesquare_p(sesquare_),
+																	      q_p(q_){
+  c_mdarray betahat (betahat_p,p);
+  c_mdarray se (se_p,p);
+  c_m2darray siris (siris_p,p,p);
+  c_mdarray sesquare (sesquare_p,p);
+  c_mdarray q(q_p,p);
+
+		      
+  rassert(sesquare.cols()==1 && "sesquare should have 1 column");
+  rassert(se.rows()==sesquare.rows() && "se should be same length as sesquare");
+  rassert(se.size()==p && "se should have p elements");
+  rassert(q.size()==p && "q should have p elements");
+  rassert(betahat.size()==p && "q should have p elements");
+
+  rassert(se.minCoeff()>0 && "se has all non-negative values");
+  rassert(sesquare.minCoeff()>0 && "sesquare has all non-negative values");
+  rassert(isnan(sesquare).sum()==0 && "sesquare has no NaN  values");
+  rassert(isnan(q).sum()==0 && "q has no NaN  values");
+  rassert(isnan(betahat).sum()==0 && "betahat has no NaN  values");
 
 
     
-  }
+																	      }
 
-Param_wrap::Param_wrap(double* logodds_,double* sigb_,double* sigma_beta_square_,double* s_,double* ssrat_, const Data_wrap &obj,const size_t gridsize_):
-  gridsize(gridsize_),
-  p(obj.p),
-  logodds_p(logodds_),
-  sigb_p(sigb_),
-  tls(false),
-  sigma_beta_square_p(sigma_beta_square_),
-  s_p(s_),
-  ssrat_p(ssrat_),
-  logodds_t(tbbdvec(0)),
-  sigma_beta_t(tbbdvec(0)),
-  sigma_beta_square_t(tbbdvec(0)),
-  s_t(tbbdvec(0)),
-  ssrat_t(tbbdvec(0))
-{
+Param_wrap::Param_wrap(const double* logodds_,const double* sigb_,const double* sigma_beta_square_,const size_t gridsize_,const size_t p_):gridsize(gridsize_),
+															p(p_),
+															ologodds_p(logodds_),
+															osigma_beta_p(sigb_),
+															osigma_beta_square_p(sigma_beta_square_),
+															logodds_t(tbbdvec(0)),
+															sigma_beta_t(tbbdvec(0)),
+															sigma_beta_square_t(tbbdvec(0)),
+															s_t(tbbdvec(0)),
+															ssrat_t(tbbdvec(0)),
+																	   logodds_m(mdarray(logodds_t.local().data(),gridsize)),
+																	   sigma_beta_m(mdarray(sigma_beta_t.local().data(),gridsize)),
+																	   sigma_beta_square_m(mdarray(sigma_beta_square_t.local().data(),gridsize)),
+																	   s_m(m2darray(s_t.local().data(),p,gridsize)),
+																	   ssrat_m(m2darray(ssrat_t.local().data(),p,gridsize)){
+  
 
-  mdarray logodds(logodds_p,gridsize);
-  mdarray sigma_beta(sigb_p,gridsize);
-  mdarray sigma_beta_square(sigma_beta_square_p,gridsize);
-  m2darray s(s_p,p,gridsize);
-  m2darray ssrat(ssrat_p,p,gridsize);
+  c_mdarray logodds(ologodds_p,gridsize);
+  c_mdarray sigma_beta(osigma_beta_p,gridsize);
+  c_mdarray sigma_beta_square(osigma_beta_square_p,gridsize);
   
-  Eigen::Map<Eigen::ArrayXd>  sesquare(obj.sesquare_p,p);
   
-  for(size_t i=0;i<gridsize;i++){
-    sigma_beta_square(i)=sigma_beta(i)*sigma_beta(i);
-    s.col(i)=(sesquare*sigma_beta_square(i))/(sesquare+sigma_beta_square(i));
-    ssrat.col(i)=(s.col(i)/sigma_beta_square(i)).log();
-  }
   
-  rassert(s.cols()==gridsize && "s should have gridsize no of columns");
-  rassert(ssrat.cols()==gridsize && "ssrat should have gridsize no of columns");
-  rassert(ssrat.rows()==p && "ssrat should have gridsize no of columns");
   
   rassert(sigma_beta.size()==sigma_beta_square.size() && "sigma_beta should be same length as sigma_beta_square");
   rassert(logodds.size()==gridsize && "logodds should have size of gridsize");
   
-  rassert(isnan(s).sum()==0 && "s has no NaN  values");
+  
   rassert(isnan(sigma_beta).sum()==0 && "sigma_beta has no NaN  values");
   rassert(isnan(sigma_beta_square).sum()==0 && "sigma_beta_square has no NaN  values");
-  rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
+  // rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
   rassert(isnan(logodds).sum()==0 && "logodds has no NaN  values");
 }
 
 
-Param_wrap::Param_wrap(double* logodds_,double* sigb_,const size_t gridsize_,const size_t p_):  gridsize(gridsize_),
-												p(p_),
-												logodds_p(logodds_),
-												sigb_p(sigb_),
-												tls(true),
-												sigma_beta_square_p(NULL),
-												s_p(NULL),
-												ssrat_p(NULL),
-												logodds_t(tbbdvec(0)),
-												sigma_beta_t(tbbdvec(0)),
-												sigma_beta_square_t(tbbdvec(0)),
-												s_t(tbbdvec(0)),
-												ssrat_t(tbbdvec(0)){
+Param_wrap::Param_wrap(const double* sigb_,const double* sigma_beta_square_,const size_t gridsize_,const size_t p_):gridsize(gridsize_),
+														    p(p_),
+														    ologodds_p(NULL),
+														    osigma_beta_p(sigb_),
+														    osigma_beta_square_p(sigma_beta_square_),
+														    logodds_t(tbbdvec(0)),
+														    sigma_beta_t(tbbdvec(0)),
+														    sigma_beta_square_t(tbbdvec(0)),
+														    s_t(tbbdvec(0)),
+														    ssrat_t(tbbdvec(0)),
+														    logodds_m(mdarray(logodds_t.local().data(),gridsize)),
+														    sigma_beta_m(mdarray(sigma_beta_t.local().data(),gridsize)),
+														    sigma_beta_square_m(mdarray(sigma_beta_square_t.local().data(),gridsize)),
+														    s_m(m2darray(s_t.local().data(),p,gridsize)),
+														    ssrat_m(m2darray(ssrat_t.local().data(),p,gridsize)){
   
-}
-
-
-
-
-
-
-
-Param_wrap::Param_wrap(double* sigb_,
-		       double* sigma_beta_square_,
-		       double* s_,
-		       double* ssrat_,const Data_wrap &obj,
-		       const size_t gridsize_):  gridsize(gridsize_),
-						 p(obj.p),
-						 logodds_p(NULL),
-						 tls(false),
-						 sigb_p(sigb_),
-						 sigma_beta_square_p(sigma_beta_square_),
-						 s_p(s_),
-						 ssrat_p(ssrat_),
-						 logodds_t(tbbdvec(0)),
-						 sigma_beta_t(tbbdvec(0)),
-						 sigma_beta_square_t(tbbdvec(0)),
-						 s_t(tbbdvec(0)),
-						 ssrat_t(tbbdvec(0)){
   
-  mdarray sigma_beta(sigb_p,gridsize);
-  mdarray sigma_beta_square(sigma_beta_square_p,gridsize);
-  mdarray s(s_p,p,gridsize);
-  mdarray ssrat(ssrat_p,p,gridsize);
   
-  Eigen::Map<Eigen::ArrayXd>  sesquare(obj.sesquare_p,p);
+  c_mdarray sigma_beta(osigma_beta_p,gridsize);
+  c_mdarray sigma_beta_square(osigma_beta_square_p,gridsize);
   
-  for(size_t i=0;i<gridsize;i++){
-    sigma_beta_square(i)=sigma_beta(i)*sigma_beta(i);
-    s.col(i)=(sesquare*sigma_beta_square(i))/(sesquare+sigma_beta_square(i));
-    ssrat.col(i)=(s.col(i)/sigma_beta_square(i)).log();
-  }
-  
-  rassert(s.cols()==gridsize && "s should have gridsize no of columns");
-  rassert(ssrat.cols()==gridsize && "ssrat should have gridsize no of columns");
-  rassert(ssrat.rows()==p && "ssrat should have gridsize no of columns");
+
   
   rassert(sigma_beta.size()==sigma_beta_square.size() && "sigma_beta should be same length as sigma_beta_square");
+
   
-  rassert(isnan(s).sum()==0 && "s has no NaN  values");
+
   rassert(isnan(sigma_beta).sum()==0 && "sigma_beta has no NaN  values");
   rassert(isnan(sigma_beta_square).sum()==0 && "sigma_beta_square has no NaN  values");
-  rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
-  }
+  //rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
+ }
 
-Param_wrap::Param_wrap(double* sigb_,const size_t gridsize_,const size_t p_):gridsize(gridsize_),
-									     p(p_),
-									     logodds_p(NULL),
-									     sigb_p(sigb_),
-									     tls(true),
-									     sigma_beta_square_p(NULL),
-									     s_p(NULL),
-									     ssrat_p(NULL),
-									     logodds_t(tbbdvec(0)),
-									     sigma_beta_t(tbbdvec(0)),
-									     sigma_beta_square_t(tbbdvec(0)),
-									     s_t(tbbdvec(0)),
-									     ssrat_t(tbbdvec(0)){
 
-  mdarray sigma_beta(sigb_p,gridsize);
-  rassert(isnan(sigma_beta).sum()==0 && "sigma_beta has no NaN  values");
-}
+
 
 
 void Param_wrap::tlresize(const blocked_range<size_t> &r,const Data_wrap &obj){
@@ -329,285 +199,298 @@ void Param_wrap::tlresize(const blocked_range<size_t> &r,const Data_wrap &obj){
   size_t rsize=r.end()-r.begin();
   
   logodds_t.local().resize(rsize);
-  mdarray ologodds(logodds_p,gridsize);
-  mdarray nlogodds(logodds_t.local().data(),rsize);
-  nlogodds=ologodds.segment(r.begin(),rsize);
+  if(ologodds_p!=NULL){
+    c_mdarray ologodds(ologodds_p,gridsize);
+
+    new (&logodds_m.local()) mdarray(logodds_t.local().data(),rsize);
+    //        mdarray nlogodds(logodds_t.local().data(),rsize);
+    logodds_m.local()=ologodds.segment(r.begin(),rsize);
+  }
   //  logodds_p = logodds_t.local().data();
   
   sigma_beta_t.local().resize(rsize);
-  mdarray osigma_beta(sigb_p,gridsize);
-  mdarray nsigma_beta(sigma_beta_t.local().data(),rsize);
-  nsigma_beta=osigma_beta.segment(r.begin(),rsize);
-//  sigb_p=sigma_beta_t.local().data();
+  c_mdarray osigma_beta(osigma_beta_p,gridsize);
+
+
+  new (&sigma_beta_m.local()) mdarray(sigma_beta_t.local().data(),rsize);
+  sigma_beta_m.local()=osigma_beta.segment(r.begin(),rsize);
+ std::cout<<"rstart:"<<r.begin()<<" rsize:"<<rsize<<endl;
+ std::cout<<"Sigma_beta_m.local():"<<sigma_beta_m.local()<<std::endl;
+ std::cout<<"osigma_beta.segment:"<<osigma_beta.segment(r.begin(),rsize)<<std::endl;
   
+  //  mdarray nsigma_beta(sigma_beta_t.local().data(),rsize);
+  //  sigb_p=sigma_beta_t.local().data();
+
+  c_mdarray osigma_beta_square(osigma_beta_square_p,gridsize);
   sigma_beta_square_t.local().resize(rsize);
-//  sigma_beta_square_p=sigma_beta_square_t.local().data();
+  new (&sigma_beta_square_m.local()) mdarray(sigma_beta_square_t.local().data(),rsize);
+  sigma_beta_square_m.local()=osigma_beta_square.segment(r.begin(),rsize);
+  //  sigma_beta_square_p=sigma_beta_square_t.local().data();
   
   s_t.local().resize(rsize*p);
-//  s_p=s_t.local().data();
+  new (&s_m.local()) m2darray(s_t.local().data(),p,rsize);
+
+  //  s_p=s_t.local().data();
   
   ssrat_t.local().resize(rsize*p);
-//  ssrat_p=ssrat_t.local().data();
+  new (&ssrat_m.local()) m2darray(ssrat_t.local().data(),p,rsize);
+
   
-  mdarray sigma_beta(sigma_beta_t.local().data(),rsize);
-  mdarray sigma_beta_square(sigma_beta_square_t.local().data(),rsize);
-  m2darray s(s_t.local().data(),p,gridsize);
-  m2darray ssrat(ssrat_t.local().data(),p,gridsize);
-  mdarray sesquare(obj.sesquare_p,p);
+  //  mdarray sigma_beta(sigma_beta_t.local().data(),rsize);
+  //  mdarray sigma_beta_square(sigma_beta_square_t.local().data(),rsize);
+  //  m2darray s(s_t.local().data(),p,gridsize);
+  //  m2darray ssrat(ssrat_t.local().data(),p,gridsize);
+  c_mdarray sesquare(obj.sesquare_p,p);
 
 
   for(size_t i=r.begin();i!=r.end();i++){
     size_t ir=i-r.begin();
     //sigma_beta(ir)=sigb_p[i];
-    sigma_beta_square(ir)=sigma_beta(ir)*sigma_beta(ir);
-    s.col(ir)=(sesquare*sigma_beta_square(ir))/(sesquare+sigma_beta_square(ir));
-    ssrat.col(ir)=(s.col(ir)/sigma_beta_square(ir)).log();
+    //    sigma_beta_square_m.local().(ir)=sigma_beta_m.local().(ir)*sigma_beta_m.local().(ir);
+    s_m.local().col(ir)=(sesquare*sigma_beta_square_m.local().coeff(ir))/(sesquare+sigma_beta_square_m.local().coeff(ir));
+    ssrat_m.local().col(ir)=(s_m.local().col(ir)/sigma_beta_square_m.local().coeff(ir)).log();
   }
 
   rassert((sesquare>0).all() && "sesquare is strictly positive");
-  rassert((sigma_beta>0).all() && "sigma_beta is strictly positive");
-  rassert((sigma_beta_square>0).all() && "sigma_beta_square is strictly positive");
+  rassert((sigma_beta_m.local()>0).all() && "sigma_beta is strictly positive");
+  rassert((sigma_beta_square_m.local()>0).all() && "sigma_beta_square is strictly positive");
   rassert(isnan(sesquare).sum()==0 && "sesquare has no NaN  values");
-  rassert(isnan(sigma_beta_square).sum()==0 && "sigma_beta_square has no NaN  values");
-  rassert(isnan(sigma_beta).sum()==0 && "sigma_beta has no NaN  values");
-  rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
-  rassert(isnan(s).sum()==0 && "ssrat has no NaN  values");
-  rassert(s.cols()==rsize && "s must have the right number of columns (rsize)");
-  rassert(s.rows()==p && "s must have the right number of rows(p)");
+  rassert(isnan(sigma_beta_square_m.local()).sum()==0 && "sigma_beta_square has no NaN  values");
+  rassert(isnan(sigma_beta_m.local()).sum()==0 && "sigma_beta has no NaN  values");
+  rassert(isnan(ssrat_m.local()).sum()==0 && "ssrat has no NaN  values");
+  rassert(isnan(s_m.local()).sum()==0 && "ssrat has no NaN  values");
+  rassert(s_m.local().cols()==rsize && "s must have the right number of columns (rsize)");
+  rassert(s_m.local().rows()==p && "s must have the right number of rows(p)");
   
-  rassert(ssrat.cols()==rsize && "ssrat must have the right number of columns (rsize)");
-  rassert(ssrat.rows()==p && "ssrat must have the right number of rows (p)");
+  rassert(ssrat_m.local().cols()==rsize && "ssrat must have the right number of columns (rsize)");
+  rassert(ssrat_m.local().rows()==p && "ssrat must have the right number of rows (p)");
 
-  rassert(sigma_beta.size()==rsize && "sigma_beta must have the right number of elements (rsize)");
-  rassert(sigma_beta_square.size()==rsize && "sigma_beta_square must have the right number of elements (rsize)");
+  rassert(sigma_beta_m.local().size()==rsize && "sigma_beta must have the right number of elements (rsize)");
+  rassert(sigma_beta_square_m.local().size()==rsize && "sigma_beta_square must have the right number of elements (rsize)");
+}
 
+  
+Fit_res::Fit_res(const size_t p_,
+		 const size_t gridsize_):p(p_),
+					 gridsize(gridsize_),
+					 lnZ_p(NULL),
+					 alpha_mean_p(NULL),
+					 pvevec_p(NULL),
+					 iternum_p(NULL),
+					 final_max_err_p(NULL),
+					 mu_mean_p(NULL),
+					 final_btnum_p(NULL),
+					 lnZ_t(tbbdvec(0)),
+					 lnZ0_t(tbbdvec(0)),
+					 lnZ00_t(tbbdvec(0)),
+					 alpha_mean_t(tbbdvec(0)),
+					 mu_mean_t(tbbdvec(0)),
+					 pvevec_t(tbbdvec(0)),
+					 iternum_t(tbbivec(0)),
+					 final_max_err_t(tbbdvec(0)),
+					 final_btnum_t(tbbivec(0)),
+					 rvec_t(tbbdvec(0)),
+					 mtp_t(tbbdvec(0)),
+					 lnZ_m(mdarray(NULL,gridsize)),
+					 lnZ0_m(mdarray(NULL,gridsize)),
+					 lnZ00_m(mdarray(NULL,gridsize)),
+					 alpha_mean_m(mdarray(NULL,gridsize)),
+					 mu_mean_m(mdarray(NULL,gridsize)),
+					 pvevec_m(mdarray(NULL,gridsize)),
+					 iternum_m(miarray(NULL,gridsize)),
+					 final_max_err_m(mdarray(NULL,gridsize)),
+					 final_btnum_m(miarray(NULL,gridsize)),
+					 rvec_m(mdarray(NULL,gridsize)),
+					 mtp_m(mdarray(NULL,gridsize))
+{
+  
+
+
+  
+  
   
 }
-  
-
 
 Fit_res::Fit_res(double* lnZ_,
-		 double* lnZ0_,
-		 double* lnZ00_,
-		 double* alpha_mean_,
-		 double* pvevec_,
-		 int* iternum_,
-		 double* mu_mean_,
-		 double* final_max_err_,
-		 double* rvec_,
-		 double* mtp_,
-		 int* final_btnum_,const size_t p_,const size_t gridsize_):p(p_),
-									   tls(false),
-									   gridsize(gridsize_),lnZ_p(lnZ_),
-									   lnZ0_p(lnZ0_),
-									   lnZ00_p(lnZ00_),
-									   alpha_mean_p(alpha_mean_),
-									   pvevec_p(pvevec_),
-									   iternum_p(iternum_),
-									   final_max_err_p(final_max_err_),
-									   mu_mean_p(mu_mean_),
-									   rvec_p(rvec_),
-									   final_btnum_p(final_btnum_),
-									   mtp_p(mtp_),
-									   lnZ_t(tbbdvec(0)),
-									   lnZ0_t(tbbdvec(0)),
-									   lnZ00_t(tbbdvec(0)),
-									   alpha_mean_t(tbbdvec(0)),
-									   mu_mean_t(tbbdvec(0)),
-									   pvevec_t(tbbdvec(0)),
-									   iternum_t(tbbivec(0)),
-									   final_max_err_t(tbbdvec(0)),
-									   final_btnum_t(tbbivec(0)),
-									   rvec_t(tbbdvec(0)),
-									   mtp_t(tbbdvec(0))
-
+	double* alpha_mean_,
+	double* pvevec_,
+	int* iternum_,
+	double* mu_mean_,
+	double* final_max_err_,
+	int* final_btnum_,const size_t p_,const size_t gridsize_):p(p_),
+								  gridsize(gridsize_),
+								  lnZ_p(lnZ_),
+								  alpha_mean_p(alpha_mean_),
+								  pvevec_p(pvevec_),
+								  iternum_p(iternum_),
+								  final_max_err_p(final_max_err_),
+								  mu_mean_p(mu_mean_),
+								  final_btnum_p(final_btnum_),
+								  lnZ_t(tbbdvec(0)),
+								  lnZ0_t(tbbdvec(0)),
+								  lnZ00_t(tbbdvec(0)),
+								  alpha_mean_t(tbbdvec(0)),
+								  mu_mean_t(tbbdvec(0)),
+								  pvevec_t(tbbdvec(0)),
+								  iternum_t(tbbivec(0)),
+								  final_max_err_t(tbbdvec(0)),
+								  final_btnum_t(tbbivec(0)),
+								  rvec_t(tbbdvec(0)),
+								  mtp_t(tbbdvec(0)),
+								  lnZ_m(mdarray(NULL,gridsize)),
+								  lnZ0_m(mdarray(NULL,gridsize)),
+								  lnZ00_m(mdarray(NULL,gridsize)),
+								  alpha_mean_m(mdarray(NULL,gridsize)),
+								  mu_mean_m(mdarray(NULL,gridsize)),
+								  pvevec_m(mdarray(NULL,gridsize)),
+								  iternum_m(miarray(NULL,gridsize)),
+								  final_max_err_m(mdarray(NULL,gridsize)),
+								  final_btnum_m(miarray(NULL,gridsize)),
+								  rvec_m(mdarray(NULL,gridsize)),
+								  mtp_m(mdarray(NULL,gridsize))
 {
+  
 
 
-  mdarray lnZ(lnZ_p,gridsize);
-  mdarray lnZ0(lnZ0_p,gridsize);
-  mdarray lnZ00(lnZ00_p,gridsize);
-  mdarray alpha_mean(alpha_mean_p,gridsize);
-  mdarray mu_mean(mu_mean_p,gridsize);
-  mdarray pvevec(pvevec_p,gridsize);
-  miarray iternum(iternum_p,gridsize);
-
-  mdarray mtp(mtp_p,gridsize);
-  miarray final_btnum(final_btnum_p,gridsize);
-  mdarray rvec(rvec_p,gridsize);
-  mdarray final_max_err(final_max_err_p,gridsize);
-  
-  std::fill(iternum_p,iternum_p+gridsize,0);
-  std::fill(final_btnum_p,final_btnum_p+gridsize,0);
-  std::fill(alpha_mean_p,alpha_mean_p+gridsize,0);
-  
-  lnZ.setZero();
-  lnZ0.setZero();
-  lnZ00.setZero();
-  mu_mean.setZero();
-  rvec.setZero();
-  mtp.setZero();
-  
-  
-  rassert(iternum.sum()+final_btnum.sum()==0 && "iternum and btnum should be zeroed out");
-  
-  rassert(lnZ.size()==gridsize && "lnZ should be of gridsize");
-  rassert(lnZ0.size()==gridsize && "lnZ0 should be of gridsize");
-  rassert(lnZ00.size()==gridsize && "lnZ00 should be of gridsize");
-  
-  
-  rassert(iternum.size()==gridsize && "iternum should be of gridsize");
-  rassert(final_max_err.size()==gridsize && "final_max_err should be of gridsize");
-  rassert(alpha_mean.size()==gridsize && "alpha_mean should be of gridsize");
-  rassert(mu_mean.size()==gridsize && "mu_mean should be of gridsize");
-  rassert(rvec.size()==gridsize && "mu_mean should be of gridsize");
-  
   
   
   
 }
 
 
-Fit_res::Fit_res(const size_t p_,const size_t gridsize_):p(p_),gridsize(gridsize_),
-							 tls(true),
-							 lnZ_p(NULL),
-							 lnZ0_p(NULL),
-							 lnZ00_p(NULL),
-							 alpha_mean_p(NULL),
-							 pvevec_p(NULL),
-							 iternum_p(NULL),
-							 final_max_err_p(NULL),
-							 mu_mean_p(NULL),
-							 rvec_p(NULL),
-							 final_btnum_p(NULL),
-							 mtp_p(NULL),
-							 lnZ_t(tbbdvec(0)),
-							 lnZ0_t(tbbdvec(0)),
-							 lnZ00_t(tbbdvec(0)),
-							 alpha_mean_t(tbbdvec(0)),
-							 mu_mean_t(tbbdvec(0)),
-							 pvevec_t(tbbdvec(0)),
-							 iternum_t(tbbivec(0)),
-							 final_max_err_t(tbbdvec(0)),
-							 final_btnum_t(tbbivec(0)),
-							 rvec_t(tbbdvec(0)),
-							 mtp_t(tbbdvec(0))
-							 
-
-{
 
   
   
   
   
-}
+
 
 void Fit_res::tlresize(const size_t rsize){
 
   
   
   lnZ_t.local().resize(rsize);
-//  lnZ_p=lnZ_t.local().data();
-  zero_out(lnZ_t,0);
+  //  lnZ_p=lnZ_t.local().data();
+  new (&lnZ_m.local()) mdarray(lnZ_t.local().data(),rsize);
   
   lnZ0_t.local().resize(rsize);
 //  lnZ0_p=lnZ0_t.local().data();
-  zero_out(lnZ0_t,0);
+  new (&lnZ0_m.local()) mdarray(lnZ0_t.local().data(),rsize);
     
   lnZ00_t.local().resize(rsize);
 //  lnZ00_p=lnZ00_t.local().data();
-  zero_out(lnZ00_t,0);
+  new (&lnZ00_m.local()) mdarray(lnZ00_t.local().data(),rsize);
   
   alpha_mean_t.local().resize(rsize);
 //  alpha_mean_p=alpha_mean_t.local().data();
-  zero_out(alpha_mean_t,0);
+  new (&alpha_mean_m.local()) mdarray(alpha_mean_t.local().data(),rsize);
   
   mu_mean_t.local().resize(rsize);
 //  mu_mean_p=mu_mean_t.local().data();
-  zero_out(mu_mean_t,0);
+  new (&mu_mean_m.local()) mdarray(mu_mean_t.local().data(),rsize);
 
   pvevec_t.local().resize(rsize);
 //  pvevec_p=pvevec_t.local().data();
-  zero_out(pvevec_t,0);
+  new (&pvevec_m.local()) mdarray(pvevec_t.local().data(),rsize);
   
   iternum_t.local().resize(rsize);
 //  iternum_p=iternum_t.local().data();
-  zero_out(iternum_t,0);
+  new (&iternum_m.local()) miarray(iternum_t.local().data(),rsize);
   
   final_max_err_t.local().resize(rsize);
 //  final_max_err_p=final_max_err_t.local().data();
-  zero_out(final_max_err_t,0);
+  new (&final_max_err_m.local()) mdarray(final_max_err_t.local().data(),rsize);
   
   final_btnum_t.local().resize(rsize);
 //  final_btnum_p=final_btnum_t.local().data();
-  zero_out(final_btnum_t,0);
+  new (&final_btnum_m.local()) miarray(final_btnum_t.local().data(),rsize);
   
   rvec_t.local().resize(rsize);
 //  rvec_p=rvec_t.local().data();
-  zero_out(rvec_t,0);
+  new (&rvec_m.local()) mdarray(rvec_t.local().data(),rsize);
   
   mtp_t.local().resize(rsize);
-//  mtp_p=mtp_t.local().data();
-  zero_out(rvec_t,0);
-  
-
+  //  mtp_p=mtp_t.local().data();
+  new (&mtp_m.local()) mdarray(mtp_t.local().data(),rsize);
+ 
   
 }
 
-rssr::rssr(const Fit_wrap &alphas_,
-	   const Fit_wrap &mus_,
-	   const Fit_wrap &sirisrs_,
-	   const Data_wrap &datas_,
-	   const Param_wrap &params_,
-	   const Siris &siris_,
-	   const Fit_res &results_,
+void Fit_res::write_res(const blocked_range<size_t> & r){
+
+  if(lnZ_p==NULL){
+    Rcpp::stop("lnZ_p not allocated!");
+  }
+  
+  for(size_t i=r.begin();i!=r.end();i++){
+    size_t ir=i-r.begin();
+    lnZ_p[i]=lnZ_m.local().coeff(ir);
+    alpha_mean_p[i]=alpha_mean_m.local().coeff(ir);
+    mu_mean_p[i]=mu_mean_m.local().coeff(ir);
+    pvevec_p[i]=pvevec_m.local().coeff(ir);
+    final_max_err_p[i]=final_max_err_m.local().coeff(ir);
+    iternum_p[i]=iternum_m.local().coeff(ir);
+    final_btnum_p[i]=final_btnum_m.local().coeff(ir);
+  }
+}
+    
+    
+    
+  
+  
+
+rssr::rssr(Fit_wrap *alphas_,
+	   Fit_wrap *mus_,
+	   Fit_wrap *sirisrs_,
+	   const Data_wrap *datas_,
+	   Param_wrap *params_,
+	   Fit_res *results_,
 	   const double tolerance_,
 	   const size_t n_,
 	   const size_t itermax_,
 	   const std::vector<int> &forward_range_,
 	   const std::vector<int> &reverse_range_): alphas(alphas_),
-						    tls(alphas.tls),
+						    tls(true),
 						    mus(mus_),
 						    sirisrs(sirisrs_),
 						    results(results_),
 						    datas(datas_),
 						    paraams(params_),
-						    siris(siris_),
-						    gridsize(paraams.gridsize),
-						    p(alphas.p),
+						    gridsize(paraams->gridsize),
+						    p(alphas->p),
 						    n(n_),
-						    q(datas.q_p,p),
-						    logodds(paraams.logodds_p,gridsize),
-						    sigma_beta(paraams.sigb_p,gridsize),
-						    sigma_beta_square(paraams.sigma_beta_square_p,gridsize),
-						    s(paraams.s_p,p,gridsize),
-						    ssrat(paraams.ssrat_p,p,gridsize),
-						    sesquare(datas.sesquare_p,p),
+						    q(datas->q_p,p),
+						    logodds(paraams->logodds_m.local()),
+						    sigma_beta(paraams->sigma_beta_m.local()),
+						    sigma_beta_square(paraams->sigma_beta_square_m.local()),
+						    s(paraams->s_m.local()),
+						    ssrat(paraams->ssrat_m.local()),
+						    sesquare(datas->sesquare_p,p),
 						    itermax(itermax_),
 						    tolerance(tolerance_),
 						    forward_range(forward_range_),
 						    reverse_range(reverse_range_),
-						    betahat(datas.betahat_p,p),
-						    se(datas.se_p,p),
-						    SiRiS(siris.siris_p,p,p),
-						    lnZ(NULL,gridsize),
-						    lnZ0(NULL,gridsize),
-						    lnZ00(NULL,gridsize),
-						    alpha_mean(NULL,gridsize),
-						    mu_mean(NULL,gridsize),
-						    pvevec(NULL,gridsize),
-						    iternum(NULL,gridsize),
-						    final_btnum(NULL,gridsize),
-						    final_max_err(NULL,gridsize),
-						    rvec(NULL,gridsize),
-						    mtp(NULL,gridsize),
-						    alpha(NULL,p,gridsize),
-						    mu(NULL,p,gridsize),
-						    SiRiSr(NULL,p,gridsize),
-						    alpha0(NULL,p,gridsize),
-						    mu0(NULL,p,gridsize),
-						    alpha1(NULL,p,gridsize),
-						    mu1(NULL,p,gridsize)
+						    betahat(datas->betahat_p,p),
+						    se(datas->se_p,p),
+						    SiRiS(datas->siris_p,p,p),
+						    lnZ(results->lnZ_m.local()),
+						    lnZ0(results->lnZ0_m.local()),
+						    lnZ00(results->lnZ00_m.local()),
+						    alpha_mean(results->alpha_mean_m.local()),
+						    mu_mean(results->mu_mean_m.local()),
+						    pvevec(results->pvevec_m.local()),
+						    iternum(results->iternum_m.local()),
+						    final_btnum(results->final_btnum_m.local()),
+						    final_max_err(results->final_max_err_m.local()),
+						    rvec(results->rvec_m.local()),
+						    mtp(results->mtp_m.local()),
+						    alpha(alphas->fit_m.local()),
+						    mu(mus->fit_m.local()),
+						    SiRiSr(sirisrs->fit_m.local()),
+						    alpha0(alphas->fit0_m.local()),
+						    mu0(mus->fit0_m.local()),
+						    alpha1(alphas->fit1_m.local()),
+						    mu1(mus->fit1_m.local())
 
 						    
 
@@ -621,49 +504,49 @@ rssr::rssr(const Fit_wrap &alphas_,
 void rssr::tls_init(const blocked_range<size_t> &r) const{
 
   size_t rstart=r.begin();
-    size_t rsize= r.end()-rstart;
+  size_t rsize= r.end()-rstart;
   if(!tls){
     rsize=gridsize;
   }
   if(tls){
-    alphas.tlresize(rsize);
-    mus.tlresize(rsize);
-    sirisrs.tlresize(rsize);
-    paraams.tlresize(r,datas);
-    results.tlresize(rsize);
+    alphas->tlresize(rsize);
+    mus->tlresize(rsize);
+    sirisrs->tlresize(rsize);
+    paraams->tlresize(r,*datas);
+    results->tlresize(rsize);
   }
 
   
-  new (&alpha) m2darray(alphas.fitl.local().data(),p,rsize);
-  new (&mu) m2darray(mus.fitl.local().data(),p,rsize);
-  new (&alpha1) m2darray(alphas.fitl1.local().data(),p,rsize);
-  new (&mu1) m2darray(mus.fitl1.local().data(),p,rsize);
-  new (&alpha0) m2darray(alphas.fitl0.local().data(),p,rsize);
-  new (&mu0) m2darray(mus.fitl0.local().data(),p,rsize);
+  alpha = alphas->fit_m.local();
+  mu = mus->fit_m.local();
+  alpha1 = alphas->fit1_m.local();
+  mu1 = mus->fit1_m.local();
+  alpha0 = alphas->fit0_m.local();
+  mu0 = mus->fit0_m.local();
 
-  new (&SiRiSr) m2darray(sirisrs.fitl.local().data(),p,rsize);
+  SiRiSr = sirisrs->fit_m.local();
 
    
 
-  new (&lnZ) mdarray(results.lnZ_t.local().data(),rsize);
-  new (&lnZ0) mdarray(results.lnZ0_t.local().data(),rsize);
-  new (&lnZ00) mdarray(results.lnZ00_t.local().data(),rsize);
-  new (&alpha_mean) mdarray(results.alpha_mean_t.local().data(),rsize);
-  new (&mu_mean) mdarray(results.mu_mean_t.local().data(),rsize);
-  new (&pvevec) mdarray(results.pvevec_t.local().data(),rsize);
-  new (&iternum) miarray(results.iternum_t.local().data(),rsize);
+  lnZ = results->lnZ_m.local();
+  lnZ0 = results->lnZ0_m.local();
+  lnZ00 = results->lnZ00_m.local();
+  alpha_mean = results->alpha_mean_m.local();
+  mu_mean = results->mu_mean_m.local();
+  pvevec = results->pvevec_m.local();
+  iternum = results->iternum_m.local();
   
-  new (&mtp) mdarray(results.mtp_t.local().data(),rsize);
-  new (&final_btnum) miarray(results.final_btnum_t.local().data(),rsize);
-  new (&rvec) mdarray(results.rvec_t.local().data(),rsize);
-  new (&final_max_err) mdarray(results.final_max_err_t.local().data(),rsize);
+  mtp = results->mtp_m.local();
+  final_btnum = results->final_btnum_m.local();
+  rvec = results->rvec_m.local();
+  final_max_err = results->final_max_err_m.local();
 
-  new (&logodds) mdarray(paraams.logodds_t.local().data(),rsize);
-  new (&sigma_beta) mdarray(paraams.sigma_beta_t.local().data(),rsize);
-  new (&sigma_beta_square) mdarray(paraams.sigma_beta_square_t.local().data(),rsize);
+  logodds = paraams->logodds_m.local();
+  sigma_beta = paraams->sigma_beta_m.local();
+  sigma_beta_square = paraams->sigma_beta_square_m.local();
 
-  new (&s) m2darray(paraams.s_t.local().data(),p,rsize);
-  new (&ssrat) m2darray(paraams.ssrat_t.local().data(),p,rsize);
+  s = paraams->s_m.local();
+  ssrat = paraams->ssrat_m.local();
   
 
   
@@ -673,12 +556,6 @@ void rssr::tls_init(const blocked_range<size_t> &r) const{
   rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
   rassert(isnan(logodds).sum()==0 && "logodds has no NaN  values");
     
-    
-  rassert(alphas.fitl.local().data()!=NULL && "alpha has to be mapped");
-  rassert(mus.fitl.local().data()!=NULL && "mu has to be mapped");
-  rassert(sirisrs.fitl.local().data()!=NULL && "sirisr has to be mapped");
-    
-
 
   rassert(isnan(alpha).sum()==0 && "alpha has no NaN  values");
   rassert(isnan(mu).sum()==0 && "mu has no NaN  values");
@@ -687,9 +564,6 @@ void rssr::tls_init(const blocked_range<size_t> &r) const{
   rassert(isnan(alpha1).sum()==0 && "alpha1 has no NaN values");
   rassert(isnan(mu0).sum()==0 && "mu0 has no NaN  values");
   rassert(isnan(mu1).sum()==0 && "mu1 has no NaN  values");
-  
- 
-
   
 
   rassert(isnan(alpha).sum()==0 && "alpha has no NaN starting values");
@@ -761,13 +635,7 @@ void rssr::calc_lnZ(const blocked_range<size_t> & r)const {
   rassert(isnan(sigma_beta).sum()==0 && "sigma_beta is all non NaN");
   
   ////std::cout<<"about to start to calculate lnZ"<<std::endl;
-    
-
-
   for(size_t j=r.begin(); j!=r.end();j++){
-
-
-    
 
     lnZ(j)=calculate_lnZ(q,
 			 alpha.col(j)*mu.col(j),
@@ -788,7 +656,6 @@ void rssr::rss_vb_iter(const blocked_range<size_t> r,bool reverse)const{
   size_t rstart=r.begin();
   size_t rsize= r.end()-rstart;			  
   if(reverse){
-
     for(const int& i: reverse_range){
       for(size_t j=r.begin();j!=r.end();j++){
 	rvec(j)=alpha(i,j)*mu(i,j);
@@ -797,7 +664,6 @@ void rssr::rss_vb_iter(const blocked_range<size_t> r,bool reverse)const{
 	SiRiSr.col(j)+=SiRiS.col(i).array()*(alpha(i,j)*mu(i,j)-rvec(j));
       }
     }
-
   }else{
     for(const int& i: forward_range){
       for(size_t j=r.begin();j!=r.end();j++){
@@ -805,26 +671,20 @@ void rssr::rss_vb_iter(const blocked_range<size_t> r,bool reverse)const{
 	mu(i,j)=s(i,j)*(q(i)+rvec(j)/sesquare(i)-SiRiSr(i,j));
 	alpha(i,j)=sigmoid(logodds(j)+0.5*(ssrat(i,j)+(mu(i,j)*mu(i,j))/s(i,j)));
 	SiRiSr.col(j)+=SiRiS.col(i).array()*(alpha(i,j)*mu(i,j)-rvec(j));
-
-	
-      }
-	    
+      }	    
     }
   }
   rassert(isnan(alpha).sum()==0 && "alpha has no NaN  values");
   rassert(isnan(mu).sum()==0 && "mu has no NaN  values");
   rassert(isnan(SiRiSr).sum()==0 && "SiRiSr has no NaN  values");
-	
 }
 
   
     
   
-void rssr::squarem_step(const blocked_range<size_t> & r) const{
-    
+void rssr::squarem_step(const blocked_range<size_t> & r) const{    
   calculate_mtp(r);
   for(size_t j=r.begin(); j!=r.end();j++){
-	
     double tmtp=mtp(j);
     if(tmtp>(-1)){
       tmtp=-1;
@@ -847,8 +707,7 @@ void rssr::squarem_step(const blocked_range<size_t> & r) const{
 
 
       
-void rssr::squarem_backtrack(const blocked_range<size_t> & r)const {
-      
+void rssr::squarem_backtrack(const blocked_range<size_t> & r)const {     
   for(size_t j=r.begin();j!=r.end();j++){
     double tmtp=mtp(j);
     double tlnZ=lnZ(j);
@@ -982,7 +841,9 @@ void rssr::operator()(    const blocked_range<size_t> &qr)const {
 	iternum(j)=iter;
       }
       compute_pve(r);
+      results->write_res(qr);
       break;
+
     }
     iter++;
   }
@@ -1000,62 +861,56 @@ void rssr::operator()(    const blocked_range<size_t> &qr)const {
 
   
   compute_pve(r);
+  results->write_res(qr);
 }
     
   
-rssr_norm::rssr_norm(const Fit_wrap &mus_,
-		     const Fit_wrap &sirisrs_,
-		     const Data_wrap &datas_,
-		     const Param_wrap &params_,
-		     const Siris &siris_,
-		     const Fit_res &results_,
+rssr_norm::rssr_norm(Fit_wrap *mus_,
+		     Fit_wrap *sirisrs_,
+		     const Data_wrap *datas_,
+		     Param_wrap *params_,
+		     Fit_res *results_,
 		     const double tolerance_, const size_t n_,
 		     const size_t itermax_,
 		     const std::vector<int> &forward_range_,
 		     const std::vector<int> &reverse_range_
-		     ): 
+		     ): tls(true),
 			mus(mus_),
 			sirisrs(sirisrs_),
 			results(results_),
 			datas(datas_),
 			paraams(params_),
-			siris(siris_),
-			SiRiS(siris.siris_p,p,p),
-			gridsize(mus.gridsize),
-			p(mus.p),
+			gridsize(paraams->gridsize),
+			p(mus->p),
 			n(n_),
-			sigma_beta(NULL,gridsize),
-			sigma_beta_square(NULL,gridsize),
-			s(NULL,p,gridsize),
-			ssrat(NULL,p,gridsize),
+			q(datas->q_p,p),
+			sigma_beta(paraams->sigma_beta_m.local()),
+			sigma_beta_square(paraams->sigma_beta_square_m.local()),
+			s(paraams->s_m.local()),
+			ssrat(paraams->ssrat_m.local()),
+			sesquare(datas->sesquare_p,p),
 			itermax(itermax_),
 			tolerance(tolerance_),
 			forward_range(forward_range_),
 			reverse_range(reverse_range_),
-			tls(mus.tls),
-			betahat(datas.betahat_p,p),
-			se(datas.se_p,p),
-			sesquare(datas.sesquare_p,p),
-			q(datas.q_p,p),
-			lnZ(NULL,gridsize),
-			lnZ0(NULL,gridsize),
-			lnZ00(NULL,gridsize),
-			alpha_mean(NULL,gridsize),
-			mu_mean(NULL,gridsize),
-			pvevec(NULL,gridsize),
-			iternum(NULL,gridsize),
-			final_btnum(NULL,gridsize),
-			final_max_err(NULL,gridsize),
-			rvec(NULL,gridsize),
-			mtp(NULL,gridsize),
-			mu(NULL,p,gridsize),
-			SiRiSr(NULL,p,gridsize),
-			mu0(NULL,p,gridsize),
-			mu1(NULL,p,gridsize)
-		
-
-
-{
+			betahat(datas->betahat_p,p),
+			se(datas->se_p,p),
+			SiRiS(datas->siris_p,p,p),
+			lnZ(results->lnZ_m.local()),
+			lnZ0(results->lnZ0_m.local()),
+			lnZ00(results->lnZ00_m.local()),
+			alpha_mean(results->alpha_mean_m.local()),
+			mu_mean(results->mu_mean_m.local()),
+			pvevec(results->pvevec_m.local()),
+			iternum(results->iternum_m.local()),
+			final_btnum(results->final_btnum_m.local()),
+			final_max_err(results->final_max_err_m.local()),
+			rvec(results->rvec_m.local()),
+			mtp(results->mtp_m.local()),
+			mu(mus->fit_m.local()),
+			SiRiSr(sirisrs->fit_m.local()),
+			mu0(mus->fit0_m.local()),
+			mu1(mus->fit1_m.local()){
 
 
     
@@ -1067,76 +922,69 @@ rssr_norm::rssr_norm(const Fit_wrap &mus_,
 
 void rssr_norm::tls_init(const blocked_range<size_t> &r) const{
 
+
+
   size_t rstart=r.begin();
   size_t rsize= r.end()-rstart;
-  if(!tls){
-    rsize=gridsize;
-  }
-  if(tls){
 
-    mus.tlresize(rsize);
-    sirisrs.tlresize(rsize);
-    paraams.tlresize(r,datas);
-    results.tlresize(rsize);
-  }
+  //    rsize=gridsize;
+  mus->tlresize(rsize);
+  sirisrs->tlresize(rsize);
+  paraams->tlresize(r,*datas);
+  results->tlresize(rsize);
 
-
-
-
-
-
-
-  new (&mu) m2darray(mus.fitl.local().data(),p,rsize);
-
-  new (&mu1) m2darray(mus.fitl1.local().data(),p,rsize);
-
-  new (&mu0) m2darray(mus.fitl0.local().data(),p,rsize);
-
-  new (&SiRiSr) m2darray(sirisrs.fitl.local().data(),p,rsize);
-  new (&lnZ) mdarray(results.lnZ_t.local().data(),rsize);
-  new (&lnZ0) mdarray(results.lnZ0_t.local().data(),rsize);
-  new (&lnZ00) mdarray(results.lnZ00_t.local().data(),rsize);
-  new (&alpha_mean) mdarray(results.alpha_mean_t.local().data(),rsize);
-  new (&mu_mean) mdarray(results.mu_mean_t.local().data(),rsize);
-  new (&pvevec) mdarray(results.pvevec_t.local().data(),rsize);
-  new (&iternum) miarray(results.iternum_t.local().data(),rsize);
   
-  new (&mtp) mdarray(results.mtp_t.local().data(),rsize);
-  new (&final_btnum) miarray(results.final_btnum_t.local().data(),rsize);
-  new (&rvec) mdarray(results.rvec_t.local().data(),rsize);
-  new (&final_max_err) mdarray(results.final_max_err_t.local().data(),rsize);
+  
+  mu = mus->fit_m.local();
+
+  mu1 = mus->fit1_m.local();
+ 
+  mu0 = mus->fit0_m.local();
+
+  SiRiSr = sirisrs->fit_m.local();
+
+   
+
+  lnZ = results->lnZ_m.local();
+  lnZ0 = results->lnZ0_m.local();
+  lnZ00 = results->lnZ00_m.local();
+  alpha_mean = results->alpha_mean_m.local();
+  mu_mean = results->mu_mean_m.local();
+  pvevec = results->pvevec_m.local();
+  iternum = results->iternum_m.local();
+  
+  mtp = results->mtp_m.local();
+  final_btnum = results->final_btnum_m.local();
+  rvec = results->rvec_m.local();
+  final_max_err = results->final_max_err_m.local();
 
 
-  new (&sigma_beta) mdarray(paraams.sigma_beta_t.local().data(),rsize);
-  new (&sigma_beta_square) mdarray(paraams.sigma_beta_square_t.local().data(),rsize);
+  sigma_beta = paraams->sigma_beta_m.local();
+  sigma_beta_square = paraams->sigma_beta_square_m.local();
 
-  new (&s) m2darray(paraams.s_t.local().data(),p,rsize);
-  new (&ssrat) m2darray(paraams.ssrat_t.local().data(),p,rsize);
-
-
+  s = paraams->s_m.local();
+  ssrat = paraams->ssrat_m.local();
   
 
   
+  rassert(isnan(s).sum()==0 && "s has no NaN  values");
+  rassert(isnan(sigma_beta).sum()==0 && "sigma_beta has no NaN  values");
+  rassert(isnan(sigma_beta_square).sum()==0 && "sigma_beta_square has no NaN  values");
+  rassert(isnan(ssrat).sum()==0 && "ssrat has no NaN  values");
 
     
-    
-
-  rassert(mus.fitl.local().data()!=NULL && "mu has to be mapped");
-  rassert(sirisrs.fitl.local().data()!=NULL && "sirisr has to be mapped");
-    
-
-
 
   rassert(isnan(mu).sum()==0 && "mu has no NaN  values");
   rassert(isnan(SiRiSr).sum()==0 && "SiRiSr has no NaN  values");
-
-
   rassert(isnan(mu0).sum()==0 && "mu0 has no NaN  values");
   rassert(isnan(mu1).sum()==0 && "mu1 has no NaN  values");
-  
+ 
 
-  rassert(isnan(mu).sum()==0 && "mu has no NaN starting values");
-  rassert(isnan(SiRiSr).sum()==0 && "SiRiSr has no NaN starting values");
+
+
+
+
+
 }			
 
 
