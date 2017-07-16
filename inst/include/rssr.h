@@ -10,6 +10,9 @@
 
 #include <RcppEigen.h>
 
+
+#include "rssr/rssr_assert.h"
+
 #include "rssr/rssr_types.h"
 
 #include "rssr/rssvarbvsr.h"
@@ -22,4 +25,9 @@
 #include "rssr/sparse_matrix.h"
 #include "rssr/rssr_classes.h"
 #include "rssr/rssr_tbb.h"
+
+
+
+
+
 #endif // RCPP_rssr_H_GEN_

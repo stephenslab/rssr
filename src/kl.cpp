@@ -4,6 +4,8 @@
 
 
 
+
+
 Eigen::ArrayXd betavar(const c_arrayxd_internal alpha,const c_arrayxd_internal mu,const c_arrayxd_internal s){
   Eigen::ArrayXd tbeta(alpha.size());
   tbeta=s;
@@ -21,9 +23,14 @@ Eigen::ArrayXd exp_betavar(const arrayxd_external p, const arrayxd_external mu, 
 
 double intklbeta_rssbvsr(const c_arrayxd_internal alpha,const c_arrayxd_internal mu,const c_arrayxd_internal sigma_square, double sigma_beta_square){
   double tres = alpha.sum()+alpha.matrix().transpose()*((sigma_square/sigma_beta_square).log()).matrix();
+  
+  rassert(!isnan(tres) &&" tres is finite");
   double sres = alpha.matrix().transpose()*(sigma_square+mu.square()).matrix();
+  rassert(!isnan(sres) &&" sres is finite");
   double thres = alpha.matrix().transpose()*((alpha+double_lim::epsilon()).log()).matrix();
+  rassert(!isnan(thres) &&" thres is finite");
   double fres = (1-alpha).matrix().transpose()*(1-alpha+double_lim::epsilon()).log().matrix();
+  rassert(!isnan(fres) &&" fres is finite");
   return (tres-sres/sigma_beta_square)*0.5-thres-fres;
 }
 
@@ -181,17 +188,11 @@ double calculate_lnZ(const c_vectorxd_internal q,
     
     
     double lnz0 = q.dot(r)-0.5*r.dot(SiRiSr)+intgamma(logodds,alpha.array());
-    // if(!std::isfinite(lnz0)){
-    //   Rcpp::stop("lnZ0 is not finite");
-    // }
+    rassert(!isnan(lnz0) && "lnZ0 is not finite");
     double lnz1 = lnz0-0.5*(1/sesquare.array()).matrix().dot(betavar(alpha.array(),mu.array(),s.array()).matrix());
-    // if(!std::isfinite(lnz0)){
-    //   Rcpp::stop("lnZ1 is not finite");
-    // }
+    rassert(!isnan(lnz1) && "lnZ1 is not finite");
     double lnz2 = lnz1+intklbeta_rssbvsr(alpha.array(),mu.array(),s.array(),sigb*sigb);
-    // if(!std::isfinite(lnz0)){
-    //   Rcpp::stop("lnZ2 is not finite");
-    // }
+    rassert(!isnan(lnz2) && "lnZ2 is not finite");
     return(lnz2);
   }
 

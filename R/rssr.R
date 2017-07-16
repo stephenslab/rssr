@@ -153,43 +153,48 @@ rss_varbvsr <- function(options=list()){
   }
 }
 
-rss_varbvsr_optim <- function(options=list()){
+rss_varbvsr_norm_optim <- function(SiRiS,sigbb,betahat,
+                                   se ,tmu0 =rmu(length(betahat)),tSiRiSr0 = c(SiRiS%*%tmu0),
+                                   tolerance = 1e-3,itermax = 100,lnz_tol =T){
    requireNamespace("stats")
-  stopifnot(length(options[["sigb"]])==2,
-            length(options[["logodds"]])==2,
-            !is.null(options[["SiRiS"]]),
-            !is.null(options[["betahat"]]),
-            !is.null(options[["alpha"]]),
-            !is.null(options[["mu"]]),
-            !is.null(options[["se"]]),
-            !is.null(options[["SiRiSr"]]),
-            !is.null(options[["itermax"]]),
-            !is.null(options[["lnz_tol"]]),
-            length(options[["se"]])==length(options[["betahat"]]),
-            length(options[["betahat"]])==length(options[["mu"]]))
+ 
   
-  sigbb <- options[["sigb"]]
-  logoddsb <- options[["logodds"]]
-  fsigb <- runif(1,min = sigbb[1],max = sigbb[2])
-  flogodds <- runif(1,min =logoddsb[1],max = logoddsb[2])
-  parv=c(flogodds,fsigb)
-  moptim <- stats::optim(par = parv,fn = wrap_rss_varbvs_squarem_optim,
-                  lower=c(logoddsb[1],sigbb[1]),upper=c(logoddsb[2],sigbb[2]),
-                  SiRiS=options[["SiRiS"]],
-                  betahat = options[["betahat"]],
-                  se = options[["se"]],
-                  talpha0 = options[["alpha"]],
-                  tmu0 = options[["mu"]],
-                  tSiRiSr0 = options[["SiRiSr"]],
-                  tolerance = options[["tolerance"]],
-                  itermax=options[["itermax"]],
-                  lnz_tol = options[["lnz_tol"]],method="L-BFGS-B")
+  moptim <- stats::optimise(f = wrap_rss_varbvs_norm_optim,interval=sigbb,
+                  SiRiS=SiRiS,
+                  betahat = betahat,
+                  se = se,
+                  tmu0 = tmu0,
+                  tSiRiSr0 = tSiRiSr0,
+                  tolerance = tolerance,
+                  itermax=itermax,
+                  lnz_tol = lnz_tol)
   return(moptim)
 }
 
 
 
 
- 
+
+wrap_rss_varbvs_norm_optim <- function( par, 
+                                      SiRiS,
+                                      betahat,
+                                      se,
+                                      tmu0,
+                                      tSiRiSr0,
+                                      tolerance,
+                                      itermax,
+                                      lnz_tol){
+   
+  return(-grid_search_rss_varbvsr_norm_tls(SiRiS,
+                                  par,
+                                  betahat,
+                                  se,
+                                  tmu0,
+                                  tSiRiSr0,
+                                  tolerance,
+                                  itermax,
+                                  lnz_tol)[["lnZ"]])
+}
+
 
 
