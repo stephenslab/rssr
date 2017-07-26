@@ -2,47 +2,47 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 logsigmoid <- function(x) {
-    .Call('rssr_logsigmoid_exp', PACKAGE = 'rssr', x)
+    .Call('_rssr_logsigmoid_exp', PACKAGE = 'rssr', x)
 }
 
 sigmoid <- function(x) {
-    .Call('rssr_sigmoid_exp', PACKAGE = 'rssr', x)
+    .Call('_rssr_sigmoid_exp', PACKAGE = 'rssr', x)
 }
 
 betavar <- function(p, mu, s) {
-    .Call('rssr_exp_betavar', PACKAGE = 'rssr', p, mu, s)
+    .Call('_rssr_exp_betavar', PACKAGE = 'rssr', p, mu, s)
 }
 
 intklbeta_rssbvsr <- function(alpha, mu, sigma_square, sigma_beta_square) {
-    .Call('rssr_exp_intklbeta_rssbvsr', PACKAGE = 'rssr', alpha, mu, sigma_square, sigma_beta_square)
+    .Call('_rssr_exp_intklbeta_rssbvsr', PACKAGE = 'rssr', alpha, mu, sigma_square, sigma_beta_square)
 }
 
 intgamma <- function(logodds, alpha) {
-    .Call('rssr_exp_intgamma', PACKAGE = 'rssr', logodds, alpha)
+    .Call('_rssr_exp_intgamma', PACKAGE = 'rssr', logodds, alpha)
 }
 
 rel_err <- function(p0, p1) {
-    .Call('rssr_rel_err', PACKAGE = 'rssr', p0, p1)
+    .Call('_rssr_rel_err', PACKAGE = 'rssr', p0, p1)
 }
 
 find_maxerr <- function(alpha, alpha0, r, r0) {
-    .Call('rssr_exp_find_maxerr', PACKAGE = 'rssr', alpha, alpha0, r, r0)
+    .Call('_rssr_exp_find_maxerr', PACKAGE = 'rssr', alpha, alpha0, r, r0)
 }
 
 update_logodds <- function(alpha) {
-    .Call('rssr_exp_update_logodds', PACKAGE = 'rssr', alpha)
+    .Call('_rssr_exp_update_logodds', PACKAGE = 'rssr', alpha)
 }
 
 calculate_lnZ <- function(alpha_mu, SiRiS, sigma_beta, logodds, betahat, se) {
-    .Call('rssr_wrap_calculate_lnZ', PACKAGE = 'rssr', alpha_mu, SiRiS, sigma_beta, logodds, betahat, se)
+    .Call('_rssr_wrap_calculate_lnZ', PACKAGE = 'rssr', alpha_mu, SiRiS, sigma_beta, logodds, betahat, se)
 }
 
 grid_search_rss_varbvsr_norm <- function(SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 grid_search_rss_varbvsr_naive_norm <- function(SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_naive_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr_naive_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 #' Run RSS with the variational bayes algorithm accelerated with SQUAREM
@@ -51,23 +51,23 @@ grid_search_rss_varbvsr_naive_norm <- function(SiRiS, sigma_beta, betahat, se, t
 #' @param tmu0 a length p vector specifying the initial value of mu
 #' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 rss_varbvsr_squarem_norm <- function(SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_squarem_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_rss_varbvsr_squarem_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 rss_varbvsr_naive_norm <- function(SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_naive_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_rss_varbvsr_naive_norm', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 wrap_squarem_adjust_prep <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol) {
-    .Call('rssr_wrap_squarem_adjust_prep', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol)
+    .Call('_rssr_wrap_squarem_adjust_prep', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha, tmu, tSiRiSr, tolerance, itermax, lnz_tol)
 }
 
 rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 rss_varbvsr_naive_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_naive_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_rss_varbvsr_naive_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 #' Run RSS with the variational bayes algorithm accelerated with SQUAREM
@@ -76,7 +76,7 @@ rss_varbvsr_naive_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha
 #' @param tmu0 a length p vector specifying the initial value of mu
 #' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 rss_varbvsr_squarem <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_squarem', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_rss_varbvsr_squarem', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 #' Run RSS with the variational bayes algorithm accelerated with SQUAREM
@@ -85,74 +85,66 @@ rss_varbvsr_squarem <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0
 #' @param tmu0 a length p vector specifying the initial value of mu
 #' @param SiRiSr0 a length p vector specifying the initial value of SiRiSr
 rss_varbvsr_squarem_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_rss_varbvsr_squarem_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_rss_varbvsr_squarem_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 grid_search_rss_varbvsr_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 grid_search_rss_varbvsr_multitrait <- function(R, sigma_beta, logodds, betahat, se, talpha0, tmu0, fgeneid, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_multitrait', PACKAGE = 'rssr', R, sigma_beta, logodds, betahat, se, talpha0, tmu0, fgeneid, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr_multitrait', PACKAGE = 'rssr', R, sigma_beta, logodds, betahat, se, talpha0, tmu0, fgeneid, tolerance, itermax, verbose, lnz_tol)
 }
 
 grid_search_rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
 grid_search_rss_varbvsr_naive_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
-    .Call('rssr_grid_search_rss_varbvsr_naive_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
+    .Call('_rssr_grid_search_rss_varbvsr_naive_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
-grid_search_rss_varbvsr_tls <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n = 1L, grainsize = 1L) {
-    .Call('rssr_grid_search_rss_varbvsr_tls_exp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n, grainsize)
+grid_search_rss_varbvsr_dense <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n = 1L, grainsize = 1L) {
+    .Call('_rssr_grid_search_rss_varbvsr_d', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n, grainsize)
 }
 
-grid_search_rss_varbvsr_norm_tls <- function(SiRiS, sigma_beta, betahat, se, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n = 1L, grainsize = 1L) {
-    .Call('rssr_grid_search_rss_varbvsr_norm_tls_exp', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n, grainsize)
-}
-
-grid_search_rss_varbvsr_norm_sparse <- function(SiRiS, sigma_beta, betahat, se, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n = 1L, grainsize = 1L) {
-    .Call('rssr_grid_search_rss_varbvsr_norm_sparse_exp', PACKAGE = 'rssr', SiRiS, sigma_beta, betahat, se, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n, grainsize)
-}
-
-grid_search_rssr_varbvsr_sparse <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n = 1L, grainsize = 1L) {
-    .Call('rssr_grid_search_rss_varbvsr_sparse_exp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n, grainsize)
+grid_search_rss_varbvsr_sparse <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n = 1L, grainsize = 1L) {
+    .Call('_rssr_grid_search_rss_varbvsr_s', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha0, mu0, SiRiSr0, tolerance, itermax, lnz_tol, n, grainsize)
 }
 
 wrap_rss_varbvsr_iter <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
-    .Call('rssr_wrap_rss_varbvsr_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
+    .Call('_rssr_wrap_rss_varbvsr_iter', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
 }
 
 wrap_rss_varbvsr_iter_squarem <- function(alpha_mu, SiRiS, sigma_beta, logodds, betahat, se) {
-    .Call('rssr_wrap_rss_varbvsr_iter_squarem', PACKAGE = 'rssr', alpha_mu, SiRiS, sigma_beta, logodds, betahat, se)
+    .Call('_rssr_wrap_rss_varbvsr_iter_squarem', PACKAGE = 'rssr', alpha_mu, SiRiS, sigma_beta, logodds, betahat, se)
 }
 
 wrap_rss_varbvsr_iter_sp <- function(SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse) {
-    .Call('rssr_wrap_rss_varbvsr_iter_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
+    .Call('_rssr_wrap_rss_varbvsr_iter_sp', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, alpha, mu, SiRiSr, reverse)
 }
 
 SiRSi <- function(R, Si) {
-    .Call('rssr_SiRSi', PACKAGE = 'rssr', R, Si)
+    .Call('_rssr_SiRSi', PACKAGE = 'rssr', R, Si)
 }
 
 SiRSi_c <- function(R, se, betahat, n) {
-    .Call('rssr_SiRSi_c', PACKAGE = 'rssr', R, se, betahat, n)
+    .Call('_rssr_SiRSi_c', PACKAGE = 'rssr', R, se, betahat, n)
 }
 
 SiRSi_a <- function(R, Si) {
-    .Call('rssr_SiRSi_a', PACKAGE = 'rssr', R, Si)
+    .Call('_rssr_SiRSi_a', PACKAGE = 'rssr', R, Si)
 }
 
 SiRSi_d <- function(R, Si) {
-    .Call('rssr_SiRSi_d', PACKAGE = 'rssr', R, Si)
+    .Call('_rssr_SiRSi_d', PACKAGE = 'rssr', R, Si)
 }
 
 genSymm <- function(R) {
-    .Call('rssr_genSymm', PACKAGE = 'rssr', R)
+    .Call('_rssr_genSymm', PACKAGE = 'rssr', R)
 }
 

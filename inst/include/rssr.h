@@ -23,7 +23,6 @@
 
 #include "rssr/rssr_grid.h"
 #include "rssr/sparse_matrix.h"
-#include "rssr/rssr_classes.h"
 #include "rssr/rssr_tbb.h"
 
 

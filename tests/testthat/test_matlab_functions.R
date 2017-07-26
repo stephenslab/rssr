@@ -21,14 +21,11 @@ Sample_Size <- 1458
 #Generate SiRiS as both dense and sparse matrices 
 SiRiS <- SiRSi(R_shrink,1/se)
 SiRiS_f <- SiRSi_d(as.matrix(R_shrink),1/se)
+R <- as.matrix(R_shrink)
 #SiRiS_f <- as.matrix(SiRSi(R_shrink,1/se))
 #SiRiS <-as(SiRiS_f,"dgCMatrix")
 p <- length(betahat)
 SiRiSr=c(SiRiS_f%*%(alpha_test*mu_test))
-
-
-
-
 
 
 
@@ -217,23 +214,23 @@ test_that("2d grid optimization over sigb and logodds works as alternative imple
   paramdf <- list(sigb=sigb,logodds=logoddsvec) %>% purrr::cross_d()
   
   
-  old_res <- microbenchmark(old=grid_search_rss_varbvsr(talpha0=alpha_test,
-                                                        tmu0=mu_test,betahat=betahat,
-                                                        se=se,
-                                                        SiRiS=SiRiS_f,
-                                                        sigma_beta =paramdf$sigb,
-                                                        logodds=paramdf$logodds,
-                                                        verbose=F,
-                                                        tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=T),
-                            new=grid_search_rss_varbvsr_alt(talpha0=alpha_test,
-                                                            tmu0=mu_test,betahat=betahat,
-                                                            se=se,
-                                                            SiRiS=SiRiS_f,
-                                                            sigma_beta =paramdf$sigb,
-                                                            logodds=paramdf$logodds,
-                                                            tSiRiSr0=SiRiSr,
-                                                            n=1,
-                                                            itermax=100,tolerance=1e-4,lnz_tol=T))
+  # old_res <- microbenchmark(old=grid_search_rss_varbvsr(talpha0=alpha_test,
+  #                                                       tmu0=mu_test,betahat=betahat,
+  #                                                       se=se,
+  #                                                       SiRiS=SiRiS_f,
+  #                                                       sigma_beta =paramdf$sigb,
+  #                                                       logodds=paramdf$logodds,
+  #                                                       verbose=F,
+  #                                                       tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=T),
+  #                           new=grid_search_rss_varbvsr_alt(talpha0=alpha_test,
+  #                                                           tmu0=mu_test,betahat=betahat,
+  #                                                           se=se,
+  #                                                           SiRiS=SiRiS_f,
+  #                                                           sigma_beta =paramdf$sigb,
+  #                                                           logodds=paramdf$logodds,
+  #                                                           tSiRiSr0=SiRiSr,
+  #                                                           n=1,
+  #                                                           itermax=100,tolerance=1e-4,lnz_tol=T))
   mr_grid <- grid_search_rss_varbvsr(talpha0=alpha_test,
                                      tmu0=mu_test,betahat=betahat,
                                      se=se,
@@ -242,20 +239,40 @@ test_that("2d grid optimization over sigb and logodds works as alternative imple
                                      logodds=paramdf$logodds,
                                      verbose=F,
                                      tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=T) %>% dplyr::select(-pve)
-  mr_grid_a <- grid_search_rss_varbvsr_alt(talpha0=alpha_test,
-                                           tmu0=mu_test,betahat=betahat,
+  
+  mr_grid_a <- grid_search_rss_varbvsr_tls(alpha0=alpha_test,
+                                           mu0=mu_test,betahat=betahat,
                                            se=se,
                                            SiRiS=SiRiS_f,
                                            sigma_beta =paramdf$sigb,
                                            logodds=paramdf$logodds,
-                                           tSiRiSr0=SiRiSr,
+                                           SiRiSr0=SiRiSr,
                                            n=1,
                                            itermax=100,tolerance=1e-4,lnz_tol=T) %>% dplyr::select(-mu_mean,-pve)
-  
-  
-  
-  
   expect_equal(mr_grid,mr_grid_a,tolerance=1e-3)
+  # 
+  # 
+  
+  
+  nmb <- microbenchmark::microbenchmark(old=grid_search_rss_varbvsr(talpha0=alpha_test,
+                                        tmu0=mu_test,betahat=betahat,
+                                        se=se,
+                                        SiRiS=SiRiS_f,
+                                        sigma_beta =paramdf$sigb,
+                                        logodds=paramdf$logodds,
+                                        verbose=F,
+                                        tSiRiSr0=SiRiSr,itermax=100,tolerance=1e-4,lnz_tol=T),
+                                        new=grid_search_rss_varbvsr_tls(alpha0=alpha_test,
+                                                                        mu0=mu_test,betahat=betahat,
+                                                                        se=se,
+                                                                        SiRiS=SiRiS_f,
+                                                                        sigma_beta =paramdf$sigb,
+                                                                        logodds=paramdf$logodds,
+                                                                        SiRiSr0=SiRiSr,
+                                                                        n=1,
+                                                                        itermax=100,tolerance=1e-4,lnz_tol=T))
+  
+  # expect_equal(mr_grid,mr_grid_a,tolerance=1e-3)
   }
 
 )

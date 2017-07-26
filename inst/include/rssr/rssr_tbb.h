@@ -4,15 +4,44 @@
 #include <RcppEigen.h>
 #include "rssr_types.h"
 
+
+
 Rcpp::DataFrame grid_search_rss_varbvsr_tls(
-    const  Matrix_external SiRiS,
-    const arrayxd_external sigma_beta,
-    const arrayxd_external logodds,
-    const arrayxd_external  betahat,
-    const arrayxd_external  se,
-    const arrayxd_external talpha0,
-    const arrayxd_external tmu0,
-    const arrayxd_external tSiRiSr0,
+    const  Rcpp::NumericMatrix &SiRiS,
+    const Rcpp::NumericVector &sigma_beta,
+    const Rcpp::NumericVector &logodds,
+    const Rcpp::NumericVector &betahat,
+    const Rcpp::NumericVector &se,
+    const Rcpp::NumericVector &alpha0,
+    const Rcpp::NumericVector &mu0,
+    const Rcpp::NumericVector &SiRiSr0,
+    const double tolerance,
+    const int itermax,
+    Rcpp::LogicalVector lnz_tol,
+    const int n,const int grainsize);
+
+
+Rcpp::DataFrame grid_search_rss_varbvsr_norm_tls(const  Rcpp::NumericMatrix &SiRiS,
+						 const Rcpp::NumericVector &sigma_beta,
+						 const Rcpp::NumericVector &betahat,
+						 const Rcpp::NumericVector &se,
+						 const Rcpp::NumericVector &mu0,
+						 const Rcpp::NumericVector &SiRiSr0,
+						 const double tolerance,
+						 const int itermax,
+						 Rcpp::LogicalVector lnz_tol,
+						 const int n,const int grainsize);
+
+
+Rcpp::DataFrame grid_search_rss_varbvsr_sparse(
+    const  Eigen::Map<Eigen::SparseMatrix<double> > SiRiS,
+    const Rcpp::NumericVector &sigma_beta,
+    const Rcpp::NumericVector &logodds,
+    const Rcpp::NumericVector &betahat,
+    const Rcpp::NumericVector &se,
+    const Rcpp::NumericVector &alpha0,
+    const Rcpp::NumericVector &mu0,
+    const Rcpp::NumericVector &SiRiSr0,
     const double tolerance,
     const int itermax,
     Rcpp::LogicalVector lnz_tol,
