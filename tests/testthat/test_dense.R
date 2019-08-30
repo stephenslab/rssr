@@ -127,7 +127,7 @@ test_that("grid optimization over logodds works as expected",{
   sigb <- 1
   log10oddsvec <- seq(-6,-1,0.5)
   logoddsvec <- log10oddsvec*log(10)
-  paramdf <- list(logodds=logoddsvec,sigb=sigb) %>% cross_d()
+  paramdf <- list(logodds=logoddsvec,sigb=sigb) %>% cross_df()
   mr_s <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =paramdf$sigb,logodds=paramdf$logodds,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
   mr_d <- grid_search_rss_varbvsr(SiRiS=SiRiS_f,sigma_beta =paramdf$sigb,logodds=paramdf$logodds,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  
   expect_equal(mr_s$logodds,mr_d$logodds)
@@ -141,7 +141,7 @@ test_that("dense is faster than sparse",{
   sigb <- 1
   log10oddsvec <- seq(-6,-1,0.5)
   logoddsvec <- log10oddsvec*log(10)
-  paramdf <- list(logodds=logoddsvec,sigb=sigb) %>% cross_d()
+  paramdf <- list(logodds=logoddsvec,sigb=sigb) %>% cross_df()
   time_s <- system.time(mr_s <- grid_search_rss_varbvsr_sp(SiRiS=SiRiS,sigma_beta =paramdf$sigb,logodds=paramdf$logodds,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  )
   time_d <- system.time(mr_d <- grid_search_rss_varbvsr(SiRiS=SiRiS_f,sigma_beta =paramdf$sigb,logodds=paramdf$logodds,betahat=betahat,se=se,talpha0=alpha_test,tmu0=mu_test,tSiRiSr0=SiRiSr,1e-4,100,F,F)  )
   expect_lt(time_d["elapsed"],time_s["elapsed"])
@@ -151,7 +151,7 @@ test_that("2d grid optimization over sigb and logodds works the same",{
   log10oddsvec <- seq(-3.1,-2.1,length.out = 5)
   logoddsvec <- log10oddsvec*log(10)
   sigb <- seq(0.8,1.2,length.out = 5)
-  paramdf <- list(logodds=logoddsvec,sigb=sigb) %>% cross_d()
+  paramdf <- list(logodds=logoddsvec,sigb=sigb) %>% cross_df()
   mr_grid_sp <- grid_search_rss_varbvsr_sp(talpha0=alpha_test,
                                            tmu0=mu_test,betahat=betahat,
                                            se=se,

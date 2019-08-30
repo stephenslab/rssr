@@ -1,3 +1,5 @@
+^\src\#.*
+^\src\.#.*
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
@@ -19,6 +21,7 @@ demo/pandas
 ^Doxyfile$
 ^clion-test\.R$
 ^API$
+^compile_commands.json
 ^ISSUE_TEMPLATE\.md$
 ^data-raw$
 ^LICENSE\.md$

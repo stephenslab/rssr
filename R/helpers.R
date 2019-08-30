@@ -6,6 +6,13 @@ relerr <- function(x1, x2){
   }
 }
 
+calc_pi <- function(logodds){
+  exp(logodds)/(exp(logodds)+1)
+}
+
+calc_logodds <- function(pi){
+  log(pi / (1 - pi))
+}
 
 #' Normalize log weights
 #' @param lnZ unnormalized log probability

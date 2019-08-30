@@ -1,0 +1,17 @@
+---
+title: "Testing R package"
+output: html_notebook
+---
+
+# Introduction
+
+In translating the MATLAB code to R for this first version, as few changes were made as possible. One of the major changes that had to be made was in the storage of the data.
+
+## MAT files vs HDF5 files
+
+To run the comparison of the MATLAB implementation of RSS with the R implementation, I used the file `ibd2015_sumstat.mat` located on the RCC in the directory `/project/compbio/tmp/` (md5sum: `ad1763079ee7e46b21722f74e037a230`). R has no problem reading HDF5 formatted files, but the format MATLAB uses for structuring cell arrays is not easy work with in R.  Instead, I split up the file into 22 files, one per chromosome.  For the test, I only used the last 4 chromosomes, so I made a new version of `ibd2015_sumstat.mat` with only chromosomes 19-22.
+
+## Comparison
+
+To ensure a fair comparison, the same starting values of `alpha` and `mu` were used (these values can be found in the `MATLAB_scripts` folder)
+

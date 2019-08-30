@@ -1,3 +1,87 @@
+RSSr_estimate <- function(R,betahat,se,grid_total=100,threads=1){
+  
+  RcppParallel::setThreadOptions(numThreads = threads)
+  
+  p <- length(betahat)
+  stopifnot(
+    ncol(R)==p,
+    length(se)==p,
+    nrow(R)==p
+    )
+  num_sigb <- as.integer(sqrt(grid_total))
+  num_logodds <- as.integer(sqrt(grid_total))
+  sigma_beta <- 10 ^ seq(-2, 0.5, length.out = num_sigb)
+  
+  pi <- 10 ^ seq(-5, -2, length.out=num_logodds)
+  logodds <- log(pi / (1 - pi))
+  paramdf <- list(logodds = logodds, sigma_beta = sigma_beta) %>% purrr::cross_df() %>% dplyr::distinct()
+  
+
+  alpha0 <- ralpha(p)
+  mu0 <- rmu(p)
+  siris <- SiRSi_d(R, 1 / se)
+  sirisr=c(siris%*%(alpha0*mu0))
+  logodds <- paramdf$logodds
+  sigma_beta <- paramdf$sigma_beta
+  return(grid_search_rss_varbvsr(
+    SiRiS = siris,
+    sigma_beta = sigma_beta,
+    logodds = logodds,
+    betahat = betahat,
+    se = se,
+    talpha0 = alpha0,
+    tmu0 = mu0,
+    tSiRiSr0 = sirisr,
+    tolerance = 1e-3,
+    itermax = 200,
+    verbose = F,
+    lnz_tol = T))
+}
+
+
+RSSr_estimate_mat <- function(R,betahat,se,grid_total=100){
+  
+  p <- NROW(betahat)
+  ns <- NCOL(betahat)
+  stopifnot(
+    ncol(R)==p,
+    NROW(se)==p,
+    NCOL(se)==ns,
+    nrow(R)==p
+  )
+  num_sigb <- as.integer(sqrt(grid_total))
+  num_logodds <- as.integer(sqrt(grid_total))
+  sigma_beta <- 10 ^ seq(-2, 0.5, length.out = num_sigb)
+  
+  pi <- 10 ^ seq(-5, -2, length.out=num_logodds)
+  logodds <- log(pi / (1 - pi))
+  paramdf <- list(logodds = logodds, sigma_beta = sigma_beta) %>% purrr::cross_df() %>% dplyr::distinct()
+  fgeneid <- as.integer(colnames(betahat) %||% "1")
+
+  if(is.null(fgeneid)){
+    fgeneid <- as.integer(1:ns)
+  }
+  
+  alpha0 <- ralpha(p)
+  mu0 <- rmu(p)
+  logodds <- paramdf$logodds
+  sigma_beta <- paramdf$sigma_beta
+  return(grid_search_rss_varbvsr_multitrait(
+    R = R,
+    sigma_beta = sigma_beta,
+    logodds = logodds,
+    betahat = betahat,
+    se = se,
+    talpha0 = alpha0,
+    tmu0 = mu0,
+    fgeneid=fgeneid,
+    tolerance = 1e-3,
+    itermax = 200,
+    verbose = F,
+    lnz_tol = T))
+}
+
+
 
 #' Run Regression with Summary Statistics over a grid of hyperparamter values
 #' 
@@ -49,11 +133,10 @@ rssr_grid <- function(R, betahat, se, sigma_beta=NULL, logodds=NULL, options=lis
     logodds <- log(pi / (1 - pi))
   }
   if (length(logodds) != length(sigma_beta)){
-    paramdf <- list(logodds = logodds, sigma_beta = sigma_beta) %>% cross_d() %>% dplyr::distinct()
+    paramdf <- dplyr::distinct(purrr::cross_df(list(logodds = logodds, sigma_beta = sigma_beta)))
     logodds <- paramdf$logodds
     sigma_beta <- paramdf$sigma_beta
   }
-  
   if (is.null(options[["alpha0"]])){
     alpha0 <- ralpha(p)
   }else{
@@ -85,8 +168,7 @@ rssr_grid <- function(R, betahat, se, sigma_beta=NULL, logodds=NULL, options=lis
   }else{
     itermax <- options[["itermax"]] 
   }
-  
-  
+
   if (!is_sparse){
     if(use_squarem){
       result <- grid_search_rss_varbvsr(SiRiS = siris,sigma_beta = sigma_beta,logodds = logodds,betahat = betahat,
@@ -100,12 +182,12 @@ rssr_grid <- function(R, betahat, se, sigma_beta=NULL, logodds=NULL, options=lis
   }else{
     if (use_squarem){
       result <- grid_search_rss_varbvsr_sp(SiRiS = siris,sigma_beta = sigma_beta,logodds = logodds,betahat = betahat,
-                                        se = ,talpha0 = alpha0,tmu0 = mu0,tSiRiSr0 = sirisr,
-                                        tolerance = tolerance,itermax = itermax,verbose = F,lnz_tol = use_lnztol)
+                                           se = ,talpha0 = alpha0,tmu0 = mu0,tSiRiSr0 = sirisr,
+                                           tolerance = tolerance,itermax = itermax,verbose = F,lnz_tol = use_lnztol)
     }else{
       result  <-grid_search_rss_varbvsr_naive_sp(SiRiS = siris,sigma_beta = sigma_beta,logodds = logodds,betahat = betahat,
-                                              se = ,talpha0 = alpha0,tmu0 = mu0,tSiRiSr0 = sirisr,
-                                              tolerance = tolerance,itermax = itermax,verbose = F,lnz_tol = use_lnztol)
+                                                 se = ,talpha0 = alpha0,tmu0 = mu0,tSiRiSr0 = sirisr,
+                                                 tolerance = tolerance,itermax = itermax,verbose = F,lnz_tol = use_lnztol)
     }
   }
   return(result)
@@ -152,49 +234,5 @@ rss_varbvsr <- function(options=list()){
     return(int_res)
   }
 }
-
-rss_varbvsr_norm_optim <- function(SiRiS,sigbb,betahat,
-                                   se ,tmu0 =rmu(length(betahat)),tSiRiSr0 = c(SiRiS%*%tmu0),
-                                   tolerance = 1e-3,itermax = 100,lnz_tol =T){
-   requireNamespace("stats")
- 
-  
-  moptim <- stats::optimise(f = wrap_rss_varbvs_norm_optim,interval=sigbb,
-                  SiRiS=SiRiS,
-                  betahat = betahat,
-                  se = se,
-                  tmu0 = tmu0,
-                  tSiRiSr0 = tSiRiSr0,
-                  tolerance = tolerance,
-                  itermax=itermax,
-                  lnz_tol = lnz_tol)
-  return(moptim)
-}
-
-
-
-
-
-wrap_rss_varbvs_norm_optim <- function( par, 
-                                      SiRiS,
-                                      betahat,
-                                      se,
-                                      tmu0,
-                                      tSiRiSr0,
-                                      tolerance,
-                                      itermax,
-                                      lnz_tol){
-   
-  return(-grid_search_rss_varbvsr_norm_tls(SiRiS,
-                                  par,
-                                  betahat,
-                                  se,
-                                  tmu0,
-                                  tSiRiSr0,
-                                  tolerance,
-                                  itermax,
-                                  lnz_tol)[["lnZ"]])
-}
-
 
 

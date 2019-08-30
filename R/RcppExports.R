@@ -96,10 +96,6 @@ grid_search_rss_varbvsr <- function(SiRiS, sigma_beta, logodds, betahat, se, tal
     .Call('_rssr_grid_search_rss_varbvsr', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
 
-grid_search_rss_varbvsr_multitrait <- function(R, sigma_beta, logodds, betahat, se, talpha0, tmu0, fgeneid, tolerance, itermax, verbose, lnz_tol) {
-    .Call('_rssr_grid_search_rss_varbvsr_multitrait', PACKAGE = 'rssr', R, sigma_beta, logodds, betahat, se, talpha0, tmu0, fgeneid, tolerance, itermax, verbose, lnz_tol)
-}
-
 grid_search_rss_varbvsr_naive <- function(SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol) {
     .Call('_rssr_grid_search_rss_varbvsr_naive', PACKAGE = 'rssr', SiRiS, sigma_beta, logodds, betahat, se, talpha0, tmu0, tSiRiSr0, tolerance, itermax, verbose, lnz_tol)
 }
