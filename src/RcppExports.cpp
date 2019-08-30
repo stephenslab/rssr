@@ -337,19 +337,19 @@ BEGIN_RCPP
 END_RCPP
 }
 // grid_search_rss_varbvsr
-Rcpp::DataFrame grid_search_rss_varbvsr(const Rcpp::NumericMatrix& SiRiS, const Rcpp::NumericVector& sigma_beta, const Rcpp::NumericVector& logodds, const Rcpp::NumericVector& betahat, const Rcpp::NumericVector& se, const Rcpp::NumericVector& talpha0, const Rcpp::NumericVector& tmu0, const Rcpp::NumericVector& tSiRiSr0, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
+Rcpp::DataFrame grid_search_rss_varbvsr(const Rcpp::NumericMatrix SiRiS, const Rcpp::NumericVector sigma_beta, const Rcpp::NumericVector logodds, const Rcpp::NumericVector betahat, const Rcpp::NumericVector se, const Rcpp::NumericVector talpha0, const Rcpp::NumericVector tmu0, const Rcpp::NumericVector tSiRiSr0, double tolerance, int itermax, Rcpp::LogicalVector verbose, Rcpp::LogicalVector lnz_tol);
 RcppExport SEXP _rssr_grid_search_rss_varbvsr(SEXP SiRiSSEXP, SEXP sigma_betaSEXP, SEXP logoddsSEXP, SEXP betahatSEXP, SEXP seSEXP, SEXP talpha0SEXP, SEXP tmu0SEXP, SEXP tSiRiSr0SEXP, SEXP toleranceSEXP, SEXP itermaxSEXP, SEXP verboseSEXP, SEXP lnz_tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix& >::type SiRiS(SiRiSSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type sigma_beta(sigma_betaSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type logodds(logoddsSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type betahat(betahatSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type se(seSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type talpha0(talpha0SEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tmu0(tmu0SEXP);
-    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type tSiRiSr0(tSiRiSr0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericMatrix >::type SiRiS(SiRiSSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type sigma_beta(sigma_betaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type logodds(logoddsSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type betahat(betahatSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type se(seSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type talpha0(talpha0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type tmu0(tmu0SEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector >::type tSiRiSr0(tSiRiSr0SEXP);
     Rcpp::traits::input_parameter< double >::type tolerance(toleranceSEXP);
     Rcpp::traits::input_parameter< int >::type itermax(itermaxSEXP);
     Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type verbose(verboseSEXP);
