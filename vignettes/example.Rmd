@@ -23,7 +23,7 @@ devtools::install_github("stephenslab/rssr",ref="v0.1.0-alpha")
 
 The input data for fitting an `RSS` model consist of i) a vector of marginal effect estimates (`betahat`); ii) a vector of standard errors of these marginal estimates (`se`) and iii) a correlation matrix (`R`) among all covariates. To make the model fitting results reproducible, here we also provide initial values of variational parameters (`alpha_start` and `mu_start`).
 
-```{r, message=FALSE}
+```{r, message=FALSE,eval=FALSE}
 suppressPackageStartupMessages(library(rssr))
 suppressPackageStartupMessages(library(Matrix))
 
@@ -51,7 +51,7 @@ alpha_start <- t(t(alpha_test))
 
 We also compute a matrix `SiRiS`, defined as `SiRiS = diag(1/se) %*% as.matrix(R) %*% diag(1/se)`, before we start the variational update. 
 
-```{r}
+```{r,eval=FALSE}
 # compute the matrix SiRiS
 SiRiS_f <- as.matrix(rssr::SiRSi(R, 1/se))
 # note that SiRiS can be also computed as follows:
@@ -68,7 +68,7 @@ SiRiSr_start <- c(SiRiS_f %*% (alpha_start * mu_start))
 
 Here we fix the values of two hyper-parameters: `sigma_beta=1` and `logodds=-4.6`.
 
-```{r}
+```{r,eval=FALSE}
 r_results <- rssr::rss_varbvsr_naive_sp(SiRiS, sigma_beta=1, logodds=-4.6, betahat, se, alpha_start, mu_start, SiRiSr_start,itermax=100,verbose = F,lnz_tol = F, tolerance=1e-4)
 
 # extract certain quantities for further comparisons
